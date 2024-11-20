@@ -45,7 +45,7 @@
                             <div class="dropdown-menu show">
                                 <div class="dropdown-menu-columns">
                                     <div class="dropdown-menu-column">
-                                        <a class="dropdown-item" href="{{ route('draftCustomer.index') }}">
+                                        <a class="dropdown-item" href="{{ route('draft-customer.index') }}">
                                             Draft customer
                                         </a>
                                         <a class="dropdown-item" href=" ">

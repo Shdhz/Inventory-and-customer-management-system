@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DraftCustomer;
 use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
 
 class draftCustomerController extends Controller
 {
@@ -12,8 +13,12 @@ class draftCustomerController extends Controller
      */
     public function index()
     {
-        $show_data = DraftCustomer::with('user')->get();
-        return view('admin.draft-customer', compact($show_data));
+        // $draftCustomers = DraftCustomer::all();
+        // return view('admin.draft-customer', compact('draftCustomers'));
+        if(request()->ajax()){
+            return DataTables::make(DraftCustomer::all())->make(true);
+        }
+        return view('admin.draft-customer');
     }
 
     /**

@@ -4,39 +4,41 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\DraftCustomer;
-use App\Models\User;
 use Faker\Factory as Faker;
 
 class DraftCustomerSeeder extends Seeder
 {
     public function run()
     {
-        // Ambil semua users
-        $users = User::all();
+        // ID pengguna default untuk dummy data
+        $defaultUserId = 1;
 
-        // Jika tidak ada pengguna, tampilkan pesan dan hentikan seeding
-        if ($users->isEmpty()) {
-            $this->command->info('Tidak ada data di tabel users. Seeder untuk draft_customer tidak dapat dijalankan.');
+        // Pastikan pengguna dengan ID ini ada di tabel users
+        if (!\App\Models\User::where('id', $defaultUserId)->exists()) {
+            $this->command->info("User dengan ID $defaultUserId tidak ditemukan. Harap tambahkan user dengan ID tersebut sebelum menjalankan seeder ini.");
             return;
         }
+
+        // Jumlah data dummy yang ingin dibuat
+        $jumlahData = 15;
 
         // Generate data menggunakan Faker
         $faker = Faker::create();
 
-        foreach ($users as $user) {
-            DraftCustomer::updateOrCreate(
-                ['user_id' => $user->id], // Kondisi pencarian berdasarkan user_id
-                [
-                    'Nama' => $faker->name,
-                    'no_hp' => $faker->phoneNumber,
-                    'email' => $faker->email,
-                    'provinsi' => $faker->state,
-                    'kota' => $faker->city,
-                    'alamat_lengkap' => $faker->address,
-                    'sumber' => $faker->word,
-                ]
-            );
+        // Loop untuk membuat data dummy
+        for ($i = 0; $i < $jumlahData; $i++) {
+            DraftCustomer::create([
+                'user_id' => $defaultUserId, // Gunakan ID pengguna default
+                'Nama' => $faker->name,
+                'no_hp' => substr( $faker->phoneNumber, 0, 15),
+                'email' => $faker->unique()->safeEmail,
+                'provinsi' => $faker->state,
+                'kota' => $faker->city,
+                'alamat_lengkap' => $faker->address,
+                'sumber' => $faker->word,
+            ]);
         }
+
+        $this->command->info("$jumlahData data DraftCustomer berhasil dibuat dengan user_id default $defaultUserId.");
     }
 }
-
