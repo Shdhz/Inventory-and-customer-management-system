@@ -43,9 +43,9 @@
 <body>
     <div class="page">
         {{-- sidebar-menu --}}
-        @include('layouts.sidebar')
+        <x-sidebar />
         <!-- Navbar Menu -->
-        @include('layouts.navbar')
+        <x-navbar />
 
         <div class="page-wrapper">
             <!-- Page body -->

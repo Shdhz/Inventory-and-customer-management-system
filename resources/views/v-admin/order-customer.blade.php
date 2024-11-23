@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 @section('dashboard', 'order-customer')
 @section('content')
     <div class="container-xl">

@@ -18,7 +18,7 @@ class draftCustomerController extends Controller
         if(request()->ajax()){
             return DataTables::make(DraftCustomer::all())->make(true);
         }
-        return view('admin.draft-customer');
+        return view('v-admin.draft-customer');
     }
 
     /**

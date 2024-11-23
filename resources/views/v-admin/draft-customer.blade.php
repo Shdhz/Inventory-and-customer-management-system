@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 @section('dashboard', 'dashboard-draft-customer')
 @section('content')
 
@@ -36,23 +36,6 @@
                         <th>Aksi</th>
                     </tr>
                 </thead>
-                {{-- <tbody>
-                    @foreach ($draftCustomers as $key => $d)
-                        <tr>
-                            <td>{{ $key + 1 }}</td>
-                            <td>{{ $d->Nama }}</td>
-                            <td>{{ $d->no_hp }}</td>
-                            <td>{{ $d->email }}</td>
-                            <td>{{ $d->provinsi }}</td>
-                            <td>{{ $d->kota }}</td>
-                            <td>{{ $d->alamat_lengkap }}</td>
-                            <td>{{ $d->sumber }}</td>
-                            <td>
-                                <x-action-btn />
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody> --}}
             </table>
         </div>
     </div>
