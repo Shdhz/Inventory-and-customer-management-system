@@ -26,7 +26,7 @@ class draftCustomerController extends Controller
      */
     public function create()
     {
-        //
+        return view('v-admin.crud_customers.add');
     }
 
     /**

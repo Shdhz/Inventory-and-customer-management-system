@@ -24,9 +24,3 @@ Route::group(['middleware' => ['auth', 'verified', 'role:admin']], function() {
 
 // Route role Produksi
 Route::get('/dashboard-produksi', [ProduksiController::class, 'index'])->name('dashboardProduksi.index')->middleware('auth', 'verified', 'role:produksi');
-
-
-// tes
-Route::get('tes', function(){
-    return view('v-admin.tes');
-});

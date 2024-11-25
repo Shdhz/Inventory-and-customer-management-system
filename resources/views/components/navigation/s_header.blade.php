@@ -5,7 +5,7 @@
                 <ul class="navbar-nav">
 
                     {{-- Nav-home --}}
-                    <li class="nav-item">
+                    <li class="nav-item {{ Request::is('dashboard-admin') ? 'active' : ''}}">
                         <a class="nav-link" href="{{ route('dashboardAdmin.index') }}">
                             <span
                                 class="nav-link-icon d-md-none d-lg-inline-block">
@@ -25,7 +25,7 @@
                         </a>
                     </li>
                     {{-- Nav - data customer --}}
-                    <li class="nav-item dropdown">
+                    <li class="nav-item dropdown {{ Request::is('draft-customer') || Request::is('order-customer') ? 'active' : ''}}">
                         <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
                             data-bs-auto-close="outside" role="button" aria-expanded="false">
                             <span
@@ -43,7 +43,7 @@
                                     <a class="dropdown-item" href="{{ route('draft-customer.index') }}">
                                         Draft Customer
                                     </a>
-                                    <a class="dropdown-item" href="">
+                                    <a class="dropdown-item" href="{{ route('oc.index') }}">
                                         Order Customer
                                     </a>
                                 </div>
@@ -140,7 +140,7 @@
 
                     {{-- Nav - Kelola tugas harian --}}
                     <li class="nav-item">
-                        <a class="btn btn-primary border border-1 rounded-1 focus-ring focus-ring-primary " href="">
+                        <a class="btn btn-outline-primary border border-1 rounded-1 focus-ring focus-ring-primary " href="">
                             Kelola tugas
                         </a>
                     </li>
