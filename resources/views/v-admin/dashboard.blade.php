@@ -1,7 +1,5 @@
 @extends('layouts.admin')
 @section('dashboard', 'dashboard-homepage')
 @section('content')
-    <div class="container-xl">
-        <h1>hai dashboard admin</h1>
-    </div>
+    <h3>Hai brow</h3>
 @endsection

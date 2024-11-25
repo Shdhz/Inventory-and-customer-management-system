@@ -1,8 +1,6 @@
 @extends('layouts.admin')
 @section('dashboard', 'dashboard-draft-customer')
 @section('content')
-
-    <h3 class="mb-4">Draft Customer</h3>
     <div class="container-lg mt-2 bg-white">
         <div class="d-flex justify-content-between align-items-center mb-2 p-3">
             <h3>Draft customer All Data</h3>
@@ -55,7 +53,8 @@
                         previous: 'Sebelumnya',
                     },
                 },
-                columns: [{
+                columns: [
+                    {
                         data: null,
                         render: function(data, type, row, meta) {
                             return meta.row + 1;

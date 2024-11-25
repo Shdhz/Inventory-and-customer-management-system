@@ -1,7 +1,9 @@
 {{-- Form login --}}
 <div class="card bg-glass rounded rounded-4">
     <div class="card-body px-4 py-5 px-md-5">
-        <form>
+
+        <form action="{{ route('Authlogin') }}" method="POST">
+            @csrf
             <h3 class="text-center mb-4">Login</h3>
             <p class="text-secondary text-center mb-5">Isi form untuk masuk kedalam aplikasi</p>
             <!-- Input username -->
