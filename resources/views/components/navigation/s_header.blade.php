@@ -1,3 +1,4 @@
+@role('admin')
 <header class="navbar-expand-md">
     <div class="collapse navbar-collapse" id="navbar-menu">
         <div class="navbar">
@@ -169,3 +170,153 @@
         </div>
     </div>
 </header>
+@endrole
+
+@role('produksi')
+{{-- Header produksi --}}
+<header class="navbar-expand-md">
+    <div class="collapse navbar-collapse" id="navbar-menu">
+        <div class="navbar">
+            <div class="container-xl my-auto">
+                <ul class="navbar-nav">
+
+                    {{-- Nav-home --}}
+                    <li class="nav-item {{ Request::is('dashboard-produksi') ? 'active' : ''}}">
+                        <a class="nav-link" href="{{ route('dashboardProduksi.index') }}">
+                            <span
+                                class="nav-link-icon d-md-none d-lg-inline-block">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24"
+                                    height="24" viewBox="0 0 24 24" stroke-width="2"
+                                    stroke="currentColor" fill="none" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                    <path d="M5 12l-2 0l9 -9l9 9l-2 0" />
+                                    <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+                                    <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+                                </svg>
+                            </span>
+                            <span class="nav-link-title">
+                                Home
+                            </span>
+                        </a>
+                    </li>
+
+                    {{-- Nav - data produk --}}
+                    <li class="nav-item dropdown {{ Request::is('kategori-barang') || Request::is('stok-barang') || Request::is('barang-rusak') ? 'active' : ''}}">
+                        <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
+                            data-bs-auto-close="outside" role="button" aria-expanded="false">
+                            <span
+                                class="nav-link-icon d-md-none d-lg-inline-block">
+                                <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-package"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5" /><path d="M12 12l8 -4.5" /><path d="M12 12l0 9" /><path d="M12 12l-8 -4.5" /><path d="M16 5.25l-8 4.5" /></svg>
+                            </span>
+                            <span class="nav-link-title">
+                                Kelola Produk
+                            </span>
+                        </a>
+                        {{-- dropdown - data produk --}}
+                        <div class="dropdown-menu">
+                            <div class="dropdown-menu-columns">
+                                <div class="dropdown-menu-column">
+                                    <a class="dropdown-item" href="{{ route('kategori-barang.index') }}">
+                                        kategori produk
+                                    </a>
+                                    <a class="dropdown-item" href="{{ route('stok-barang.index') }}">
+                                        Stok produk
+                                    </a>
+                                    <a class="dropdown-item" href="{{ route('barang-rusak.index') }}">
+                                        Barang rusak
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+
+                    {{-- Nav - manajemen barang masuk/keluar --}}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
+                            data-bs-auto-close="outside" role="button" aria-expanded="false">
+                            <span
+                                class="nav-link-icon d-md-none d-lg-inline-block">
+                                <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-package-export"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 21l-8 -4.5v-9l8 -4.5l8 4.5v4.5" /><path d="M12 12l8 -4.5" /><path d="M12 12v9" /><path d="M12 12l-8 -4.5" /><path d="M15 18h7" /><path d="M19 15l3 3l-3 3" /></svg>
+                            </span>
+                            <span class="nav-link-title">
+                                Transaksi
+                            </span>
+                        </a>
+                        {{-- dropdown - data customer --}}
+                        <div class="dropdown-menu">
+                            <div class="dropdown-menu-columns">
+                                <div class="dropdown-menu-column">
+                                    <a class="dropdown-item" href="">
+                                        Barang masuk
+                                    </a>
+                                    <a class="dropdown-item" href="">
+                                        Barang keluar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+
+                    {{-- Nav - Kelola Produksi --}}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
+                            data-bs-auto-close="outside" role="button" aria-expanded="false">
+                            <span
+                                class="nav-link-icon d-md-none d-lg-inline-block">
+                                <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-calendar-month"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z" /><path d="M16 3v4" /><path d="M8 3v4" /><path d="M4 11h16" /><path d="M7 14h.013" /><path d="M10.01 14h.005" /><path d="M13.01 14h.005" /><path d="M16.015 14h.005" /><path d="M13.015 17h.005" /><path d="M7.01 17h.005" /><path d="M10.01 17h.005" /></svg>
+                            </span>
+                            <span class="nav-link-title">
+                                Rencana Produksi
+                            </span>
+                        </a>
+                        {{-- dropdown - kelola produksi --}}
+                        <div class="dropdown-menu">
+                            <div class="dropdown-menu-columns">
+                                <div class="dropdown-menu-column">
+                                    <a class="dropdown-item" href="">
+                                        kelola kelompok produksi
+                                    </a>
+                                    <a class="dropdown-item" href="">
+                                        kelola rencana produksi
+                                    </a>
+                                    <a class="dropdown-item" href="">
+                                        Kondisi Produk
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+
+                    {{-- Nav - Kelola tugas harian --}}
+                    <li class="nav-item">
+                        <a class="btn btn-outline-primary border border-1 rounded-1 focus-ring focus-ring-primary " href="">
+                            Kelola tugas
+                        </a>
+                    </li>
+                    
+                </ul>
+                {{-- seacrh form --}}
+                <div class="my-2 my-md-0 flex-grow-1 flex-md-grow-0 order-first order-md-last">
+                    <form action="./" method="get" autocomplete="off" novalidate>
+                        <div class="input-icon">
+                            <span class="input-icon-addon">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24"
+                                    height="24" viewBox="0 0 24 24" stroke-width="2"
+                                    stroke="currentColor" fill="none" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                    <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
+                                    <path d="M21 21l-6 -6" />
+                                </svg>
+                            </span>
+                            <input type="text" value="" class="form-control" placeholder="Search…"
+                                aria-label="Search in website">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+@endrole

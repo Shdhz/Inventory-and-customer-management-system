@@ -100,7 +100,7 @@
                             orderable: false,
                             searchable: false,
                             render: function(data, type, row) {
-                                return `<x-action-btn />`;
+                                return `<x-button.action-btn />`;
                             }
                         }
                     ],

@@ -14,6 +14,7 @@ class loginController extends Controller
 
     public function authenticate(Request $request)
     {
+
         $credentials = $request->only('username', 'password');
 
         if (Auth::attempt($credentials)) {
@@ -34,9 +35,7 @@ class loginController extends Controller
             }
         }
 
-        return back()->withErrors([
-            'username' => 'The provided credentials do not match our records.',
-        ]);
+        return back()->with('error', 'Username atau password anda salah');
     }
     public function logout(Request $request)
     {
@@ -46,6 +45,6 @@ class loginController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect('');
     }
 }

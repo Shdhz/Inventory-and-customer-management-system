@@ -1,24 +1,19 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\stok;
 
-use App\Models\DraftCustomer;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Yajra\DataTables\Facades\DataTables;
 
-class draftCustomerController extends Controller
+class stokBarangController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        if (request()->ajax()) {
-            $data = DraftCustomer::with('user')->where('user_id', Auth::id())->get(); // Ambil data berdasarkan user_id yang login
-            return DataTables::of($data)->make(true);
-        }
-        return view('v-admin.draft-customer');        
+        $title = 'Stok Barang';
+        return view('v-produksi.stok-barang.stok.index', compact('title'));
     }
 
     /**
@@ -26,7 +21,7 @@ class draftCustomerController extends Controller
      */
     public function create()
     {
-        return view('v-admin.crud_customers.add');
+        //
     }
 
     /**

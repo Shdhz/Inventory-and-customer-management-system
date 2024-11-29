@@ -1,24 +1,20 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\stok;
 
-use App\Models\DraftCustomer;
+use App\Http\Controllers\Controller;
+use App\Models\categoriesProduct;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Yajra\DataTables\Facades\DataTables;
 
-class draftCustomerController extends Controller
+class kategoriBarangController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        if (request()->ajax()) {
-            $data = DraftCustomer::with('user')->where('user_id', Auth::id())->get(); // Ambil data berdasarkan user_id yang login
-            return DataTables::of($data)->make(true);
-        }
-        return view('v-admin.draft-customer');        
+        $title = 'Kategori barang';
+        return view('v-produksi.stok-barang.kategori.index', compact('title'));
     }
 
     /**
@@ -26,7 +22,8 @@ class draftCustomerController extends Controller
      */
     public function create()
     {
-        return view('v-admin.crud_customers.add');
+        $title = "Tambah kategori barang";
+        return view('v-produksi.stok-barang.kategori.create', compact('title'));
     }
 
     /**
@@ -34,7 +31,18 @@ class draftCustomerController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // Validasi input
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255'
+        ]);
+
+        // Menyimpan kategori ke database
+        $category = categoriesProduct::create([
+            'name' => $validatedData['name']
+        ]);
+
+        // Mengembalikan response jika berhasil
+        return redirect()->route('categories.index')->with('success', 'Kategori berhasil ditambahkan!');
     }
 
     /**
