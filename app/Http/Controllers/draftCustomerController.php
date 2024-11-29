@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DraftCustomer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\Facades\DataTables;
 
 class draftCustomerController extends Controller
@@ -15,10 +16,11 @@ class draftCustomerController extends Controller
     {
         // $draftCustomers = DraftCustomer::all();
         // return view('admin.draft-customer', compact('draftCustomers'));
-        if(request()->ajax()){
-            return DataTables::make(DraftCustomer::all())->make(true);
+        if (request()->ajax()) {
+            $data = DraftCustomer::where('user_id', Auth::id())->get(); // Ambil data berdasarkan user_id yang login
+            return DataTables::of($data)->make(true);
         }
-        return view('v-admin.draft-customer');
+        return view('v-admin.draft-customer');        
     }
 
     /**
