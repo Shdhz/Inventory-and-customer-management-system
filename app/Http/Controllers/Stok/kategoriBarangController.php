@@ -5,6 +5,7 @@ namespace App\Http\Controllers\stok;
 use App\Http\Controllers\Controller;
 use App\Models\categoriesProduct;
 use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
 
 class kategoriBarangController extends Controller
 {
@@ -14,6 +15,19 @@ class kategoriBarangController extends Controller
     public function index()
     {
         $title = 'Kategori barang';
+
+        if (request()->ajax()) {
+            $data = categoriesProduct::all();
+            return DataTables::of($data)
+                ->addColumn('actions', function ($row) {
+                    return view('components.button.action-btn', [
+                        'edit' => route('kategori-barang.edit', $row->id_kategori),
+                        'delete' => route('kategori-barang.destroy', $row->id_kategori),
+                    ])->render();
+                })
+                ->rawColumns(['actions']) // Supaya tombol HTML dirender
+                ->make(true);
+        }
         return view('v-produksi.stok-barang.kategori.index', compact('title'));
     }
 
@@ -23,7 +37,12 @@ class kategoriBarangController extends Controller
     public function create()
     {
         $title = "Tambah kategori barang";
-        return view('v-produksi.stok-barang.kategori.create', compact('title'));
+        $backUrl = route('kategori-barang.index');
+
+        // $kelompokProduksi = categoriesProduct::select('kelompok_produksi')->get();
+        // dd($kelompokProduksi);
+
+        return view('v-produksi.stok-barang.kategori.create', compact('title', 'backUrl'));
     }
 
     /**
@@ -31,18 +50,18 @@ class kategoriBarangController extends Controller
      */
     public function store(Request $request)
     {
+        // echo json_encode($request->all()); die;
         // Validasi input
         $validatedData = $request->validate([
-            'name' => 'required|string|max:255'
+            'nama_kategori' => 'required|max:20',
+            'kelompok_produksi'=>'required'
         ]);
-
+        dd($validatedData);
+        
         // Menyimpan kategori ke database
-        $category = categoriesProduct::create([
-            'name' => $validatedData['name']
-        ]);
+        categoriesProduct::create($validatedData);
 
-        // Mengembalikan response jika berhasil
-        return redirect()->route('categories.index')->with('success', 'Kategori berhasil ditambahkan!');
+        return redirect()->route('kategori-barang.index')->with('success', 'Kategori berhasil ditambahkan!');
     }
 
     /**
@@ -56,9 +75,18 @@ class kategoriBarangController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit($id)
     {
-        //
+        $title = 'Edit kategori barang';
+        $backUrl = route('kategori-barang.index');
+
+        $category = categoriesProduct::where('id_kategori', $id)->firstOrFail();
+
+        return view('v-produksi.stok-barang.kategori.edit', [
+            'category' => $category,
+            'title' => $title,
+            'backUrl'=> $backUrl
+        ]);
     }
 
     /**
@@ -66,14 +94,31 @@ class kategoriBarangController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        // echo json_encode($request->all()); die;
+        $validatedData = $request->validate([
+            'nama_kategori' => 'required|max:20',
+            'kelompok_produksi'=> 'required'
+        ]);
+
+        
+        $category = categoriesProduct::where('id_kategori', $id)->firstOrFail();
+
+        // Update data kategori
+        $category->update($validatedData);
+
+
+        // Redirect dengan pesan sukses
+        return redirect()->route('kategori-barang.index')->with('success', 'Kategori berhasil diperbarui!');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy($id)
     {
-        //
+        $category = categoriesProduct::findOrFail($id);
+        $category->delete();
+
+        return back()->with('success', 'Kategori berhasil dihapus!');
     }
 }

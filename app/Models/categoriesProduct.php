@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class categoriesProduct extends Model
 {
     protected $table = 'tb_categories_products';
+    protected $primaryKey = 'id_kategori';
+    
     protected $guarded = [
         'id_kategori'
     ];

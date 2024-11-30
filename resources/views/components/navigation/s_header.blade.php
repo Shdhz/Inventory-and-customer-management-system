@@ -259,33 +259,16 @@
                     </li>
 
                     {{-- Nav - Kelola Produksi --}}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
-                            data-bs-auto-close="outside" role="button" aria-expanded="false">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#navbar-base" role="button" aria-expanded="false">
                             <span
                                 class="nav-link-icon d-md-none d-lg-inline-block">
                                 <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-calendar-month"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z" /><path d="M16 3v4" /><path d="M8 3v4" /><path d="M4 11h16" /><path d="M7 14h.013" /><path d="M10.01 14h.005" /><path d="M13.01 14h.005" /><path d="M16.015 14h.005" /><path d="M13.015 17h.005" /><path d="M7.01 17h.005" /><path d="M10.01 17h.005" /></svg>
                             </span>
                             <span class="nav-link-title">
-                                Rencana Produksi
+                                kelola rencana produksi
                             </span>
                         </a>
-                        {{-- dropdown - kelola produksi --}}
-                        <div class="dropdown-menu">
-                            <div class="dropdown-menu-columns">
-                                <div class="dropdown-menu-column">
-                                    <a class="dropdown-item" href="">
-                                        kelola kelompok produksi
-                                    </a>
-                                    <a class="dropdown-item" href="">
-                                        kelola rencana produksi
-                                    </a>
-                                    <a class="dropdown-item" href="">
-                                        Kondisi Produk
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
                     </li>
 
                     {{-- Nav - Kelola tugas harian --}}

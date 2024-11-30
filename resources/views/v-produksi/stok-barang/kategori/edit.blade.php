@@ -13,8 +13,9 @@
                     <h2 class="page-title">{{ $title }}</h2>
                 </div>
             </div>
-            <form action="{{ route('kategori-barang.store') }}" method="POST">
+            <form action="{{ route('kategori-barang.update', $category->id_kategori) }}" method="POST">
                 @csrf
+                @method('PUT')
                 <div class="card-body">
                     <div class="d-flex flex-wrap gap-3">
                         <!-- Kolom Kiri -->
@@ -22,15 +23,20 @@
                             <div class="mb-3">
                                 <label class="form-label">Nama Kategori barang</label>
                                 <input type="text" class="form-control" name="nama_kategori" placeholder="nama kategori"
-                                    required />
+                                    required value="{{ $category->nama_kategori }}" />
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Kelompok Produksi</label>
-                                <select class="form-select" aria-label="Default select example">
-                                    <option selected>-- Pilih Kelompok Produksi --</option>
-                                    <option value="kelompok_produksi">1</option>
-                                    <option value="kelompok_produksi">2</option>
-                                    <option value="kelompok_produksi">3</option>
+                                <select class="form-control" name="kelompok_produksi" required
+                                    id="kelompok_produksi_select">
+                                    <option value="" disabled {{ !$category->kelompok_produksi ? 'selected' : '' }}>
+                                        Pilih Kelompok Produksi</option>
+                                    @foreach ([1 => '1', 2 => '2', 3 => '3'] as $value => $label)
+                                        <option value="{{ $value }}"
+                                            {{ $category->kelompok_produksi == $value ? 'selected' : '' }}>
+                                            {{ $label }}
+                                        </option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>

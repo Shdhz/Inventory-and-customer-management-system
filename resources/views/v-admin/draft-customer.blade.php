@@ -44,7 +44,7 @@
                 </div>
             </div>
         </div>
-        <script>
+        {{-- <script>
             $(document).ready(function() {
                 $('#draft-customer').DataTable({
                     processing: true,
@@ -107,5 +107,5 @@
                     responsive: true
                 });
             });
-        </script>
+        </script> --}}
     @endsection
