@@ -27,16 +27,12 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Kelompok Produksi</label>
-                                <select class="form-control" name="kelompok_produksi" required
-                                    id="kelompok_produksi_select">
-                                    <option value="" disabled {{ !$category->kelompok_produksi ? 'selected' : '' }}>
-                                        Pilih Kelompok Produksi</option>
-                                    @foreach ([1 => '1', 2 => '2', 3 => '3'] as $value => $label)
-                                        <option value="{{ $value }}"
-                                            {{ $category->kelompok_produksi == $value ? 'selected' : '' }}>
-                                            {{ $label }}
-                                        </option>
-                                    @endforeach
+                                <select class="form-control" name="kelompok_produksi" required id="kelompok_produksi_select">
+                                    <option selected>{{ $category->kelompok_produksi }}</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                </select>
                                 </select>
                             </div>
                         </div>

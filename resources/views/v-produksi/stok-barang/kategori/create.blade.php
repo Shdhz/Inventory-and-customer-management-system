@@ -26,12 +26,19 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Kelompok Produksi</label>
-                                <select class="form-select" aria-label="Default select example">
-                                    <option selected>-- Pilih Kelompok Produksi --</option>
-                                    <option value="kelompok_produksi">1</option>
-                                    <option value="kelompok_produksi">2</option>
-                                    <option value="kelompok_produksi">3</option>
+                                <select class="form-select @error('kelompok_produksi') is-invalid @enderror"
+                                    aria-label="Default select example" id="kelompok_produksi" name="kelompok_produksi"
+                                    required>
+                                    <option selected>-- Pilih Kelompok produksi --</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
                                 </select>
+                                @error('kelompok_produksi')
+                                    <div class="invalid-feedback">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
                             </div>
                         </div>
                         <div class="card-footer d-flex justify-content-end gap-2">

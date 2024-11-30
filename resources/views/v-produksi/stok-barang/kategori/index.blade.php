@@ -1,6 +1,12 @@
 @extends('layouts.produksi')
 
 @section('content')
+@if (session('success'))
+<div class="alert alert-success alert-dismissible fade show" role="alert"       >
+    {{ session('success') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+@endif
     <div class="container-lg mt-2">
         <div class="card">
             <div class="card-body">
@@ -43,8 +49,7 @@
                         previous: 'Sebelumnya',
                     },
                 },
-                columns: [
-                    {
+                columns: [{
                         data: null,
                         render: function(data, type, row, meta) {
                             return meta.row + 1; // Nomor urut

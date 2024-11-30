@@ -56,8 +56,8 @@ class kategoriBarangController extends Controller
             'nama_kategori' => 'required|max:20',
             'kelompok_produksi'=>'required'
         ]);
-        dd($validatedData);
-        
+        // dd($validatedData);
+
         // Menyimpan kategori ke database
         categoriesProduct::create($validatedData);
 
