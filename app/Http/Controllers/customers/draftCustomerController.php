@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\customers;
 
+use App\Http\Controllers\Controller;
 use App\Models\DraftCustomer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,10 +16,16 @@ class draftCustomerController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            $data = DraftCustomer::with('user')->where('user_id', Auth::id())->get(); // Ambil data berdasarkan user_id yang login
-            return DataTables::of($data)->make(true);
+            $data = DraftCustomer::with('user')->where('user_id', Auth::id())->get();
+            return DataTables::of($data)
+                ->addColumn('actions', function ($row) {
+                    return view('components.button.action-btn', [
+                        'edit' => route('draft-customer.edit', $row->user_id),
+                        'delete' => route('draft-customer.destroy', $row->user_id),
+                    ])->render();
+                })->rawColumns(['actions'])->make(true);
         }
-        return view('v-admin.draft-customer');        
+        return view('v-admin.draft_customers.index');        
     }
 
     /**
@@ -26,7 +33,7 @@ class draftCustomerController extends Controller
      */
     public function create()
     {
-        return view('v-admin.crud_customers.add');
+        return view('v-admin.draft_customers.create');
     }
 
     /**

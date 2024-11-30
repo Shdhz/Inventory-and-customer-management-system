@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\stok\barangRusakController;
 use App\Http\Controllers\dashboardAdminController;
-use App\Http\Controllers\draftCustomerController;
+use App\Http\Controllers\customers\draftCustomerController;
 use App\Http\Controllers\stok\kategoriBarangController;
 use App\Http\Controllers\loginController;
 use App\Http\Controllers\orderController;

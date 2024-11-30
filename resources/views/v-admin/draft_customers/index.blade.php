@@ -44,7 +44,7 @@
                 </div>
             </div>
         </div>
-        {{-- <script>
+        <script>
             $(document).ready(function() {
                 $('#draft-customer').DataTable({
                     processing: true,
@@ -95,17 +95,14 @@
                             name: 'sumber'
                         },
                         {
-                            data: null,
+                            data: 'actions',
                             name: 'actions',
                             orderable: false,
-                            searchable: false,
-                            render: function(data, type, row) {
-                                return `<x-button.action-btn />`;
-                            }
+                            searchable: false
                         }
                     ],
                     responsive: true
                 });
             });
-        </script> --}}
+        </script>
     @endsection
