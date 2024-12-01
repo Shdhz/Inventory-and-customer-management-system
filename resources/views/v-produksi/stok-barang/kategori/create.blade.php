@@ -1,5 +1,6 @@
 @extends('layouts.produksi')
 @section('content')
+<x-message.errors />
     <div class="container-lg mt-2">
         <div class="card">
             <div class="card-header row-cols-auto">

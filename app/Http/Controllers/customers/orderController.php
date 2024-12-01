@@ -32,8 +32,8 @@ class orderController extends Controller
                 })
                 ->addColumn('actions', function ($row) {
                     return view('components.button.action-btn', [
-                        'edit' => route('draft-customer.edit', $row->customer_order_id),
-                        'delete' => route('draft-customer.destroy', $row->customer_order_id),
+                        'edit' => route('order-customer.edit', $row->customer_order_id),
+                        'delete' => route('order-customer.destroy', $row->customer_order_id),
                     ])->render();
                 })
                 ->rawColumns(['actions'])
@@ -67,7 +67,7 @@ class orderController extends Controller
             'keterangan' => 'nullable|string',
         ]);
 
-        // Tentukan tipe order berdasarkan sumber dalam satu variabel
+        // Tentukan tipe order
         $tipeOrder = match (true) {
             $sumber = strtolower(DraftCustomer::findOrFail($validated['draft_customer_id'])->sumber),
             in_array($sumber, ['shopee', 'tokopedia', 'lazada', 'tiktok shop']) => 'cashless',
@@ -79,32 +79,29 @@ class orderController extends Controller
             return redirect()->back()->withErrors(['draft_customer_id' => 'Sumber tidak valid.']);
         }
 
-        // Proses selanjutnya
+        // store data ke database
         CustomerOrder::create([
             'draft_customer_id' => $validated['draft_customer_id'],
             'tipe_order' => $tipeOrder,
             'jenis_order' => $validated['jenis_order'],
             'keterangan' => $validated['keterangan'],
         ]);
-
-        // Redirect dengan pesan sukses
-        return redirect()->route('order-customer.index')->with('success', 'Order berhasil ditambahkan!');
+        return redirect()->route('order-customer.index')->with('success', 'Order customer berhasil ditambahkan!');
     }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
     /**
      * Show the form for editing the specified resource.
      */
     public function edit(string $id)
     {
-        //
+        $title = "Edit Order Customer";
+        $backUrl = route('order-customer.index');
+
+        $orderCustomer = CustomerOrder::findOrFail($id);
+
+        // Ambil daftar draft customer untuk dropdown
+        $draftCustomers = DraftCustomer::select('draft_customers_id', 'Nama', 'sumber')->get();
+
+        return view('v-admin.order_customers.edit', compact('title', 'backUrl', 'orderCustomer', 'draftCustomers'));
     }
 
     /**
@@ -112,7 +109,33 @@ class orderController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $validated = $request->validate([
+            'draft_customer_id' => 'required|exists:tb_draft_customers,draft_customers_id',
+            'jenis_order' => 'required|in:pre order,ready stock',
+            'keterangan' => 'nullable|string',
+        ]);
+
+        // Ambil data order customer berdasarkan ID
+        $orderCustomer = CustomerOrder::findOrFail($id);
+        $tipeOrder = match (true) {
+            $sumber = strtolower(DraftCustomer::findOrFail($validated['draft_customer_id'])->sumber),
+            in_array($sumber, ['shopee', 'tokopedia', 'lazada', 'tiktok shop']) => 'cashless',
+            in_array($sumber, ['whatsapp', 'instagram', 'facebook']) => 'cash',
+            default => null,
+        };
+
+        if (!$tipeOrder) {
+            return redirect()->back()->withErrors(['draft_customer_id' => 'Sumber tidak valid.']);
+        }
+
+        // Update data di database
+        $orderCustomer->update([
+            'draft_customer_id' => $validated['draft_customer_id'],
+            'tipe_order' => $tipeOrder,
+            'jenis_order' => $validated['jenis_order'],
+            'keterangan' => $validated['keterangan'],
+        ]);
+        return redirect()->route('order-customer.index')->with('success', 'Order berhasil diperbarui!');
     }
 
     /**
@@ -120,6 +143,9 @@ class orderController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $orderCustomer = CustomerOrder::findOrFail($id);
+        $orderCustomer->delete();
+
+        return back()->with('success', 'Order Customer berhasil dihapus!');
     }
 }

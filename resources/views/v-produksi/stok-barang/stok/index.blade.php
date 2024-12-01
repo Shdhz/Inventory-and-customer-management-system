@@ -7,22 +7,24 @@
                     <div class="col">
                         <h2 class="page-title">{{ $title }}</h2>
                     </div>
-                    <x-button.add-btn />
+                    <x-button.add-btn href="{{ route('stok-barang.create') }}" />
                 </div>
             </div>
             <div class="card-body">
-                <div class="table-responsive">
+                <div class="table-responsive overflow-auto">
                     <table class="table table-striped datatable" id="stok-barang" style="width:100%">
                         <thead>
                             <tr>
                                 <th>No</th>
-                                <th>Nama customer</th>
-                                <th>No Hp</th>
-                                <th>Email</th>
-                                <th>Provinsi</th>
-                                <th>Kota</th>
-                                <th>Alamat lengkap</th>
-                                <th>Sumber customer</th>
+                                <th>Kode produk</th>
+                                <th>Foto produk</th>
+                                <th>Nama produk</th>
+                                <th>Kategori</th>
+                                <th>Jenis</th>
+                                <th>Kelompok Produksi</th>
+                                <th>Jumlah stok</th>
+                                <th>Barang rusak</th>
+                                <th>Diperbarui tanggal</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>

@@ -1,12 +1,12 @@
 @extends('layouts.admin')
 @section('content')
-<x-message.errors />
+    <x-message.errors />
     <div class="container-lg mt-2">
         <div class="card">
             <div class="card-header card-header row-cols-auto">
                 <div class="col">
                     <span>
-                        {{-- component backurl --}}
+                        {{-- Component backurl --}}
                         <x-button.backUrl href="{{ $backUrl }}" />
                     </span>
                 </div>
@@ -14,8 +14,9 @@
                     <h2 class="page-title">{{ $title }}</h2>
                 </div>
             </div>
-            <form action="{{ route('order-customer.store') }}" method="POST">
+            <form action="{{ route('order-customer.update', $orderCustomer->customer_order_id) }}" method="POST">
                 @csrf
+                @method('PUT')
                 <div class="card-body">
                     <div class="d-flex flex-wrap gap-3">
                         <!-- Kolom Kiri -->
@@ -23,10 +24,11 @@
                             <div class="mb-3">
                                 <label class="form-label">Draft Customer <span class="text-danger">*</span></label>
                                 <select class="form-control" name="draft_customer_id" id="draft_customer_select" required>
-                                    <option value=" ">-- Pilih Draft Customer --</option>
+                                    <option value="">-- Pilih Draft Customer --</option>
                                     @foreach ($draftCustomers as $customer)
                                         <option value="{{ $customer->draft_customers_id }}"
-                                            data-sumber="{{ $customer->sumber }}">
+                                            data-sumber="{{ $customer->sumber }}"
+                                            {{ $orderCustomer->draft_customer_id == $customer->draft_customers_id ? 'selected' : '' }}>
                                             {{ $customer->Nama }}
                                         </option>
                                     @endforeach
@@ -35,11 +37,13 @@
                             <div class="mb-3">
                                 <label class="form-label">Sumber</label>
                                 <input type="text" name="sumber" id="sumber_display" class="form-control"
+                                    value="{{ $orderCustomer->draftCustomer->sumber ?? '' }}"
                                     placeholder="Sumber akan tampil otomatis" disabled>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Tipe Order <span class="text-danger">*</span></label>
                                 <input type="text" name="tipe_order" id="tipe_order" class="form-control"
+                                    value="{{ $orderCustomer->tipe_order }}"
                                     placeholder="Tipe Order (cash/cashless) akan tampil otomatis" disabled>
                             </div>
                         </div>
@@ -50,13 +54,17 @@
                                 <label class="form-label">Jenis Order <span class="text-danger">*</span></label>
                                 <select class="form-control" name="jenis_order" required>
                                     <option value="">-- Pilih Jenis Order --</option>
-                                    <option value="pre order">Pre Order</option>
-                                    <option value="ready stock">Ready Stock</option>
+                                    <option value="pre order"
+                                        {{ $orderCustomer->jenis_order == 'pre order' ? 'selected' : '' }}>Pre Order
+                                    </option>
+                                    <option value="ready stock"
+                                        {{ $orderCustomer->jenis_order == 'ready stock' ? 'selected' : '' }}>Ready Stock
+                                    </option>
                                 </select>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Keterangan</label>
-                                <textarea name="keterangan" class="form-control" rows="4" placeholder="Tambahkan keterangan jika diperlukan"></textarea>
+                                <textarea name="keterangan" class="form-control" rows="4" placeholder="Tambahkan keterangan jika diperlukan">{{ $orderCustomer->keterangan }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -74,11 +82,11 @@
             const selectedOption = this.options[this.selectedIndex];
             const sumber = selectedOption.getAttribute('data-sumber') || ''; // Ambil data-sumber dari option
             document.getElementById('sumber_display').value = sumber; // Tampilkan sumber di input
-    
+
             // Menentukan tipe order berdasarkan sumber (case insensitive)
             const cashlessSources = ['shopee', 'tokopedia', 'lazada', 'tiktok shop'];
             const cashSources = ['whatsapp', 'instagram', 'facebook'];
-    
+
             const sumberLower = sumber.toLowerCase();
             if (cashlessSources.includes(sumberLower)) {
                 document.getElementById('tipe_order').value = 'cashless';
@@ -89,5 +97,4 @@
             }
         });
     </script>
-    
 @endsection

@@ -60,15 +60,6 @@ class draftCustomerController extends Controller
         DraftCustomer::create($validatedData);
         return redirect()->route('draft-customer.index')->with('success', 'Draft customer berhasil ditambahkan!');
     }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
     /**
      * Show the form for editing the specified resource.
      */

@@ -1,6 +1,7 @@
 @extends('layouts.admin')
 @section('title', 'Add Draft Customers')
 @section('content')
+<x-message.errors />
 <div class="container-lg mt-2">
     <div class="card">
         <div class="card-header card-header row-cols-auto">

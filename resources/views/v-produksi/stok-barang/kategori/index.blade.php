@@ -1,12 +1,7 @@
 @extends('layouts.produksi')
 
 @section('content')
-@if (session('success'))
-<div class="alert alert-success alert-dismissible fade show" role="alert"       >
-    {{ session('success') }}
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-</div>
-@endif
+    <x-message.success />
     <div class="container-lg mt-2">
         <div class="card">
             <div class="card-body">
@@ -41,21 +36,23 @@
                 ajax: '{{ route('kategori-barang.index') }}',
                 dom: '<"d-flex justify-content-between align-items-center mb-3"<"entries-filter"l><"search-bar"f>>rt<"d-flex justify-content-between align-items-center"ip>',
                 language: {
-                    search: '', // Menghapus label default
-                    searchPlaceholder: 'Cari...', // Placeholder untuk search bar
-                    lengthMenu: 'Tampilkan _MENU_ data', // Label untuk jumlah entri
+                    search: '',
+                    searchPlaceholder: 'Cari...',
+                    lengthMenu: 'Tampilkan _MENU_ data',
                     paginate: {
                         next: 'Berikutnya',
                         previous: 'Sebelumnya',
                     },
                 },
+                columnDefs: [
+                    {
+                    targets: '_all',
+                    className: 'text-start',
+                    }, 
+                ],
                 columns: [{
-                        data: null,
-                        render: function(data, type, row, meta) {
-                            return meta.row + 1; // Nomor urut
-                        },
-                        orderable: false,
-                        searchable: false
+                        data: 'DT_RowIndex',
+                        name: 'DT_RowIndex'
                     },
                     {
                         data: 'nama_kategori',

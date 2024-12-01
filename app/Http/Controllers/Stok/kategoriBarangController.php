@@ -19,6 +19,7 @@ class kategoriBarangController extends Controller
         if (request()->ajax()) {
             $data = categoriesProduct::all();
             return DataTables::of($data)
+                ->addIndexColumn()
                 ->addColumn('actions', function ($row) {
                     return view('components.button.action-btn', [
                         'edit' => route('kategori-barang.edit', $row->id_kategori),
