@@ -38,10 +38,7 @@ class kategoriBarangController extends Controller
     {
         $title = "Tambah kategori barang";
         $backUrl = route('kategori-barang.index');
-
-        // $kelompokProduksi = categoriesProduct::select('kelompok_produksi')->get();
-        // dd($kelompokProduksi);
-
+        
         return view('v-produksi.stok-barang.kategori.create', compact('title', 'backUrl'));
     }
 

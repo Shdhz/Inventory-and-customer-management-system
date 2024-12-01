@@ -46,4 +46,10 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    // Relasi ke DraftCustomer
+    public function draftCustomers()
+    {
+        return $this->hasMany(DraftCustomer::class, 'user_id', 'draft_customer_id');
+    }
 }

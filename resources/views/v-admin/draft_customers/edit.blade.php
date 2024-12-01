@@ -14,8 +14,9 @@
                 <h2 class="page-title">{{ $title }}</h2>
             </div>
         </div>
-        <form action="{{ route('draft-customer.store') }}" method="POST">
+        <form action="{{ route('draft-customer.update', $id->draft_customers_id) }}" method="POST">
             @csrf
+            @method('PUT')
             <div class="card-body">
                 <div class="d-flex flex-wrap gap-3">
                     <!-- Kolom Kiri -->
@@ -27,7 +28,7 @@
                                 class="form-control" 
                                 name="Nama" 
                                 placeholder="Nama customer" 
-                                value="{{ old('Nama') }}" 
+                                value="{{ $id->Nama }}" 
                                 required 
                             />
                             @error('Nama')
@@ -41,7 +42,7 @@
                                 class="form-control" 
                                 name="email" 
                                 placeholder="example@gmail.com" 
-                                value="{{ old('email') }}" 
+                                value="{{ $id->email }}" 
                             />
                             @error('email')
                                 <div class="text-danger">{{ $message }}</div>
@@ -54,7 +55,7 @@
                                 class="form-control" 
                                 name="kota" 
                                 placeholder="Kota" 
-                                value="{{ old('kota') }}" 
+                                value="{{ $id->kota }}" 
                             />
                             @error('kota')
                                 <div class="text-danger">{{ $message }}</div>
@@ -67,7 +68,7 @@
                                 class="form-control" 
                                 name="sumber" 
                                 placeholder="Sumber" 
-                                value="{{ old('sumber') }}" 
+                                value="{{ $id->sumber }}" 
                                 required
                             />
                             @error('sumber')
@@ -85,7 +86,7 @@
                                 class="form-control" 
                                 name="no_hp" 
                                 placeholder="No HP" 
-                                value="{{ old('no_hp') }}" 
+                                value="{{ $id->no_hp }}" 
                                 required 
                             />
                             @error('no_hp')
@@ -99,7 +100,7 @@
                                 class="form-control" 
                                 name="provinsi" 
                                 placeholder="Provinsi" 
-                                value="{{ old('provinsi') }}" 
+                                value="{{ $id->provinsi }}" 
                             />
                             @error('provinsi')
                                 <div class="text-danger">{{ $message }}</div>
@@ -112,7 +113,7 @@
                                 class="form-control" 
                                 rows="4" 
                                 placeholder="Contoh: Jl. Sukasukur, Kp. Majalengka..."
-                            >{{ old('alamat_lengkap') }}</textarea>
+                            >{{ $id->alamat_lengkap }}</textarea>
                             @error('alamat_lengkap')
                                 <div class="text-danger">{{ $message }}</div>
                             @enderror
