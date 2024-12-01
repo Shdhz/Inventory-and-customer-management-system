@@ -44,7 +44,7 @@
                                     <a class="dropdown-item" href="{{ route('draft-customer.index') }}">
                                         Draft Customer
                                     </a>
-                                    <a class="dropdown-item" href="{{ route('oc.index') }}">
+                                    <a class="dropdown-item" href="{{ route('order-customer.index') }}">
                                         Order Customer
                                     </a>
                                 </div>
