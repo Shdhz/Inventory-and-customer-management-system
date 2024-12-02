@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class productStock extends Model
 {
     protected $table = 'tb_products';
-    protected $primarykey = 'id_stok';
+    protected $primaryKey = 'id_stok';
 
     protected $guarded = [
         'id_stok',

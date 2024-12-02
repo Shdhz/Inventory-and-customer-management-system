@@ -31,5 +31,6 @@ Route::group(['middleware' => ['auth', 'verified', 'role:produksi']], function()
     Route::get('/dashboard-produksi', [ProduksiController::class, 'index'])->name('dashboardProduksi.index')->middleware('auth', 'verified', 'role:produksi');
     Route::resource('kategori-barang', kategoriBarangController::class);
     Route::resource('stok-barang', stokBarangController::class);
+    Route::get('/api/generate-kode-produk', [stokBarangController::class, 'generateKodeProduk']);
     Route::resource('barang-rusak', barangRusakController::class);
 });
