@@ -1,6 +1,31 @@
 @extends('layouts.produksi')
 @section('content')
     <x-message.errors />
+    <style>
+        .custom-file-upload input[type="file"] {
+            display: none; /* Hide the file input element */
+        }
+    
+        .custom-file-upload label {
+            cursor: pointer;
+            padding: 10px 20px;
+            border: 2px dashed #381bdd;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+    
+        .custom-file-upload label:hover {
+            color: black
+            border: 2px dashed #381bdd;
+        }
+    
+        .image-preview img {
+            max-height: 300px;
+            object-fit: contain;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+    
     <div class="container-lg mt-2">
         <div class="card">
             <div class="card-header row-cols-auto">
@@ -46,11 +71,17 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Foto Produk</label>
-                                <input type="file" class="form-control" id="foto_produk" name="foto_produk"
-                                    accept="image/*" />
-                                <img class="mt-2" id="previewImage" src="#" alt="Preview Gambar"
-                                    style="max-width: 200px; display: none;" />
+                                <div class="custom-file-upload">
+                                    <input type="file" class="form-control" id="foto_produk" name="foto_produk" accept="image/*" />
+                                    <label for="foto_produk" class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center">
+                                        <i class="bi bi-camera-fill me-2"></i> Upload Foto
+                                    </label>
+                                </div>
+                                <div class="image-preview mt-2">
+                                    <img id="previewImage" src="#" alt="Preview Gambar" style="max-width: 100%; display: none; border-radius: 8px;" />
+                                </div>
                             </div>
+                            
                         </div>
 
                         <!-- Kolom Kanan -->
@@ -83,22 +114,27 @@
         const namaKategori = document.getElementById('kategori_id');
         const kelompokProduksi = document.getElementById('kelompok_produksi');
         const kodeProduk = document.getElementById('kode_produk');
-
+    
         // Map kategori ke prefix
         const prefixMap = {
             "bambu": "BU",
             "box": "BX",
             "tas": "TS"
         };
-
+    
+        // Function to generate a random 4-digit number
+        function generateRandomNumber() {
+            return Math.floor(1000 + Math.random() * 9000); // Generate random number between 1000 and 9999
+        }
+    
         namaKategori.addEventListener('change', async function() {
             const selectedOption = this.options[this.selectedIndex];
             const kelompok = selectedOption.getAttribute('data-kelompok');
             const kategori = selectedOption.textContent.trim().toLowerCase();
-
+    
             // Set kelompok produksi
             kelompokProduksi.value = kelompok || '';
-
+    
             // Validasi kategori
             const prefix = prefixMap[kategori];
             if (!prefix) {
@@ -106,26 +142,20 @@
                 alert("Kategori tidak dikenali untuk penentuan kode produk.");
                 return;
             }
-
-            // Fetch kode produk
-            try {
-                const response = await fetch(`/api/generate-kode-produk?prefix=${prefix}`);
-                if (!response.ok) {
-                    throw new Error('Gagal mendapatkan kode produk dari server');
-                }
-                const data = await response.json();
-                kodeProduk.value = data.kode_produk;
-            } catch (error) {
-                console.error('Error:', error);
-                alert("Terjadi kesalahan saat menghasilkan kode produk.");
-            }
+    
+            // Generate random number for kode produk if no backend call is needed
+            const randomNumber = generateRandomNumber(); // Random number from 1000 to 9999
+            const newKodeProduk = prefix + randomNumber;
+    
+            // Set the kode produk in the input field
+            kodeProduk.value = newKodeProduk;
         });
-
+    
         // Preview Foto Produk
         document.getElementById('foto_produk').addEventListener('change', function(event) {
             const preview = document.getElementById('previewImage');
             const file = event.target.files[0];
-
+    
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
@@ -137,5 +167,5 @@
                 preview.style.display = "none";
             }
         });
-    </script>
+    </script>    
 @endsection

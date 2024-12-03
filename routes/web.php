@@ -13,9 +13,10 @@ use Illuminate\Support\Facades\Route;
 
 // Route login
 Route::controller(LoginController::class)->group(function(){
-    Route::get('/', 'showLoginForm');  // Menambahkan rute default ke login
-    Route::get('/login', 'showLoginForm')->name('login');
-    Route::post('/login_auth', 'authenticate')->name('Authlogin');
+    Route::middleware('guest')->group(function(){
+        Route::get('/', 'showLoginForm')->name('login');
+        Route::post('login_auth', 'authenticate')->name('Authlogin');
+    });
     Route::post('/logout', 'logout')->name('logout');
 });
 

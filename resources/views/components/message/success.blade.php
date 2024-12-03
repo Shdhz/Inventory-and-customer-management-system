@@ -13,5 +13,5 @@
             alert.classList.add('fade');
             setTimeout(() => alert.remove(), 500);
         }
-    }, 2000);
+    }, 2500);
 </script>

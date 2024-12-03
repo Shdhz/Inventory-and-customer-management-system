@@ -122,28 +122,20 @@
                 return;
             }
 
-            // Fetch kode produk
-            try {
-                const response = await fetch(`/api/generate-kode-produk?prefix=${prefix}`, {
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
-                            'content'),
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    }
-                });
-                if (!response.ok) {
-                    throw new Error('Gagal mendapatkan kode produk dari server');
-                }
-                const data = await response.json();
-                kodeProduk.value = data.kode_produk;
-            } catch (error) {
-                console.error('Error:', error);
-                alert("Terjadi kesalahan saat menghasilkan kode produk.");
-            }
+            // Generate the product code
+            const randomNumber = generateRandomNumber(); // Generate random number for code
+            const newKodeProduk = prefix + randomNumber; // Concatenate prefix and number
+
+            // Set the new product code
+            kodeProduk.value = newKodeProduk;
         });
 
-        // Preview Foto Produk
+        // Function to generate a random 4-digit number
+        function generateRandomNumber() {
+            return Math.floor(1000 + Math.random() * 9000); // Generate random number between 1000 and 9999
+        }
+
+        // Image preview logic
         document.getElementById('foto_produk').addEventListener('change', function(event) {
             const preview = document.getElementById('previewImage');
             const file = event.target.files[0];

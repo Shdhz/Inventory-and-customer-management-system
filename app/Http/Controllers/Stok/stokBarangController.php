@@ -179,7 +179,7 @@ class stokBarangController extends Controller
 
     public function destroy(string $id)
     {
-        $$product = productStock::findOrFail($id);
+        $product = productStock::findOrFail($id);
 
         $prefix = substr($product->kode_produk, 0, 2);
         $deletedNumber = (int) substr($product->kode_produk, 2);
@@ -217,14 +217,16 @@ class stokBarangController extends Controller
             ->orderByDesc('created_at')
             ->first();
 
-        // Jika produk sebelumnya ada, ambil nomor urut terakhir
-        $lastNumber = $lastProduct ? substr($lastProduct->kode_produk, 2) : 0;
+        // Generate nomor acak baru
+        $randomNumber = str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT); // Angka acak dari 0001 hingga 9999
 
-        // Generate nomor urut baru
-        $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
-
-        // Gabungkan prefix dan nomor urut
-        $kodeProduk = $prefix . $newNumber;
+        if (!$lastProduct) {
+            $kodeProduk = $prefix . $randomNumber;
+        } else {
+            $lastRandomNumber = substr($lastProduct->kode_produk, strlen($prefix));
+            $newNumber = str_pad((int)$lastRandomNumber + 1, 4, '0', STR_PAD_LEFT); 
+            $kodeProduk = $prefix . $newNumber;
+        }
 
         return response()->json(['kode_produk' => $kodeProduk]);
     }
