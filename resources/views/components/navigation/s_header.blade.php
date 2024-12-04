@@ -232,7 +232,7 @@
                     </li>
 
                     {{-- Nav - manajemen barang masuk/keluar --}}
-                    <li class="nav-item dropdown">
+                    <li class="nav-item dropdown {{ Request::is('barang-masuk') ? 'active' : ''}}">
                         <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
                             data-bs-auto-close="outside" role="button" aria-expanded="false">
                             <span
@@ -247,7 +247,7 @@
                         <div class="dropdown-menu">
                             <div class="dropdown-menu-columns">
                                 <div class="dropdown-menu-column">
-                                    <a class="dropdown-item" href="">
+                                    <a class="dropdown-item" href="{{ route('barang-masuk.index') }}">
                                         Barang masuk
                                     </a>
                                     <a class="dropdown-item" href="">

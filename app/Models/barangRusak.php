@@ -13,6 +13,6 @@ class barangRusak extends Model
 
     public function product()
     {
-        return $this->belongsTo(productStock::class, 'stok_id ', 'id_stok');
+        return $this->belongsTo(productStock::class, 'stok_id', 'id_stok');
     }
 }

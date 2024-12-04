@@ -100,7 +100,7 @@
                                 <label class="form-label">Jumlah Stok <span class="text-danger">*</span></label>
                                 <input type="number" class="form-control" name="jumlah_stok"
                                     placeholder="Masukkan jumlah stok"
-                                    value="{{ old('jumlah_stok', $product->jumlah_stok) }}" required />
+                                    value="{{ old('jumlah_stok', $product->jumlah_stok) }}" readonly required />
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Foto Produk</label>

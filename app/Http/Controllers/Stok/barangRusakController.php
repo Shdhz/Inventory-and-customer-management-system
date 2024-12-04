@@ -20,11 +20,14 @@ class barangRusakController extends Controller
         $button = "Tambah barang rusak";
 
         if ($request->ajax()) {
-            $barangRusak = barangRusak::with('product')->get();
+            $barangRusak = barangRusak::with('product.category')->get();
             return DataTables::of($barangRusak)
                 ->addIndexColumn()
                 ->addColumn('nama_produk', function ($row) {
                     return $row->product ? $row->product->nama_produk : 'N/A';
+                })
+                ->addColumn('kategori_id', function ($row) {
+                    return $row->product && $row->product->category ? $row->product->category->nama_kategori : 'N/A'; // Menampilkan nama kategori
                 })
                 ->addColumn('updated_at', function ($row) {
                     return Carbon::parse($row->updated_at)->format('d M Y, H:i');
@@ -35,7 +38,7 @@ class barangRusakController extends Controller
                         'delete' => route('barang-rusak.destroy', $row->barang_rusak_id),
                     ])->render();
                 })
-                ->rawColumns(['foto_produk', 'actions'])
+                ->rawColumns(['actions'])
                 ->make(true);
         }
         return view('v-produksi.stok-barang.barang_rusak.index', compact('title', 'button'));
@@ -58,8 +61,8 @@ class barangRusakController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'id_stok'=>'required|exists:tb_products,id_stok',
-            'jumlah_barang_rusak'=>'required|integer|min:1',
+            'id_stok' => 'required|exists:tb_products,id_stok',
+            'jumlah_barang_rusak' => 'required|integer|min:1',
         ]);
         try {
             // Simpan data ke database
@@ -91,7 +94,17 @@ class barangRusakController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+
+        $validated = $request->validate([
+            'id_stok' => 'required|exists:tb_products,id_stok',
+            'jumlah_barang_rusak' => 'required|integer|min:1',
+        ]);
+
+        $barangRusak = barangRusak::findOrFail($id);
+        $barangRusak->update($validated);
+
+        // Kembalikan ke halaman index dengan pesan sukses
+        return redirect()->route('barang-rusak.index')->with('success', 'Barang rusak berhasil diperbarui.');
     }
 
     /**
@@ -99,6 +112,9 @@ class barangRusakController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $barangRusak = barangRusak::findOrFail($id);
+        $barangRusak->delete();
+
+        return back()->with('success', 'Barang rusak berhasil dihapus dan stok telah dikembalikan.');
     }
 }

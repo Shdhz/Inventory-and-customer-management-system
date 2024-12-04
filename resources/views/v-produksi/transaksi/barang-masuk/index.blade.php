@@ -8,7 +8,7 @@
                     <div class="col">
                         <h2 class="page-title">{{ $title }}</h2>
                     </div>
-                    <x-button.add-btn :button="$button" href="{{ route('barang-rusak.create') }}" />
+                    <x-button.add-btn :button="$button" href="" />
                 </div>
             </div>
             <div class="card-body">
@@ -17,10 +17,10 @@
                         <thead>
                             <tr>
                                 <th>No</th>
-                                <th>Nama barang</th>
+                                <th>Tanggal Masuk</th>
                                 <th>Kategori barang</th>
-                                <th>Jumlah barang rusak</th>
-                                <th>Diedit pada</th>
+                                <th>Nama barang</th>
+                                <th>Jumlah masuk</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -29,7 +29,7 @@
             </div>
         </div>
     </div>
-    <script>
+    {{-- <script>
         $('#barang-rusak').DataTable({
             processing: true,
             serverSide: true,
@@ -77,5 +77,5 @@
                 }
             ],
         });
-    </script>
+    </script> --}}
 @endsection
