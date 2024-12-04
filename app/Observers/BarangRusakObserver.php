@@ -13,8 +13,10 @@ class BarangRusakObserver
     public function created(barangRusak $barangRusak): void
     {
         $product = productStock::find($barangRusak->stok_id);
+
         if ($product) {
-            $product->decrement('jumlah_stok', $barangRusak->jumlah_barang_rusak);
+            $product->jumlah_stok -= $barangRusak->jumlah_barang_rusak;
+            $product->save();
         }
     }
 

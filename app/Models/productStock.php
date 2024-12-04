@@ -18,4 +18,9 @@ class productStock extends Model
     {
         return $this->belongsTo(categoriesProduct::class, 'kategori_id', 'id_kategori');
     }
+
+    public function barangRusak()
+    {
+        return $this->hasMany(barangRusak::class);
+    }
 }

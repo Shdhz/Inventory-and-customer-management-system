@@ -16,6 +16,8 @@ class stokBarangController extends Controller
     public function index(Request $request)
     {
         $title = 'Stok Barang';
+        $button = 'Tambah Stok barang';
+
         if ($request->ajax()) {
             $productStocks = productStock::with('category')->get();
             return DataTables::of($productStocks)
@@ -43,7 +45,7 @@ class stokBarangController extends Controller
                 ->rawColumns(['foto_produk', 'actions'])
                 ->make(true);
         }
-        return view('v-produksi.stok-barang.stok.index', compact('title'));
+        return view('v-produksi.stok-barang.stok.index', compact('title', 'button'));
     }
 
     public function create()

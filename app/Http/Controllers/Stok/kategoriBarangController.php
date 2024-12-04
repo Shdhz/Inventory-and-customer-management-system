@@ -15,6 +15,7 @@ class kategoriBarangController extends Controller
     public function index()
     {
         $title = 'Kategori barang';
+        $button = 'Tambah kategori barang';
 
         if (request()->ajax()) {
             $data = categoriesProduct::all();
@@ -29,7 +30,7 @@ class kategoriBarangController extends Controller
                 ->rawColumns(['actions']) // Supaya tombol HTML dirender
                 ->make(true);
         }
-        return view('v-produksi.stok-barang.kategori.index', compact('title'));
+        return view('v-produksi.stok-barang.kategori.index', compact('title', 'button'));
     }
 
     /**

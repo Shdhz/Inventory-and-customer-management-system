@@ -8,7 +8,7 @@
                     <div class="col">
                         <h2 class="page-title">{{ $title }}</h2>
                     </div>
-                    <x-button.add-btn href="{{ route('stok-barang.create') }}" />
+                    <x-button.add-btn :button="$button" href="{{ route('stok-barang.create') }}" />
                 </div>
             </div>
             <div class="card-body">
