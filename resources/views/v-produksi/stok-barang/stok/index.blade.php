@@ -23,7 +23,6 @@
                                 <th>Kategori</th>
                                 <th>Kelompok Produksi</th>
                                 <th>Jumlah stok</th>
-                                <th>Barang rusak</th>
                                 <th>Diperbarui tanggal</th>
                                 <th>Aksi</th>
                             </tr>
@@ -80,10 +79,6 @@
                 {
                     data: 'jumlah_stok',
                     name: 'jumlah_stok'
-                },
-                {
-                    data: 'jumlah_rusak',
-                    name: 'jumlah_rusak'
                 },
                 {
                     data: 'updated_at',

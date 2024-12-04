@@ -69,19 +69,6 @@
                                 <input type="text" class="form-control" name="nama_produk"
                                     placeholder="Masukkan jenis produk" value="{{ old('nama_produk') }}" required />
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">Foto Produk</label>
-                                <div class="custom-file-upload">
-                                    <input type="file" class="form-control" id="foto_produk" name="foto_produk" accept="image/*" />
-                                    <label for="foto_produk" class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center">
-                                        <i class="bi bi-camera-fill me-2"></i> Upload Foto
-                                    </label>
-                                </div>
-                                <div class="image-preview mt-2">
-                                    <img id="previewImage" src="#" alt="Preview Gambar" style="max-width: 100%; display: none; border-radius: 8px;" />
-                                </div>
-                            </div>
-                            
                         </div>
 
                         <!-- Kolom Kanan -->
@@ -96,9 +83,16 @@
                                     placeholder="Masukkan jumlah stok" value="{{ old('jumlah_stok') }}" required />
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Jumlah Rusak</label>
-                                <input type="number" class="form-control" name="jumlah_rusak"
-                                    placeholder="Masukkan jumlah barang rusak" value="{{ old('jumlah_rusak') }}" />
+                                <label class="form-label">Foto Produk</label>
+                                <div class="custom-file-upload">
+                                    <input type="file" class="form-control" id="foto_produk" name="foto_produk" accept="image/*" />
+                                    <label for="foto_produk" class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center">
+                                        <i class="bi bi-camera-fill me-2"></i> Upload Foto
+                                    </label>
+                                </div>
+                                <div class="image-preview mt-2">
+                                    <img id="previewImage" src="#" alt="Preview Gambar" style="max-width: 100%; display: none; border-radius: 8px;" />
+                                </div>
                             </div>
                         </div>
                     </div>

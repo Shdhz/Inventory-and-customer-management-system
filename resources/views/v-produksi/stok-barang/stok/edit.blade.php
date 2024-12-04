@@ -1,6 +1,30 @@
 @extends('layouts.produksi')
 @section('content')
     <x-message.errors />
+    <style>
+        .custom-file-upload input[type="file"] {
+            display: none;
+            /* Hide the file input element */
+        }
+
+        .custom-file-upload label {
+            cursor: pointer;
+            padding: 10px 20px;
+            border: 2px dashed #381bdd;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .custom-file-upload label:hover {
+            color: black border: 2px dashed #381bdd;
+        }
+
+        .image-preview img {
+            max-height: 300px;
+            object-fit: contain;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
     <div class="container-lg mt-2">
         <div class="card">
             <div class="card-header row-cols-auto">
@@ -38,13 +62,18 @@
                                 @enderror
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Kode Produk <span class="text-danger">*</span></label>
+                                <label class="form-label">Kode Produk <span class="text-danger">*</span>
+                                    <span>
+                                        <small
+                                            id="kodeProdukHelp" class="form-text text-muted ms-1">Kode produk akan dihasilkan
+                                            secara otomatis.
+                                        </small>
+                                    </span>
+                                </label>
                                 <input type="text" class="form-control @error('kode_produk') is-invalid @enderror"
                                     name="kode_produk" id="kode_produk"
                                     value="{{ old('kode_produk', $product->kode_produk) }}" readonly required
                                     aria-describedby="kodeProdukHelp" />
-                                <small id="kodeProdukHelp" class="form-text text-muted">Kode produk akan dihasilkan secara
-                                    otomatis.</small>
                                 @error('kode_produk')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -57,19 +86,6 @@
                                 @error('nama_produk')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Foto Produk</label>
-                                <input type="file" class="form-control" id="foto_produk" name="foto_produk"
-                                    accept="image/*" />
-                                @if ($product->foto_produk)
-                                    <img class="mt-2" id="previewImage"
-                                        src="{{ asset('storage/uploads/stok-barang/' . $product->foto_produk) }}"
-                                        alt="Preview Gambar" style="max-width: 200px;" />
-                                @else
-                                    <img class="mt-2" id="previewImage" src="#" alt="Preview Gambar"
-                                        style="max-width: 200px; display: none;" />
-                                @endif
                             </div>
                         </div>
 
@@ -87,10 +103,26 @@
                                     value="{{ old('jumlah_stok', $product->jumlah_stok) }}" required />
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Jumlah Rusak</label>
-                                <input type="number" class="form-control" name="jumlah_rusak"
-                                    placeholder="Masukkan jumlah barang rusak"
-                                    value="{{ old('jumlah_rusak', $product->jumlah_rusak) }}" />
+                                <label class="form-label">Foto Produk</label>
+                                <div class="custom-file-upload">
+                                    <input type="file" class="form-control" id="foto_produk" name="foto_produk"
+                                        accept="image/*" />
+                                    <label for="foto_produk"
+                                        class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center">
+                                        <i class="bi bi-camera-fill me-2"></i> Upload Foto
+                                    </label>
+                                </div>
+                                <div class="image-preview mt-2">
+                                    @if ($product->foto_produk)
+                                        <img id="previewImage"
+                                            src="{{ asset('storage/uploads/stok-barang/' . $product->foto_produk) }}"
+                                            alt="Preview Gambar"
+                                            style="max-width: 100%; display: block; border-radius: 8px;" />
+                                    @else
+                                        <img id="previewImage" src="#" alt="Preview Gambar"
+                                            style="max-width: 100%; display: none; border-radius: 8px;" />
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     </div>

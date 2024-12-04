@@ -61,7 +61,6 @@ class stokBarangController extends Controller
             'kode_produk' => 'required|unique:tb_products,kode_produk',
             'nama_produk' => 'required|max:100',
             'jumlah_stok' => 'required|integer|min:0',
-            'jumlah_rusak' => 'nullable',
             'foto_produk' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
@@ -79,7 +78,6 @@ class stokBarangController extends Controller
                 'kode_produk' => $request->kode_produk,
                 'nama_produk' => $request->nama_produk,
                 'jumlah_stok' => $request->jumlah_stok,
-                'jumlah_rusak' => $request->jumlah_rusak,
                 'foto_produk' => $gambarFileName,
             ]);
         } catch (\Exception $e) {
@@ -113,7 +111,6 @@ class stokBarangController extends Controller
             'kode_produk' => 'required|unique:tb_products,kode_produk,' . $product->id_stok . ',id_stok',
             'nama_produk' => 'required|max:100',
             'jumlah_stok' => 'required|integer|min:0',
-            'jumlah_rusak' => 'nullable|integer|min:0',
             'foto_produk' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
@@ -170,7 +167,6 @@ class stokBarangController extends Controller
             'kode_produk' => $request->kode_produk,
             'nama_produk' => $request->nama_produk,
             'jumlah_stok' => $request->jumlah_stok,
-            'jumlah_rusak' => $request->jumlah_rusak,
             'foto_produk' => $gambarFileName,
         ]);
 
