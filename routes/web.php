@@ -8,6 +8,7 @@ use App\Http\Controllers\loginController;
 use App\Http\Controllers\customers\orderController;
 use App\Http\Controllers\dashboardSupervisorController;
 use App\Http\Controllers\ProduksiController;
+use App\Http\Controllers\rencana_produksi\rencanaProduksiController;
 use App\Http\Controllers\stok\stokBarangController;
 use App\Http\Controllers\transaksi\barangMasukController;
 use App\Http\Controllers\transaksi\formPoController;
@@ -25,7 +26,7 @@ Route::controller(LoginController::class)->group(function(){
     Route::post('/logout', 'logout')->name('logout');
 });
 
-
+// admin + supervisor
 Route::group(['middleware' => ['auth', 'verified', 'role:admin|supervisor']], function() {
     Route::get('dashboard-admin', [dashboardAdminController::class, 'index'])->name('dashboardAdmin.index');
     Route::resource('draft-customer', draftCustomerController::class);
@@ -42,6 +43,7 @@ Route::middleware(['auth', 'role:supervisor'])->group(function () {
 
 Route::resource('stok-barang', stokBarangController::class);
 
+// Produksi
 Route::group(['middleware' => ['auth', 'verified', 'role:produksi']], function(){
     Route::get('/dashboard-produksi', [ProduksiController::class, 'index'])->name('dashboardProduksi.index')->middleware('auth', 'verified', 'role:produksi');
     Route::resource('kategori-barang', kategoriBarangController::class);
@@ -51,6 +53,7 @@ Route::group(['middleware' => ['auth', 'verified', 'role:produksi']], function()
 });
 
 Route::middleware(['auth', 'verified', 'role:admin|produksi'])->group(function () {
+    Route::resource('rencana-produksi', rencanaProduksiController::class);
     Route::resource('stok-barang', stokBarangController::class);
     Route::resource('barang-rusak', barangRusakController::class);
 });

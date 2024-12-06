@@ -21,4 +21,9 @@ class formPo extends Model
     {
         return $this->belongsTo(categoriesProduct::class, 'kategori_id', 'id_kategori');
     }
+
+    public function rencanaProduksi()
+    {
+        return $this->hasMany(rencanaProduksi::class);
+    }
 }
