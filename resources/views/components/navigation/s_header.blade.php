@@ -1,4 +1,4 @@
-@role('admin')
+@role('admin|supervisor')
 <header class="navbar-expand-md">
     <div class="collapse navbar-collapse" id="navbar-menu">
         <div class="navbar">
@@ -74,7 +74,7 @@
                                     <a class="dropdown-item" href="">
                                         Kelola Invoice
                                     </a>
-                                    <a class="dropdown-item" href="">
+                                    <a class="dropdown-item" href="{{ route('form-po.index') }}">
                                         Kelola Form Po
                                     </a>
                                 </div>

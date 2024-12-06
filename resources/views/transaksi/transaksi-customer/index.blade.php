@@ -20,6 +20,7 @@
                                 <th>No</th>
                                 <th>Nama Customer</th>
                                 <th>Tanggal Transaksi</th>
+                                <th>Nama produk</th>
                                 <th>Jumlah Item</th>
                                 <th>Harga Satuan</th>
                                 <th>Total Harga</th>
@@ -66,6 +67,10 @@
                         }
                     },
                     {
+                        data: 'nama_produk',
+                        name: 'nama_produk'
+                    },
+                    {
                         data: 'jumlah_item',
                         name: 'jumlah_item'
                     },
@@ -80,21 +85,21 @@
                         data: 'total_harga',
                         name: 'total_harga',
                         render: function(data) {
-                            return `Rp ${data.toLocaleString('id-ID')}`;
+                            return data ? `Rp ${data.toLocaleString('id-ID')}` : '-';
                         }
                     },
                     {
                         data: 'diskon',
                         name: 'diskon',
                         render: function(data) {
-                            return data ? `Rp ${parseFloat(data).toLocaleString('id-ID')}` : '-';
+                            return data ? `${parseFloat(data).toLocaleString('id-ID')}%` : '-';
                         }
                     },
                     {
                         data: 'grand_total',
                         name: 'grand_total',
                         render: function(data) {
-                            return `Rp ${data.toLocaleString('id-ID')}`;
+                            return data ? `Rp ${data.toLocaleString('id-ID')}` : '-';
                         }
                     },
                     {

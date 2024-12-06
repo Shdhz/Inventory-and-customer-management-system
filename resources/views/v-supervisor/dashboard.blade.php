@@ -1,5 +1,4 @@
-@extends('layouts.admin')
-@section('dashboard', 'dashboard-homepage')
+@extends('layouts.supervisor')
 @section('content')
     <div class="page-header d-print-none">
         <div class="container-xl">

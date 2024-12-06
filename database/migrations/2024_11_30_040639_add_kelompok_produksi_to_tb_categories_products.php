@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::table('tb_categories_products', function (Blueprint $table) {
             Schema::table('tb_categories_products', function (Blueprint $table) {
-                // Adding the 'kelompok_produksi' column with enum values
                 $table->enum('kelompok_produksi', [1, 2, 3])->comment('1 = Box, 2 = Bambu, 3 = Tas');
             });
         });

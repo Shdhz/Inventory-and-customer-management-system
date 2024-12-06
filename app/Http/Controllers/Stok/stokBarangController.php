@@ -18,7 +18,8 @@ class stokBarangController extends Controller
     public function index(Request $request)
     {
         $title = 'Stok Barang';
-        $button = null; // Default button is null.
+        
+         null; // Default button is null.
 
         // Check if the user has 'manage stok' permission (produksi role)
         if (Auth::user()->hasRole('produksi')) {

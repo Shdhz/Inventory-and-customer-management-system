@@ -27,7 +27,7 @@ class loginController extends Controller
                 case 'admin':
                     return redirect()->intended('dashboard-admin');
                 case 'supervisor':
-                    return redirect()->intended('supervisor');
+                    return redirect()->intended('dashboard-supervisor');
                 case 'produksi':
                     return redirect()->intended('dashboard-produksi');
                 default:

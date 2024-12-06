@@ -7,6 +7,7 @@ use App\Models\CustomerOrder;
 use App\Models\DraftCustomer;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\Facades\DataTables;
 
 class orderController extends Controller
@@ -17,7 +18,11 @@ class orderController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $customerOrders = CustomerOrder::with('draftCustomer')->get(); // Fetch data with the relation
+            $customerOrders = CustomerOrder::with('draftCustomer')
+                ->whereHas('draftCustomer', function ($query) {
+                    $query->where('user_id', Auth::id()); // Filter berdasarkan user yang sedang login
+                })
+                ->get();
 
             return Datatables::of($customerOrders)
                 ->addIndexColumn()
