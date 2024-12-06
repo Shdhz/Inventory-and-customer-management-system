@@ -23,4 +23,9 @@ class productStock extends Model
     {
         return $this->hasMany(barangRusak::class);
     }
+
+    public function barangMasuk()
+    {
+        return $this->hasMany(barangMasuk::class);
+    }
 }

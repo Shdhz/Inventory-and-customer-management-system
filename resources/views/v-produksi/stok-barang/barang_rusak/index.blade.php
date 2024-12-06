@@ -1,6 +1,6 @@
 @extends('layouts.produksi')
 @section('content')
-<x-message.success />
+    <x-message.success />
     <div class="container-lg mt-2">
         <div class="card">
             <div class="card-body">
@@ -8,7 +8,9 @@
                     <div class="col">
                         <h2 class="page-title">{{ $title }}</h2>
                     </div>
-                    <x-button.add-btn :button="$button" href="{{ route('barang-rusak.create') }}" />
+                    @if (auth()->user()->hasRole('produksi'))
+                        <x-button.add-btn :button="$button" href="{{ route('barang-rusak.create') }}" />
+                    @endif
                 </div>
             </div>
             <div class="card-body">
@@ -21,7 +23,9 @@
                                 <th>Kategori barang</th>
                                 <th>Jumlah barang rusak</th>
                                 <th>Diedit pada</th>
-                                <th>Aksi</th>
+                                @role('produksi')
+                                    <th>Aksi</th>
+                                @endrole
                             </tr>
                         </thead>
                     </table>
@@ -69,12 +73,23 @@
                     data: 'updated_at',
                     name: 'updated_at'
                 },
-                {
-                    data: 'actions',
-                    name: 'actions',
-                    orderable: false,
-                    searchable: false
-                }
+                @role('produksi')
+                    {
+                        data: 'actions',
+                        name: 'actions',
+                        orderable: false,
+                        searchable: false,
+                    }
+                @else
+                    {
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        render: function() {
+                            return ''; // Jika bukan produksi, tidak tampilkan kolom aksi
+                        }
+                    }
+                @endrole
             ],
         });
     </script>

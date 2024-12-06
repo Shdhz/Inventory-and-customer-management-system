@@ -9,20 +9,7 @@
                     <div class="col">
                         <h2 class="page-title">Draft Customer All Data</h2>
                     </div>
-                    <div class="col-auto d-print-none">
-                        <div class="btn-list">
-                            <a href="{{ route('draft-customer.create') }}" class="btn btn-primary d-none d-sm-inline-block">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
-                                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                                    stroke-linecap="round" stroke-linejoin="round">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M12 5l0 14" />
-                                    <path d="M5 12l14 0" />
-                                </svg>
-                                Tambah Draft Customer
-                            </a>
-                        </div>
-                    </div>
+                    <x-button.add-btn :button="$button" href="{{ route('draft-customer.create') }}" />
                 </div>
             </div>
             <div class="card-body">

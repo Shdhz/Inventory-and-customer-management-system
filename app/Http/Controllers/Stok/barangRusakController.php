@@ -7,6 +7,7 @@ use App\Models\barangRusak;
 use App\Models\productStock;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\Facades\DataTables;
 
 class barangRusakController extends Controller
@@ -17,31 +18,53 @@ class barangRusakController extends Controller
     public function index(Request $request)
     {
         $title = "Barang rusak";
-        $button = "Tambah barang rusak";
+        $button = null;
 
-        if ($request->ajax()) {
-            $barangRusak = barangRusak::with('product.category')->get();
-            return DataTables::of($barangRusak)
-                ->addIndexColumn()
-                ->addColumn('nama_produk', function ($row) {
-                    return $row->product ? $row->product->nama_produk : 'N/A';
-                })
-                ->addColumn('kategori_id', function ($row) {
-                    return $row->product && $row->product->category ? $row->product->category->nama_kategori : 'N/A'; // Menampilkan nama kategori
-                })
-                ->addColumn('updated_at', function ($row) {
-                    return Carbon::parse($row->updated_at)->format('d M Y, H:i');
-                })
-                ->addColumn('actions', function ($row) {
-                    return view('components.button.action-btn', [
-                        'edit' => route('barang-rusak.edit', $row->barang_rusak_id),
-                        'delete' => route('barang-rusak.destroy', $row->barang_rusak_id),
-                    ])->render();
-                })
-                ->rawColumns(['actions'])
-                ->make(true);
+        if (Auth::user()->hasRole('produksi')) {
+            $button = 'Tambah Stok barang';
+            if ($request->ajax()) {
+                $barangRusak = barangRusak::with('product.category')->get();
+                return DataTables::of($barangRusak)
+                    ->addIndexColumn()
+                    ->addColumn('nama_produk', function ($row) {
+                        return $row->product ? $row->product->nama_produk : 'N/A';
+                    })
+                    ->addColumn('kategori_id', function ($row) {
+                        return $row->product && $row->product->category ? $row->product->category->nama_kategori : 'N/A'; // Menampilkan nama kategori
+                    })
+                    ->addColumn('updated_at', function ($row) {
+                        return Carbon::parse($row->updated_at)->format('d M Y, H:i');
+                    })
+                    ->addColumn('actions', function ($row) {
+                        return view('components.button.action-btn', [
+                            'edit' => route('barang-rusak.edit', $row->barang_rusak_id),
+                            'delete' => route('barang-rusak.destroy', $row->barang_rusak_id),
+                        ])->render();
+                    })
+                    ->rawColumns(['actions'])
+                    ->make(true);
+            }
+            return view('v-produksi.stok-barang.barang_rusak.index', compact('title', 'button'));
         }
-        return view('v-produksi.stok-barang.barang_rusak.index', compact('title', 'button'));
+
+        if (Auth::user()->hasRole('admin')) {
+            if ($request->ajax()) {
+                $barangRusak = barangRusak::with('product.category')->get();
+                return DataTables::of($barangRusak)
+                    ->addIndexColumn()
+                    ->addColumn('nama_produk', function ($row) {
+                        return $row->product ? $row->product->nama_produk : 'N/A';
+                    })
+                    ->addColumn('kategori_id', function ($row) {
+                        return $row->product && $row->product->category ? $row->product->category->nama_kategori : 'N/A'; // Menampilkan nama kategori
+                    })
+                    ->addColumn('updated_at', function ($row) {
+                        return Carbon::parse($row->updated_at)->format('d M Y, H:i');
+                    })
+                    ->make(true);
+            }
+            return view('v-produksi.stok-barang.barang_rusak.index', compact('title'));
+        }
     }
 
     /**

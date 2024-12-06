@@ -14,7 +14,7 @@ use App\Http\Controllers\transaksi\TransaksiDetailController;
 use Illuminate\Support\Facades\Route;
 
 
-// Route login
+
 Route::controller(LoginController::class)->group(function(){
     Route::middleware('guest')->group(function(){
         Route::get('/', 'showLoginForm')->name('login');
@@ -23,7 +23,7 @@ Route::controller(LoginController::class)->group(function(){
     Route::post('/logout', 'logout')->name('logout');
 });
 
-// Route role admin
+
 Route::group(['middleware' => ['auth', 'verified', 'role:admin']], function() {
     Route::get('dashboard-admin', [dashboardAdminController::class, 'index'])->name('dashboardAdmin.index');
     Route::resource('draft-customer', draftCustomerController::class);
@@ -31,13 +31,17 @@ Route::group(['middleware' => ['auth', 'verified', 'role:admin']], function() {
     Route::resource('transaksi-customer', TransaksiController::class);
 });
 
-// Route role Produksi
+Route::resource('stok-barang', stokBarangController::class);
+
 Route::group(['middleware' => ['auth', 'verified', 'role:produksi']], function(){
     Route::get('/dashboard-produksi', [ProduksiController::class, 'index'])->name('dashboardProduksi.index')->middleware('auth', 'verified', 'role:produksi');
     Route::resource('kategori-barang', kategoriBarangController::class);
-    Route::resource('stok-barang', stokBarangController::class);
     Route::get('/api/generate-kode-produk', [stokBarangController::class, 'generateKodeProduk']);
-    Route::resource('barang-rusak', barangRusakController::class);
     Route::resource('transaksi-detail', TransaksiDetailController::class);
     Route::resource('barang-masuk', barangMasukController::class);
+});
+
+Route::middleware(['auth', 'verified', 'role:admin|produksi'])->group(function () {
+    Route::resource('stok-barang', stokBarangController::class);
+    Route::resource('barang-rusak', barangRusakController::class);
 });

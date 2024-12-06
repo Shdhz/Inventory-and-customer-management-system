@@ -1,6 +1,7 @@
 @extends('layouts.produksi')
+
 @section('content')
-<x-message.success />
+    <x-message.success />
     <div class="container-lg mt-2">
         <div class="card">
             <div class="card-body">
@@ -8,7 +9,9 @@
                     <div class="col">
                         <h2 class="page-title">{{ $title }}</h2>
                     </div>
-                    <x-button.add-btn :button="$button" href="{{ route('stok-barang.create') }}" />
+                    @if (auth()->user()->can('add stock'))
+                        <x-button.add-btn :button="$button" href="{{ route('stok-barang.create') }}" />
+                    @endif
                 </div>
             </div>
             <div class="card-body">
@@ -24,7 +27,9 @@
                                 <th>Kelompok Produksi</th>
                                 <th>Jumlah stok</th>
                                 <th>Diperbarui tanggal</th>
-                                <th>Aksi</th>
+                                @role('produksi')
+                                    <th>Aksi</th>
+                                @endrole
                             </tr>
                         </thead>
                     </table>
@@ -32,6 +37,7 @@
             </div>
         </div>
     </div>
+
     <script>
         $('#stok-barang').DataTable({
             processing: true,
@@ -82,14 +88,34 @@
                 },
                 {
                     data: 'updated_at',
-                    name: 'updated_at'
+                    name: 'updated_at',
+                    render: function(data) {
+                        return data ? new Date(data).toLocaleString('id-ID', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        }) : 'N/A';
+                    }
                 },
-                {
-                    data: 'actions',
-                    name: 'actions',
-                    orderable: false,
-                    searchable: false
-                }
+                @role('produksi')
+                    {
+                        data: 'actions',
+                        name: 'actions',
+                        orderable: false,
+                        searchable: false,
+                    }
+                @else
+                    {
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        render: function() {
+                            return ''; // Jika bukan produksi, tidak tampilkan kolom aksi
+                        }
+                    }
+                @endrole
             ],
         });
     </script>

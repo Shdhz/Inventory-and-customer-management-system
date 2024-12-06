@@ -15,7 +15,8 @@ class draftCustomerController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {
+    {   
+        $button = "Tambah draft customer";
         if (request()->ajax()) {
             $data = DraftCustomer::with('user')->where('user_id', Auth::id())->get();
             return DataTables::of($data)
@@ -26,7 +27,7 @@ class draftCustomerController extends Controller
                     ])->render();
                 })->rawColumns(['actions'])->make(true);
         }
-        return view('v-admin.draft_customers.index');
+        return view('v-admin.draft_customers.index', compact('button'));
     }
 
     /**

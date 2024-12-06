@@ -53,7 +53,7 @@
                     </li>
 
                     {{-- Nav - Manajemen Order --}}
-                    <li class="nav-item dropdown">
+                    <li class="nav-item dropdown {{ Request::is('transaksi-customer') ? 'active' : ''}}">
                         <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
                             data-bs-auto-close="outside" role="button" aria-expanded="false">
                             <span
@@ -68,7 +68,7 @@
                         <div class="dropdown-menu">
                             <div class="dropdown-menu-columns">
                                 <div class="dropdown-menu-column">
-                                    <a class="dropdown-item" href="">
+                                    <a class="dropdown-item" href="{{ route('transaksi-customer.index') }}">
                                         Transaksi Customer
                                     </a>
                                     <a class="dropdown-item" href="">
@@ -83,7 +83,7 @@
                     </li>
 
                     {{-- Nav - Kelola Produk --}}
-                    <li class="nav-item dropdown">
+                    <li class="nav-item dropdown {{ Request::is('stok-barang') || Request::is('barang-rusak') ? 'active' : ''}}">
                         <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
                             data-bs-auto-close="outside" role="button" aria-expanded="false">
                             <span
@@ -101,10 +101,10 @@
                                     <a class="dropdown-item" href="">
                                         Rencana Produksi
                                     </a>
-                                    <a class="dropdown-item" href="">
+                                    <a class="dropdown-item" href="{{ route('stok-barang.index') }}">
                                         Stok Produk
                                     </a>
-                                    <a class="dropdown-item" href="">
+                                    <a class="dropdown-item" href="{{ route('barang-rusak.index') }}">
                                         Kondisi Produk
                                     </a>
                                 </div>
