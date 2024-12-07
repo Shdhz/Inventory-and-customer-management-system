@@ -7,6 +7,7 @@ use App\Http\Controllers\stok\kategoriBarangController;
 use App\Http\Controllers\loginController;
 use App\Http\Controllers\customers\orderController;
 use App\Http\Controllers\dashboardSupervisorController;
+use App\Http\Controllers\manageAdmiinController;
 use App\Http\Controllers\ProduksiController;
 use App\Http\Controllers\rencana_produksi\rencanaProduksiController;
 use App\Http\Controllers\stok\stokBarangController;
@@ -41,7 +42,7 @@ Route::middleware(['auth', 'role:supervisor'])->group(function () {
         ->name('form-po.update-status');
 });
 
-Route::resource('stok-barang', stokBarangController::class);
+// Route::resource('stok-barang', stokBarangController::class);
 
 // Produksi
 Route::group(['middleware' => ['auth', 'verified', 'role:produksi']], function(){
@@ -52,11 +53,15 @@ Route::group(['middleware' => ['auth', 'verified', 'role:produksi']], function()
     Route::resource('barang-masuk', barangMasukController::class);
 });
 
-Route::middleware(['auth', 'verified', 'role:admin|produksi'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:admin|produksi|supervisor'])->group(function () {
     Route::resource('rencana-produksi', rencanaProduksiController::class);
     Route::resource('stok-barang', stokBarangController::class);
     Route::resource('barang-rusak', barangRusakController::class);
 });
 
 // Role supervisor
-Route::get('dashboard-supervisor', [dashboardSupervisorController::class, 'index'])->name('dashboardSupervisor.index')->middleware('auth', 'role:supervisor');
+
+Route::middleware(['auth', 'verified', 'role:supervisor'])->group(function () {
+    Route::get('dashboard-supervisor', [dashboardSupervisorController::class, 'index'])->name('dashboardSupervisor.index');
+    Route::resource('kelola-admin', manageAdmiinController::class);
+});

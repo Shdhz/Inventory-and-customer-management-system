@@ -16,8 +16,12 @@ class rencanaProduksiController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = rencanaProduksi::with('formPo')->get();
-    
+            $data = rencanaProduksi::with([
+                'formPo.customerOrder.draftCustomer' => function ($queryDraft) {
+                    $queryDraft->where('user_id', auth()->id());
+                }
+            ])->get();
+        
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('nomor_po', function ($row) {
@@ -27,20 +31,18 @@ class rencanaProduksiController extends Controller
                     return $row->formPo->keterangan ?? 'Tidak Ada';
                 })
                 ->addColumn('actions', function ($row) {
-                    // Periksa peran pengguna saat ini
                     if (auth()->user()->hasRole('produksi')) {
                         return view('components.button.action-btn', [
                             'edit' => route('rencana-produksi.edit', $row->id_rencana_produksi),
                             'delete' => route('rencana-produksi.destroy', $row->id_rencana_produksi),
                         ])->render();
                     }
-                    return '-'; // Admin tidak bisa mengedit atau menghapus
+                    return '-';
                 })
                 ->rawColumns(['actions'])
                 ->make(true);
         }
-    
-        // Periksa apakah pengguna adalah admin, jika iya sembunyikan tombol tambah
+
         $canAdd = auth()->user()->hasRole('produksi');
 
         return view('v-produksi.rencana-produksi.index', [
