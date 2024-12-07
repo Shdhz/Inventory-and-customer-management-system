@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -29,8 +30,8 @@ class manageAdmiinController extends Controller
                 })
                 ->addColumn('actions', function ($row) {
                     return view('components.button.action-btn', [
-                        'edit' => route('stok-barang.edit', $row->id),
-                        'delete' => route('stok-barang.destroy', $row->id),
+                        'edit' => route('kelola-admin.edit', $row->id),
+                        'delete' => route('kelola-admin.destroy', $row->id),
                     ])->render();
                 })
                 ->rawColumns(['roles', 'actions'])
@@ -45,7 +46,10 @@ class manageAdmiinController extends Controller
      */
     public function create()
     {
-        //
+        $title = 'Tambah Data Pengguna';
+        $backUrl = url()->previous();
+        $roles = Role::all(); // Ambil semua role
+        return view('v-supervisor.data-admin.create', compact('title', 'backUrl', 'roles'));
     }
 
     /**
@@ -53,15 +57,22 @@ class manageAdmiinController extends Controller
      */
     public function store(Request $request)
     {
-        //
-    }
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users',
+            'password' => 'required|string|min:6|confirmed',
+            'role' => 'required|exists:roles,name',
+        ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
+        $user = User::create([
+            'name' => $request->name,
+            'username' => $request->username,
+            'password' => Hash::make($request->password),
+        ]);
+
+        $user->assignRole($request->role);
+
+        return redirect()->route('kelola-admin.index')->with('success', 'Data pengguna berhasil ditambahkan.');
     }
 
     /**
@@ -69,7 +80,11 @@ class manageAdmiinController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $title = 'Edit Data Pengguna';
+        $backUrl = url()->previous();
+        $user = User::findOrFail($id);
+        $roles = Role::all();
+        return view('v-supervisor.data-admin.edit', compact('title', 'backUrl', 'user', 'roles'));
     }
 
     /**
@@ -77,7 +92,26 @@ class manageAdmiinController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users,username,' . $id,
+            'password' => 'nullable|string|min:6|confirmed',
+            'role' => 'required|exists:roles,name',
+        ]);
+
+        $user = User::findOrFail($id);
+        $user->name = $request->name;
+        $user->username = $request->username;
+
+        if ($request->password) {
+            $user->password = Hash::make($request->password);
+        }
+
+        $user->save();
+
+        $user->syncRoles([$request->role]);
+
+        return redirect()->route('data-admin.index')->with('success', 'Data pengguna berhasil diperbarui.');
     }
 
     /**
@@ -85,6 +119,9 @@ class manageAdmiinController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $user = User::findOrFail($id);
+        $user->delete();
+
+        return back()->with(['success' => 'Data pengguna berhasil dihapus.']);
     }
 }

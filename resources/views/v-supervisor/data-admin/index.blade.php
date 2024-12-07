@@ -1,6 +1,6 @@
 @extends('layouts.supervisor')
-
 @section('content')
+<x-message.success />
     <div class="container-lg mt-2">
         <div class="card">
             <div class="card-body">
@@ -8,9 +8,7 @@
                     <div class="col">
                         <h2 class="page-title">{{ $title }}</h2>
                     </div>
-                    @if (auth()->user()->hasRole('admin'))
-                        <x-button.add-btn :button="$button" href="{{ route('data-admin.create') }}" />
-                    @endif
+                        <x-button.add-btn :button="$button" href="{{ route('kelola-admin.create') }}" />
                 </div>
             </div>
             <div class="card-body">
