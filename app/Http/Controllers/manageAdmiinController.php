@@ -111,7 +111,7 @@ class manageAdmiinController extends Controller
 
         $user->syncRoles([$request->role]);
 
-        return redirect()->route('data-admin.index')->with('success', 'Data pengguna berhasil diperbarui.');
+        return redirect()->route('kelola-admin.index')->with('success', 'Data pengguna berhasil diperbarui.');
     }
 
     /**

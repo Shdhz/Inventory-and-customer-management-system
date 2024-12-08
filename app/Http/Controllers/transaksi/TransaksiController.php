@@ -21,7 +21,6 @@ class TransaksiController extends Controller
         $button = "Tambah transaksi";
 
         if (request()->ajax()) {
-            // Mengambil data transaksi dengan relasi yang diperlukan
             $data = transaksi::with(['customerOrder', 'transaksiDetails.stok'])
                 ->whereHas('customerOrder.draftCustomer', function ($query) {
                     $query->where('user_id', Auth::id());
@@ -31,6 +30,9 @@ class TransaksiController extends Controller
             return DataTables::of($data)
                 ->addColumn('customer_name', function ($row) {
                     return $row->customerOrder->draftCustomer->Nama ?? 'N/A';  // Nama customer
+                })
+                ->addColumn('ekspedisi', function ($row) {
+                    return $row->ekspedisi ?? 'N/A';  // Nama customer
                 })
                 ->addColumn('jumlah_item', function ($row) {
                     return $row->transaksiDetails->sum('qty');
@@ -176,9 +178,9 @@ class TransaksiController extends Controller
                 'transaksi_id' => $transaksi->id_transaksi,
                 'stok_id' => $product['stok_id'],
                 'qty' => $product['qty'],
-                'harga_satuan' => $hargaSatuan,  // Menyimpan harga satuan yang dibulatkan
-                'subtotal' => $subtotalDetail, // Subtotal per item
-                'jumlah' => $product['qty'], // Jumlah barang keluar
+                'harga_satuan' => $hargaSatuan, 
+                'subtotal' => $subtotalDetail, 
+                'jumlah' => $product['qty'] * $product['harga_satuan'],
                 'tanggal_keluar' => now(), // Sesuaikan dengan kebutuhan
             ]);
         }
@@ -191,15 +193,6 @@ class TransaksiController extends Controller
         return redirect()->route('transaksi-customer.index')->with('success', 'Transaksi berhasil disimpan!');
     }
 
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(transaksi $transaksi)
-    {
-        //
-    }
-
     /**
      * Show the form for editing the specified resource.
      */
@@ -209,13 +202,10 @@ class TransaksiController extends Controller
         $transaksi = Transaksi::with(['customerOrder.draftCustomer', 'transaksiDetails.stok'])
             ->findOrFail($id);
 
-        // Ambil data pelanggan untuk dropdown
         $customers = CustomerOrder::with('draftCustomer')->get();
         foreach ($customers as $customer) {
             $customer->sumber = $customer->draftCustomer->sumber ?? 'Tidak Diketahui';
         }
-
-        // Ambil data produk untuk dropdown
         $products = ProductStock::all();
 
         if ($products->isEmpty()) {
@@ -232,10 +222,29 @@ class TransaksiController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Transaksi $transaksi)
+
+    public function calculateTotal($transaksi)
+    {
+        $subtotal = 0;
+        foreach ($transaksi->transaksiDetails as $detail) {
+            $subtotal += $detail->qty * $detail->harga_satuan;
+        }
+
+        $diskon = $transaksi->diskon_produk ?? 0;
+        $diskonAmount = ($subtotal * $diskon) / 100;
+
+        $total = $subtotal - $diskonAmount;
+
+        $transaksi->update([
+            'subtotal' => $subtotal,
+            'total' => $total
+        ]);
+    }
+
+    public function update(Request $request, $id)
     {
         // Validasi input
-        $request->validate([
+        $validated = $request->validate([
             'customer_order_id' => 'required|exists:tb_customer_orders,customer_order_id',
             'products.*.stok_id' => 'required|exists:tb_products,id_stok',
             'products.*.qty' => 'required|integer|min:1',
@@ -245,62 +254,47 @@ class TransaksiController extends Controller
             'discount_product_percent' => 'nullable|numeric|min:0|max:100',
         ]);
 
-        // Validasi stok produk
-        $insufficientStock = [];
-        foreach ($request->products as $product) {
-            $stok = ProductStock::findOrFail($product['stok_id']);
-            $currentQty = $transaksi->transaksiDetails()
-                ->where('stok_id', $product['stok_id'])
-                ->first()?->qty ?? 0;
-
-            // Hitung stok yang disesuaikan (stok lama + qty lama - qty baru)
-            $adjustedStock = $stok->jumlah_stok + $currentQty - $product['qty'];
-            if ($adjustedStock < 0) {
-                $insufficientStock[] = $stok->nama_produk;
-            }
-        }
-
-        // Jika ada stok tidak mencukupi, kembalikan error
-        if (!empty($insufficientStock)) {
-            return redirect()->back()->withInput()->withErrors([
-                'error' => "Stok tidak mencukupi untuk produk: " . implode(', ', $insufficientStock),
-            ]);
-        }
+        // Ambil transaksi yang ada berdasarkan ID
+        $transaksi = Transaksi::findOrFail($id);
 
         // Update data transaksi utama
         $transaksi->update([
             'customer_order_id' => $request->customer_order_id,
-            'diskon_produk' => $request->discount_product_percent ?? 0,
-            'metode_pembayaran' => $request->payment_method,
-            'ekspedisi' => $request->expedition,
+            'diskon_produk' => $request->discount_product_percent ?? 0, // Diskon produk
+            'metode_pembayaran' => $request->payment_method,            // Metode pembayaran
+            'ekspedisi' => $request->expedition,                         // Ekspedisi
         ]);
-        dd($transaksi->id_transaksi); 
-        $transaksi->transaksiDetails()->delete();
 
-        // Simpan detail transaksi baru
+        // Update atau tambahkan detail transaksi
         foreach ($request->products as $product) {
-            if (!$transaksi->id_transaksi) {
-                // Debugging log untuk memastikan nilai transaksi_id tidak null
-                dd($transaksi); // Menampilkan isi dari objek $transaksi dan menghentikan eksekusi
+            $detail = $transaksi->transaksiDetails()->where('stok_id', $product['stok_id'])->first();
 
-                // Jika transaksi_id null, kembalikan error
-                return redirect()->back()->withInput()->withErrors([
-                    'error' => 'Gagal mendapatkan transaksi_id.',
+            if ($detail) {
+                // Jika detail transaksi sudah ada, update nilai qty dan harga satuan
+                $detail->update([
+                    'qty' => $product['qty'],
+                    'harga_satuan' => round(str_replace('.', '', $product['harga_satuan'])),
+                    'subtotal' => $product['qty'] * round(str_replace('.', '', $product['harga_satuan'])),
+                ]);
+            } else {
+                // Jika detail transaksi belum ada, buat detail transaksi baru
+                TransaksiDetail::create([
+                    'transaksi_id' => $transaksi->id_transaksi,
+                    'stok_id' => $product['stok_id'],
+                    'qty' => $product['qty'],
+                    'harga_satuan' => round(str_replace('.', '', $product['harga_satuan'])),
+                    'subtotal' => $product['qty'] * round(str_replace('.', '', $product['harga_satuan'])),
+                    'jumlah' => $product['qty'] * $product['harga_satuan'],
+                    'tanggal_keluar' => now(),
                 ]);
             }
-
-            transaksiDetail::create([
-                'transaksi_id' => $transaksi->id_transaksi,
-                'stok_id' => $product['stok_id'],
-                'qty' => $product['qty'],
-                'harga_satuan' => round($product['harga_satuan']), // Pastikan harga bulat
-                'subtotal' => $product['qty'] * $product['harga_satuan'], // Hitung subtotal
-                'jumlah' => $product['qty'], // Jumlah barang keluar
-                'tanggal_keluar' => now(), // Set tanggal keluar
-            ]);
         }
 
-        return redirect()->route('transaksi-customer.index')->with('success', 'Transaksi berhasil diperbarui!');
+        // Menghitung subtotal dan total transaksi
+        $this->calculateTotal($transaksi);
+
+        // Redirect ke halaman daftar transaksi
+        return redirect()->route('transaksi-customer.index')->with('success', 'Transaksi berhasil diperbarui');
     }
 
     /**
@@ -309,21 +303,15 @@ class TransaksiController extends Controller
     public function destroy($id)
     {
         try {
-            // Cari data transaksi berdasarkan ID
-            $transaksi = Transaksi::with('transaksiDetails')->findOrFail($id);
-    
-            // Hapus detail transaksi
-            foreach ($transaksi->transaksiDetails as $detail) {
-                $detail->delete(); // Hapus setiap detail transaksi
-            }
-    
+            $transaksi = Transaksi::findOrFail($id);
+            $transaksi->transaksiDetails()->delete();
+
             // Hapus transaksi utama
             $transaksi->delete();
-    
-            return redirect()->route('transaksi-customer.index')->with('success', 'Transaksi berhasil dihapus!');
+
+            return back()->with('success', 'Transaksi berhasil dihapus!');
         } catch (\Exception $e) {
-            // Tangani error
-            return redirect()->route('transaksi-customer.index')->with('error', 'Terjadi kesalahan saat menghapus transaksi: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat menghapus transaksi: ' . $e->getMessage());
         }
     }
 }

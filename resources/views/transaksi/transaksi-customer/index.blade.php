@@ -19,13 +19,14 @@
                             <tr>
                                 <th>No</th>
                                 <th>Nama Customer</th>
-                                <th>Tanggal Transaksi</th>
+                                <th>Tanggal transaksi</th>
                                 <th>Nama produk</th>
                                 <th>Jumlah Item</th>
                                 <th>Harga Satuan</th>
                                 <th>Total Harga</th>
                                 <th>Diskon</th>
                                 <th>Grand Total</th>
+                                <th>ekspedisi</th>
                                 <th>Metode Pembayaran</th>
                                 <th>Aksi</th>
                             </tr>
@@ -56,8 +57,8 @@
                         name: 'customer_name'
                     },
                     {
-                        data: 'created_at',
-                        name: 'created_at',
+                        data: 'updated_at',
+                        name: 'updated_at',
                         render: function(data) {
                             var date = new Date(data);
                             var day = ("0" + date.getDate()).slice(-2);
@@ -101,6 +102,10 @@
                         render: function(data) {
                             return data ? `Rp ${data.toLocaleString('id-ID')}` : '-';
                         }
+                    },
+                    {
+                        data: 'ekspedisi',
+                        name: 'ekspedisi',
                     },
                     {
                         data: 'metode_pembayaran',

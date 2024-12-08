@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('content')
-<x-message.errors />
+    <x-message.errors />
     <div class="container">
         <div class="card mt-3">
             <div class="row card-header row-cols-auto">
@@ -18,6 +18,7 @@
                     @csrf
                     @method('PUT')
                     {{-- Pilihan Customer --}}
+                    <input type="hidden" name="transaction_id" value="{{ $transaksi->id }}">
                     <div class="row mb-3">
                         <label for="customer_order_id" class="form-label">Pilih Customer</label>
                         <select class="form-control @error('customer_order_id') is-invalid @enderror"
@@ -47,7 +48,7 @@
                                         <option value="" selected>-- Pilih Produk --</option>
                                         @foreach ($products as $product)
                                             <option value="{{ $product->id_stok }}"
-                                                {{ $product->id_stok == $detail->id_stok ? 'selected' : '' }}>
+                                                {{ old('products.' . $index . '.stok_id', $detail->stok_id) == $product->id_stok ? 'selected' : '' }}>
                                                 {{ $product->nama_produk }}
                                             </option>
                                         @endforeach
@@ -129,50 +130,71 @@
 
             function addProductRow(index) {
                 return `
-                    <div class="product-row d-flex gap-2 mb-2">
-                        <select class="form-control" name="products[${index}][stok_id]" required>
-                            <option value="" selected>-- Pilih Produk --</option>
-                            ${products.map(product => `<option value="${product.id_product}">${product.nama_produk}</option>`).join('')}
-                        </select>
-                        <input type="number" class="form-control qty-input" name="products[${index}][qty]" placeholder="Qty" required>
-                        <input type="text" class="form-control price-input" name="products[${index}][harga_satuan]" placeholder="Harga" required>
-                        <button type="button" class="btn btn-danger remove-product">Hapus</button>
-                    </div>
-                `;
+                <div class="product-row d-flex gap-2 mb-2">
+                    <select class="form-control" name="products[${index}][stok_id]" required>
+                        <option value="" selected>-- Pilih Produk --</option>
+                        ${products.map(product => `<option value="${product.id_stok}">${product.nama_produk}</option>`).join('')}
+                    </select>
+                    <input type="text" class="form-control qty-input" name="products[${index}][qty]" placeholder="Qty" required>
+                    <input type="text" class="form-control price-input" name="products[${index}][harga_satuan]" placeholder="Harga" required>
+                    <button type="button" class="btn btn-danger remove-product">Hapus</button>
+                </div>
+            `;
             }
 
             $('#add-product').click(function() {
                 $('#product-container').append(addProductRow(productIndex));
                 productIndex++;
-            });
-
-            $(document).on('click', '.remove-product', function() {
-                $(this).closest('.product-row').remove();
+                bindProductEvents();
                 calculateTotal();
             });
 
+            // Event to remove product row
+            function bindProductEvents() {
+                $('.remove-product').off('click').on('click', function() {
+                    $(this).closest('.product-row').remove();
+                    calculateTotal();
+                });
+
+                $('.qty-input').off('input').on('input', function() {
+                    let value = $(this).val().replace(/\D/g, '');
+                    value = value === '' ? 1 : Math.max(1, parseInt(value));
+                    $(this).val(formatCurrency(value.toString()));
+                    calculateTotal();
+                });
+
+                $('.price-input').off('input').on('input', function() {
+                    let value = $(this).val().replace(/\D/g, '');
+                    $(this).val(formatCurrency(value));
+                    calculateTotal();
+                });
+            }
+
+            // Calculate subtotal and total
             function calculateTotal() {
                 let subtotal = 0;
-
                 $('.product-row').each(function() {
-                    const qty = parseInt($(this).find('.qty-input').val().replace(/\./g, '') || 0, 10);
-                    const price = parseInt($(this).find('.price-input').val().replace(/\./g, '') || 0, 10);
+                    const qty = parseInt($(this).find('.qty-input').val().replace(/\D/g, '') || 0, 10);
+                    const price = parseInt($(this).find('.price-input').val().replace(/\D/g, '') || 0, 10);
                     subtotal += qty * price;
                 });
 
-                const discountProductPercent = parseInt($('#discount_product_percent').val() || 0, 10); // Pastikan diskon adalah persen
-                const discountProduct = subtotal * (discountProductPercent / 100);
+                const discountProductPercent = parseInt($('#discount_product_percent').val() || 0, 10);
+                let discountProduct = Math.floor((subtotal * discountProductPercent) / 100);
+                discountProduct = Math.min(discountProduct, subtotal);
                 const total = subtotal - discountProduct;
 
-                $('#subtotal').text(subtotal.toLocaleString('id-ID'));
-                $('#total').text(total.toLocaleString('id-ID'));
+                $('#subtotal').text(formatCurrency(subtotal.toString()));
+                $('#total').text(formatCurrency(total.toString()));
             }
 
-            $(document).on('input', '.qty-input, .price-input, #discount_product_percent', function() {
-                calculateTotal();
-            });
+            // Format number as currency
+            function formatCurrency(value) {
+                return value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            }
 
-            calculateTotal(); // Kalkulasi awal pada saat halaman dimuat
+            bindProductEvents();
+            calculateTotal();
         });
     </script>
 @endsection
