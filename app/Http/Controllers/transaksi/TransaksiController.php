@@ -123,7 +123,7 @@ class TransaksiController extends Controller
             'products.*.qty' => 'required|integer|min:1',
             'products.*.harga_satuan' => 'required|numeric|min:1',
             'payment_method' => 'required|string|in:cod,transfer',
-            'expedition' => 'required|string|max:255',
+            'expedition' => 'nullable|string|max:255',
             'discount_product_percent' => 'nullable|numeric|min:0|max:100',
         ]);
 
