@@ -9,6 +9,8 @@ use App\Models\transaksi;
 use App\Models\transaksiDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
 
 class TransaksiController extends Controller
@@ -34,20 +36,24 @@ class TransaksiController extends Controller
                 ->addColumn('ekspedisi', function ($row) {
                     return $row->ekspedisi ?? 'N/A';  // Nama customer
                 })
-                ->addColumn('jumlah_item', function ($row) {
-                    return $row->transaksiDetails->sum('qty');
-                })
-                ->addColumn('nama_produk', function ($row) {
-                    // Ambil nama produk dari relasi stok
-                    $nama_produk = $row->transaksiDetails->map(function ($detail) {
-                        return $detail->stok->nama_produk ?? 'N/A';
-                    })->implode(', ');
-                    return $nama_produk;
+                ->addColumn('item_pilih', function ($row) {
+                    $produkDanJumlah = $row->transaksiDetails->map(function ($detail) {
+                        $namaProduk = $detail->stok->nama_produk ?? 'N/A';
+                        $jumlahItem = $detail->qty ?? 0;
+                        return "$namaProduk : $jumlahItem";
+                    })->implode('<br>');
+                    return $produkDanJumlah;
                 })
                 ->addColumn('harga_satuan', function ($row) {
-                    // Mengambil harga satuan dari transaksi details pertama, jika ada
-                    $firstDetail = $row->transaksiDetails->first();
-                    return $firstDetail ? number_format($firstDetail->harga_satuan, 0, ',', '.') : '-';
+                    $details = $row->transaksiDetails;
+                    if ($details->isEmpty()) {
+                        return '-';
+                    }
+                    $hargaList = $details->map(function ($detail) {
+                        return number_format($detail->harga_satuan, 0, ',', '.');
+                    })->implode('<br>Rp ');
+
+                    return $hargaList;
                 })
                 ->addColumn('total_harga', function ($row) {
                     // Menghitung total harga
@@ -78,7 +84,7 @@ class TransaksiController extends Controller
                         'delete' => route('transaksi-customer.destroy', $row->id_transaksi),
                     ])->render();
                 })
-                ->rawColumns(['actions'])
+                ->rawColumns(['actions', 'item_pilih', 'harga_satuan'])
                 ->make(true);
         }
         return view('transaksi.transaksi-customer.index', compact('button'));
@@ -115,9 +121,85 @@ class TransaksiController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+    // public function store(Request $request)
+    // {
+    //     $validated = $request->validate([
+    //         'customer_order_id' => 'required|exists:tb_customer_orders,customer_order_id',
+    //         'products.*.stok_id' => 'required|exists:tb_products,id_stok',
+    //         'products.*.qty' => 'required|integer|min:1',
+    //         'products.*.harga_satuan' => 'required|numeric|min:1',
+    //         'payment_method' => 'required|string|in:cod,transfer',
+    //         'expedition' => 'nullable|string|max:255',
+    //         'discount_product_percent' => 'nullable|numeric|min:0|max:100',
+    //     ]);
+
+    //     // Validasi jika produk yang sama sudah dipilih lebih dari sekali
+    //     $selectedProductIds = collect($request->products)->pluck('stok_id')->toArray();
+    //     if (count($selectedProductIds) !== count(array_unique($selectedProductIds))) {
+    //         return redirect()->back()->withInput()->withErrors(['error' => 'Produk yang sama tidak boleh dipilih lebih dari sekali.']);
+    //     }
+
+    //     // Validasi stok produk
+    //     $insufficientStock = [];
+    //     foreach ($request->products as $product) {
+    //         $stok = ProductStock::findOrFail($product['stok_id']);
+    //         if ($product['qty'] > $stok->jumlah_stok) {
+    //             $insufficientStock[] = $stok->nama_produk;
+    //         }
+    //     }
+
+    //     if (!empty($insufficientStock)) {
+    //         return redirect()->back()->withInput()->withErrors([
+    //             'error' => "Stok tidak mencukupi untuk produk: " . implode(', ', $insufficientStock),
+    //         ]);
+    //     }
+
+    //     // Hitung subtotal transaksi
+    //     $subtotal = collect($request->products)->reduce(function ($carry, $product) {
+    //         return $carry + ($product['qty'] * $product['harga_satuan']);
+    //     }, 0);
+
+    //     // Hitung diskon produk
+    //     $discountProductPercent = $request->discount_product_percent ?? 0;
+    //     $discountProduct = ($subtotal * $discountProductPercent) / 100;
+    //     $total = $subtotal - $discountProduct;
+
+    //     // Simpan data transaksi
+    //     $transaksi = Transaksi::create([
+    //         'customer_order_id' => $request->customer_order_id,
+    //         'diskon_produk' => $discountProductPercent,
+    //         'diskon_ongkir' => 0,
+    //         'ekspedisi' => $request->expedition,
+    //         'metode_pembayaran' => $request->payment_method,
+    //     ]);
+
+    //     // Simpan detail transaksi
+    //     foreach ($request->products as $product) {
+    //         $subtotalDetail = $product['qty'] * $product['harga_satuan'];
+
+    //         $hargaSatuan = round($product['harga_satuan']);
+
+    //         transaksiDetail::create([
+    //             'transaksi_id' => $transaksi->id_transaksi,
+    //             'stok_id' => $product['stok_id'],
+    //             'qty' => $product['qty'],
+    //             'harga_satuan' => $hargaSatuan,
+    //             'subtotal' => $subtotalDetail,
+    //             'jumlah' => $product['qty'] * $product['harga_satuan'],
+    //             'tanggal_keluar' => now(),
+    //         ]);
+    //     }
+
+    //     // Update total transaksi setelah diskon
+    //     $transaksi->update([
+    //         'total' => $total,
+    //     ]);
+
+    //     return redirect()->route('transaksi-customer.index')->with('success', 'Transaksi berhasil disimpan!');
+    // }
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'customer_order_id' => 'required|exists:tb_customer_orders,customer_order_id',
             'products.*.stok_id' => 'required|exists:tb_products,id_stok',
             'products.*.qty' => 'required|integer|min:1',
@@ -158,30 +240,30 @@ class TransaksiController extends Controller
         $discountProduct = ($subtotal * $discountProductPercent) / 100;
         $total = $subtotal - $discountProduct;
 
+        // dd($request->all());
         // Simpan data transaksi
         $transaksi = Transaksi::create([
             'customer_order_id' => $request->customer_order_id,
             'diskon_produk' => $discountProductPercent,
-            'diskon_ongkir' => 0, // Sesuaikan jika ada diskon ongkir
+            'diskon_ongkir' => 0,
             'ekspedisi' => $request->expedition,
             'metode_pembayaran' => $request->payment_method,
         ]);
 
         // Simpan detail transaksi
         foreach ($request->products as $product) {
-            $subtotalDetail = $product['qty'] * $product['harga_satuan']; // Subtotal per item
+            $subtotalDetail = $product['qty'] * $product['harga_satuan'];
 
-            // Pastikan harga satuan yang disimpan adalah angka bulat
-            $hargaSatuan = round($product['harga_satuan']); // Membulatkan harga satuan jika perlu
+            $hargaSatuan = round($product['harga_satuan']);
 
-            transaksiDetail::create([
+            TransaksiDetail::create([
                 'transaksi_id' => $transaksi->id_transaksi,
                 'stok_id' => $product['stok_id'],
                 'qty' => $product['qty'],
-                'harga_satuan' => $hargaSatuan, 
-                'subtotal' => $subtotalDetail, 
+                'harga_satuan' => $hargaSatuan,
+                'subtotal' => $subtotalDetail,
                 'jumlah' => $product['qty'] * $product['harga_satuan'],
-                'tanggal_keluar' => now(), // Sesuaikan dengan kebutuhan
+                'tanggal_keluar' => now(),
             ]);
         }
 
@@ -250,7 +332,7 @@ class TransaksiController extends Controller
             'products.*.qty' => 'required|integer|min:1',
             'products.*.harga_satuan' => 'required|numeric|min:1',
             'payment_method' => 'required|string|in:cod,transfer',
-            'expedition' => 'required|string|max:255',
+            'expedition' => 'nullable|string|max:255',
             'discount_product_percent' => 'nullable|numeric|min:0|max:100',
         ]);
 
@@ -303,15 +385,22 @@ class TransaksiController extends Controller
     public function destroy($id)
     {
         try {
-            $transaksi = Transaksi::findOrFail($id);
-            $transaksi->transaksiDetails()->delete();
-
-            // Hapus transaksi utama
-            $transaksi->delete();
-
+            DB::transaction(function () use ($id) {
+                $transaksi = Transaksi::with('transaksiDetails')->findOrFail($id);
+                foreach ($transaksi->transaksiDetails as $detail) {
+                    $detail->delete();
+                }
+    
+                // Hapus transaksi utama
+                $transaksi->delete();
+            });
+    
             return back()->with('success', 'Transaksi berhasil dihapus!');
         } catch (\Exception $e) {
-            return back()->with('error', 'Terjadi kesalahan saat menghapus transaksi: ' . $e->getMessage());
+            Log::error("Error menghapus transaksi ID: $id. Pesan: " . $e->getMessage());
+    
+            return back()->with('error', 'Gagal menghapus transaksi. Silakan coba lagi.');
         }
     }
+    
 }

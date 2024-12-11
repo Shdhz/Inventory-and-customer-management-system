@@ -76,7 +76,7 @@
             document.getElementById('sumber_display').value = sumber; // Tampilkan sumber di input
     
             // Menentukan tipe order berdasarkan sumber (case insensitive)
-            const cashlessSources = ['shopee', 'tokopedia', 'lazada', 'tiktok shop'];
+            const cashlessSources = ['shopee', 'tokopedia', 'lazada', 'tiktok shop', 'tiktok'];
             const cashSources = ['whatsapp', 'instagram', 'facebook'];
     
             const sumberLower = sumber.toLowerCase();

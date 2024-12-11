@@ -49,7 +49,7 @@
                                         @foreach ($products as $product)
                                             <option value="{{ $product->id_stok }}"
                                                 {{ old('products.' . $index . '.stok_id', $detail->stok_id) == $product->id_stok ? 'selected' : '' }}>
-                                                {{ $product->nama_produk }}
+                                                {{ $product->nama_produk }} (Stok : {{ $product->jumlah_stok }})
                                             </option>
                                         @endforeach
                                     </select>
@@ -87,7 +87,7 @@
                     <div class="row mb-3">
                         <label for="expedition" class="form-label">Ekspedisi</label>
                         <input type="text" class="form-control @error('expedition') is-invalid @enderror"
-                            name="expedition" id="expedition" placeholder="Nama Ekspedisi" required
+                            name="expedition" id="expedition" placeholder="Nama Ekspedisi"
                             value="{{ old('expedition', $transaksi->ekspedisi) }}">
                         @error('expedition')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -124,24 +124,29 @@
     {{-- Script untuk Form Dinamis --}}
     <script>
         $(document).ready(function() {
-            let productIndex = {{ $transaksiDetails->count() }};
+            let productIndex = {{ $transaksiDetails->count() }}; // Mulai dari jumlah data transaksiDetail yang ada
+            const products = @json($products); // Data semua produk
 
-            const products = @json($products);
-
-            function addProductRow(index) {
+            // Fungsi untuk menambahkan baris produk
+            function addProductRow(index, stokId = "", qty = "", harga = "") {
                 return `
-                <div class="product-row d-flex gap-2 mb-2">
-                    <select class="form-control" name="products[${index}][stok_id]" required>
-                        <option value="" selected>-- Pilih Produk --</option>
-                        ${products.map(product => `<option value="${product.id_stok}">${product.nama_produk}</option>`).join('')}
-                    </select>
-                    <input type="text" class="form-control qty-input" name="products[${index}][qty]" placeholder="Qty" required>
-                    <input type="text" class="form-control price-input" name="products[${index}][harga_satuan]" placeholder="Harga" required>
-                    <button type="button" class="btn btn-danger remove-product">Hapus</button>
-                </div>
-            `;
+                    <div class="product-row d-flex gap-2 mb-2">
+                        <select class="form-control product-select" name="products[${index}][stok_id]" required>
+                            <option value="" selected>-- Pilih Produk --</option>
+                            ${products.map(product => `
+                                    <option value="${product.id_stok}" data-stok="${product.jumlah_stok}" 
+                                        ${product.id_stok == stokId ? "selected" : ""}>
+                                        ${product.nama_produk} (Stok: ${product.jumlah_stok})
+                                    </option>`).join('')}
+                        </select>
+                        <input type="text" class="form-control qty-input" name="products[${index}][qty]" 
+                            value="${qty}" placeholder="Qty" required>
+                        <input type="text" class="form-control price-input" name="products[${index}][harga_satuan]" 
+                            value="${harga}" placeholder="Harga" required>
+                        <button type="button" class="btn btn-danger remove-product">Hapus</button>
+                    </div>`;
             }
-
+            // Tambahkan baris produk baru
             $('#add-product').click(function() {
                 $('#product-container').append(addProductRow(productIndex));
                 productIndex++;
@@ -149,13 +154,15 @@
                 calculateTotal();
             });
 
-            // Event to remove product row
+            // Bind event untuk elemen dinamis
             function bindProductEvents() {
+                // Hapus baris produk
                 $('.remove-product').off('click').on('click', function() {
                     $(this).closest('.product-row').remove();
                     calculateTotal();
                 });
 
+                // Perbarui total ketika qty berubah
                 $('.qty-input').off('input').on('input', function() {
                     let value = $(this).val().replace(/\D/g, '');
                     value = value === '' ? 1 : Math.max(1, parseInt(value));
@@ -163,14 +170,54 @@
                     calculateTotal();
                 });
 
+                // Perbarui total ketika harga berubah
                 $('.price-input').off('input').on('input', function() {
                     let value = $(this).val().replace(/\D/g, '');
                     $(this).val(formatCurrency(value));
                     calculateTotal();
                 });
+
+                // Cegah duplikasi pilihan produk
+                $('.product-select').off('change').on('change', function() {
+                    updateProductSelection();
+                    calculateTotal();
+                });
             }
 
-            // Calculate subtotal and total
+            // Mencegah duplikasi produk
+            function updateProductSelection() {
+                const selectedProducts = $('.product-select').map(function() {
+                    return $(this).val();
+                }).get();
+
+                const productCounts = {};
+                selectedProducts.forEach(productId => {
+                    if (productId) {
+                        productCounts[productId] = (productCounts[productId] || 0) + 1;
+                    }
+                });
+
+                $('.product-select').each(function() {
+                    const currentSelect = $(this);
+                    const currentSelectedValue = currentSelect.val();
+
+                    currentSelect.find('option').each(function() {
+                        const option = $(this);
+                        const optionValue = option.val();
+
+                        if (optionValue) {
+                            if (productCounts[optionValue] > 0 && optionValue !==
+                                currentSelectedValue) {
+                                option.prop('disabled', true);
+                            } else {
+                                option.prop('disabled', false);
+                            }
+                        }
+                    });
+                });
+            }
+
+            // Hitung subtotal dan total
             function calculateTotal() {
                 let subtotal = 0;
                 $('.product-row').each(function() {
@@ -179,21 +226,41 @@
                     subtotal += qty * price;
                 });
 
-                const discountProductPercent = parseInt($('#discount_product_percent').val() || 0, 10);
-                let discountProduct = Math.floor((subtotal * discountProductPercent) / 100);
-                discountProduct = Math.min(discountProduct, subtotal);
-                const total = subtotal - discountProduct;
+                const discountPercent = parseInt($('#discount_product_percent').val() || 0, 10);
+                let discount = Math.floor((subtotal * discountPercent) / 100);
+                discount = Math.min(discount, subtotal);
 
+                const total = subtotal - discount;
+
+                // Tampilkan subtotal dan total
                 $('#subtotal').text(formatCurrency(subtotal.toString()));
                 $('#total').text(formatCurrency(total.toString()));
             }
 
-            // Format number as currency
+            // Format angka menjadi format ribuan
             function formatCurrency(value) {
                 return value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
             }
 
+            // Bind event input diskon
+            $('#discount_product_percent').on('input', function() {
+                let value = $(this).val().replace(/\D/g, '');
+                value = Math.min(Math.max(value, 0), 100);
+                $(this).val(value);
+                calculateTotal();
+            });
+
+            // Siapkan form untuk submit
+            $('form').on('submit', function() {
+                $('.price-input, .qty-input').each(function() {
+                    const rawValue = $(this).val().replace(/\./g, '');
+                    $(this).val(rawValue);
+                });
+            });
+
+            // Initial setup
             bindProductEvents();
+            updateProductSelection();
             calculateTotal();
         });
     </script>

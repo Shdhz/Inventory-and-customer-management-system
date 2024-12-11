@@ -23,12 +23,11 @@ class TransaksiDetailObserver
     {
         $originalQty = $transaksiDetail->getOriginal('qty');
         $currentQty = $transaksiDetail->qty;
-
         $selisih = $currentQty - $originalQty;
 
-        if ($selisih !== 0) {
+        if ($selisih != 0) {
             ProductStock::where('id_stok', $transaksiDetail->stok_id)
-                ->decrement('jumlah_stok', $selisih);
+                ->increment('jumlah_stok', $selisih);
         }
     }
 

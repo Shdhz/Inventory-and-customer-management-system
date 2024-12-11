@@ -119,11 +119,10 @@
     </div>
     <script>
         $(document).ready(function() {
-            let productIndex = {{ $transaksiDetails->count() }}; // Count from backend
+            let productIndex = 1;
             const products = @json($products);
-            let selectedProducts = []; // Track selected product IDs
+            let selectedProducts = [];
 
-            // Function to add a new product row
             function addProductRow(index) {
                 return `
         <div class="product-row d-flex gap-2 mb-2">
@@ -131,13 +130,12 @@
                 <option value="" selected>-- Pilih Produk --</option>
                 ${products.map(product => `<option value="${product.id_stok}" data-stok="${product.jumlah_stok}">${product.nama_produk} (Stok : ${product.jumlah_stok})</option>`).join('')}
             </select>
-            <input type="number" class="form-control qty-input" name="products[${index}][qty]" placeholder="Qty" required min="1">
-            <input type="text" class="form-control price-input" name="products[${index}][harga_satuan]" placeholder="Harga" required min="1">
+            <input type="number" class="form-control qty-input" name="products[${index}][qty]" placeholder="Qty" required min="0">
+            <input type="number" class="form-control price-input" name="products[${index}][harga_satuan]" placeholder="Harga" required min="0">
             <button type="button" class="btn btn-danger remove-product">Hapus</button>
         </div>`;
             }
 
-            // Add product row when button is clicked
             $('#add-product').click(function() {
                 $('#product-container').append(addProductRow(productIndex));
                 productIndex++;
@@ -146,22 +144,18 @@
                 calculateTotal();
             });
 
-            // Function to bind events to dynamically added elements
             function bindProductEvents() {
-                // Remove product row and update calculations
                 $('.remove-product').off('click').on('click', function() {
                     $(this).closest('.product-row').remove();
                     updateProductSelection();
                     calculateTotal();
                 });
 
-                // Product selection change
                 $('.product-select').off('change').on('change', function() {
                     updateProductSelection();
                     calculateTotal();
                 });
 
-                // Quantity input events
                 $('.qty-input').off('input').on('input', function() {
                     let value = $(this).val().replace(/\D/g, '');
                     value = value === '' ? 1 : Math.max(1, parseInt(value));
@@ -169,7 +163,6 @@
                     calculateTotal();
                 });
 
-                // Price input events
                 $('.price-input').off('input').on('input', function() {
                     let value = $(this).val().replace(/\D/g, '');
                     $(this).val(formatCurrency(value));

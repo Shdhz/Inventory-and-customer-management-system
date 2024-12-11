@@ -20,8 +20,9 @@
                                 <th>No</th>
                                 <th>Nama Customer</th>
                                 <th>Tanggal transaksi</th>
-                                <th>Nama produk</th>
-                                <th>Jumlah Item</th>
+                                {{-- <th>Nama produk</th>
+                                <th>Jumlah Item</th> --}}
+                                <th>Item dipilih</th>
                                 <th>Harga Satuan</th>
                                 <th>Total Harga</th>
                                 <th>Diskon</th>
@@ -67,13 +68,17 @@
                             return day + '-' + month + '-' + year;
                         }
                     },
+                    // {
+                    //     data: 'nama_produk',
+                    //     name: 'nama_produk'
+                    // },
+                    // {
+                    //     data: 'jumlah_item',
+                    //     name: 'jumlah_item'
+                    // },
                     {
-                        data: 'nama_produk',
-                        name: 'nama_produk'
-                    },
-                    {
-                        data: 'jumlah_item',
-                        name: 'jumlah_item'
+                        data: 'item_pilih',
+                        name: 'item_pilih',
                     },
                     {
                         data: 'harga_satuan',

@@ -75,7 +75,7 @@ class orderController extends Controller
         // Tentukan tipe order
         $tipeOrder = match (true) {
             $sumber = strtolower(DraftCustomer::findOrFail($validated['draft_customer_id'])->sumber),
-            in_array($sumber, ['shopee', 'tokopedia', 'lazada', 'tiktok shop']) => 'cashless',
+            in_array($sumber, ['shopee', 'tokopedia', 'lazada', 'tiktok shop', 'tiktok']) => 'cashless',
             in_array($sumber, ['whatsapp', 'instagram', 'facebook']) => 'cash',
             default => null,
         };
@@ -124,7 +124,7 @@ class orderController extends Controller
         $orderCustomer = CustomerOrder::findOrFail($id);
         $tipeOrder = match (true) {
             $sumber = strtolower(DraftCustomer::findOrFail($validated['draft_customer_id'])->sumber),
-            in_array($sumber, ['shopee', 'tokopedia', 'lazada', 'tiktok shop']) => 'cashless',
+            in_array($sumber, ['shopee', 'tokopedia', 'lazada', 'tiktok shop', 'tiktok']) => 'cashless',
             in_array($sumber, ['whatsapp', 'instagram', 'facebook']) => 'cash',
             default => null,
         };
