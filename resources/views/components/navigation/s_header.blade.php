@@ -53,7 +53,7 @@
                     </li>
 
                     {{-- Nav - Manajemen Order --}}
-                    <li class="nav-item dropdown {{ Request::is('transaksi-customer') ? 'active' : ''}}">
+                    <li class="nav-item dropdown {{ Request::is('transaksi-customer') || Request::is('form-po') ? 'active' : ''}}">
                         <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
                             data-bs-auto-close="outside" role="button" aria-expanded="false">
                             <span

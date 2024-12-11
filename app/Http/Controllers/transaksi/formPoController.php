@@ -5,7 +5,6 @@ namespace App\Http\Controllers\transaksi;
 use App\Http\Controllers\Controller;
 use App\Models\categoriesProduct;
 use App\Models\CustomerOrder;
-use App\Models\DraftCustomer;
 use App\Models\formPo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,13 +20,13 @@ class formPoController extends Controller
         if ($request->ajax()) {
             if (Auth::user()->hasRole('supervisor')) {
                 $data = formPo::with(['customerOrder.draftCustomer.user', 'category'])->get();
-            } else {
+            }
+            else {
                 $data = formPo::with(['customerOrder.draftCustomer.user', 'category'])
                     ->whereHas('customerOrder.draftCustomer.user', function ($query) {
                         $query->where('user_id', Auth::user()->id);
                     })->get();
             }
-
             return DataTables::of($data)
                 ->addColumn('model', function ($row) {
                     return $row->model
@@ -45,7 +44,7 @@ class formPoController extends Controller
                         : '<span class="badge bg-danger text-white">Inactive</span>';
                 })
                 ->addColumn('actions', function ($row) {
-                    if (auth()->user()->hasRole('supervisor')) {
+                    if (Auth::user()->hasRole('supervisor')) {
                         // Dropdown untuk supervisor
                         $statusOptions = '
                             <select class="form-select form-select-sm update-status" data-id="' . $row->id_form_po . '">
@@ -53,14 +52,14 @@ class formPoController extends Controller
                                 <option value="0" ' . (!$row->status_form_po ? 'selected' : '') . '>Inactive</option>
                             </select>';
                         return $statusOptions;
-                    } elseif (auth()->user()->hasRole('admin')) {
+                    } elseif (Auth::user()->hasRole('admin')) {
                         // Tombol aksi untuk admin
                         return view('components.button.action-btn', [
                             'edit' => route('form-po.edit', $row->id_form_po),
                             'delete' => route('form-po.destroy', $row->id_form_po),
                         ])->render();
                     }
-                    return ''; // Jika bukan admin atau supervisor, kosongkan aksi
+                    return '';
                 })
                 ->rawColumns(['model', 'status_form_po', 'actions', 'po_admin'])
                 ->make(true);

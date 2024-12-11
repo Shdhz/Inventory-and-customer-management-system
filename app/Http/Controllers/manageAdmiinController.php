@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
@@ -23,10 +24,32 @@ class manageAdmiinController extends Controller
 
             return DataTables::of($users)
                 ->addIndexColumn()
+                ->addColumn('updated_at', function ($row) {
+                    return Carbon::parse($row->updated_at)->format('d M Y');
+                })
                 ->addColumn('roles', function ($user) {
-                    return $user->roles->map(function ($role) {
-                        return '<span class="badge bg-primary text-white">' . $role->name . '</span>';
-                    })->implode(' '); // Gabungkan badges dengan spasi
+                    // Cek apakah user memiliki role 'admin', 'supervisor', atau 'produksi'
+                    $roles = $user->roles->pluck('name'); // Mengambil semua nama role dari user
+
+                    $roleBadges = '';
+
+                    // Memeriksa setiap role dan memberikan badge sesuai role yang dimiliki
+                    if ($roles->contains('admin')) {
+                        $roleBadges .= '<span class="badge bg-primary text-white">Admin</span> ';
+                    }
+                    if ($roles->contains('supervisor')) {
+                        $roleBadges .= '<span class="badge bg-warning text-white">Supervisor</span> ';
+                    }
+                    if ($roles->contains('produksi')) {
+                        $roleBadges .= '<span class="badge bg-green text-white">Produksi</span> ';
+                    }
+
+                    // Jika tidak ada role yang cocok
+                    if ($roleBadges === '') {
+                        $roleBadges = 'No roles assigned';
+                    }
+
+                    return $roleBadges;
                 })
                 ->addColumn('actions', function ($row) {
                     return view('components.button.action-btn', [
@@ -34,8 +57,8 @@ class manageAdmiinController extends Controller
                         'delete' => route('kelola-admin.destroy', $row->id),
                     ])->render();
                 })
-                ->rawColumns(['roles', 'actions'])
-                ->make(true); // Buat response DataTables
+                ->rawColumns(['roles', 'actions', 'updated_at'])
+                ->make(true);
         }
 
         return view('v-supervisor.data-admin.index', compact('title', 'button'));
