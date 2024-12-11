@@ -9,15 +9,18 @@
                     <div class="col">
                         <h2 class="page-title">Data form po</h2>
                     </div>
+                    @role('admin')
                     <div class="col-auto">
                         <x-button.add-btn href="{{ route('form-po.create') }}" :button="'Tambah Form Po'" />
                     </div>
+                    @endrole
                 </div>
                 <div class="table-responsive mt-4">
                     <table class="table table-striped datatable" id="form-po" style="width: 100%">
                         <thead>
                             <tr>
                                 <th>No</th>
+                                <th>Po admin</th>
                                 <th>Model</th>
                                 <th>Qty</th>
                                 <th>Ukuran</th>
@@ -49,6 +52,10 @@
                         },
                         orderable: false,
                         searchable: false
+                    },
+                    {
+                        data: 'po_admin',
+                        name: 'po_admin',
                     },
                     {
                         data: 'model',

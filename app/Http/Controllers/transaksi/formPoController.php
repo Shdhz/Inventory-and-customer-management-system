@@ -8,6 +8,7 @@ use App\Models\CustomerOrder;
 use App\Models\DraftCustomer;
 use App\Models\formPo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\Facades\DataTables;
 
 class formPoController extends Controller
@@ -18,12 +19,24 @@ class formPoController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = formPo::with(['customerOrder', 'category'])->get();
+            if (Auth::user()->hasRole('supervisor')) {
+                $data = formPo::with(['customerOrder.draftCustomer.user', 'category'])->get();
+            } else {
+                $data = formPo::with(['customerOrder.draftCustomer.user', 'category'])
+                    ->whereHas('customerOrder.draftCustomer.user', function ($query) {
+                        $query->where('user_id', Auth::user()->id);
+                    })->get();
+            }
 
             return DataTables::of($data)
                 ->addColumn('model', function ($row) {
                     return $row->model
                         ? '<img src="' . asset('storage/uploads/stok-barang/' . $row->model) . '" alt="Foto Produk" width="50">'
+                        : 'N/A';
+                })
+                ->addColumn('po_admin', function ($row) {
+                    return $row->customerOrder && $row->customerOrder->draftCustomer && $row->customerOrder->draftCustomer->user
+                        ? $row->customerOrder->draftCustomer->user->name
                         : 'N/A';
                 })
                 ->addColumn('status_form_po', function ($row) {
@@ -49,7 +62,7 @@ class formPoController extends Controller
                     }
                     return ''; // Jika bukan admin atau supervisor, kosongkan aksi
                 })
-                ->rawColumns(['model', 'status_form_po', 'actions'])
+                ->rawColumns(['model', 'status_form_po', 'actions', 'po_admin'])
                 ->make(true);
         }
         return view('transaksi.form-po.index');
