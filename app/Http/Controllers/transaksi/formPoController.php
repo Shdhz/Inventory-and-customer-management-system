@@ -8,6 +8,7 @@ use App\Models\CustomerOrder;
 use App\Models\formPo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
 
 class formPoController extends Controller
@@ -20,8 +21,7 @@ class formPoController extends Controller
         if ($request->ajax()) {
             if (Auth::user()->hasRole('supervisor')) {
                 $data = formPo::with(['customerOrder.draftCustomer.user', 'category'])->get();
-            }
-            else {
+            } else {
                 $data = formPo::with(['customerOrder.draftCustomer.user', 'category'])
                     ->whereHas('customerOrder.draftCustomer.user', function ($query) {
                         $query->where('user_id', Auth::user()->id);
@@ -36,6 +36,11 @@ class formPoController extends Controller
                 ->addColumn('po_admin', function ($row) {
                     return $row->customerOrder && $row->customerOrder->draftCustomer && $row->customerOrder->draftCustomer->user
                         ? $row->customerOrder->draftCustomer->user->name
+                        : 'N/A';
+                })
+                ->addColumn('nama_customer', function ($row) {
+                    return $row->customerOrder && $row->customerOrder->draftCustomer && $row->customerOrder->draftCustomer->Nama
+                        ? $row->customerOrder->draftCustomer->Nama
                         : 'N/A';
                 })
                 ->addColumn('status_form_po', function ($row) {
@@ -61,7 +66,7 @@ class formPoController extends Controller
                     }
                     return '';
                 })
-                ->rawColumns(['model', 'status_form_po', 'actions', 'po_admin'])
+                ->rawColumns(['model', 'status_form_po', 'actions', 'po_admin', 'nama_customer'])
                 ->make(true);
         }
         return view('transaksi.form-po.index');
@@ -140,7 +145,15 @@ class formPoController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $formPo = FormPo::findOrFail($id);
+
+        $backUrl = route('form-po.index');
+        $customers = CustomerOrder::with('draftCustomer')
+            ->where('jenis_order', 'pre order')
+            ->get();
+        $categories = categoriesProduct::all();
+
+        return view('transaksi.form-po.edit', compact('formPo', 'customers', 'categories', 'backUrl'));
     }
 
     /**
@@ -148,7 +161,43 @@ class formPoController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'customer_order_id' => 'required|exists:tb_customer_orders,customer_order_id',
+            'qty' => 'required|integer',
+            'ukuran' => 'required|string|max:255',
+            'warna' => 'required|string|max:255',
+            'bahan' => 'required|string|max:255',
+            'aksesoris' => 'nullable|string|max:255',
+            'kategori_id' => 'required|exists:tb_categories_products,id_kategori',
+            'keterangan' => 'nullable|string',
+            'metode_pembayaran' => 'required|string|in:cod,transfer',
+            'model' => 'nullable|image|mimes:jpeg,png,jpg|max:5120'
+        ]);
+
+        $formPo = FormPo::findOrFail($id);
+
+        $formPo->customer_order_id = $request->customer_order_id;
+        $formPo->qty = $request->qty;
+        $formPo->ukuran = $request->ukuran;
+        $formPo->warna = $request->warna;
+        $formPo->bahan = $request->bahan;
+        $formPo->aksesoris = $request->aksesoris;
+        $formPo->kategori_id = $request->kategori_id;
+        $formPo->keterangan = $request->keterangan;
+        $formPo->metode_pembayaran = $request->metode_pembayaran;
+
+        if ($request->hasFile('model')) {
+            // Delete old image if exists
+            if ($formPo->model) {
+                Storage::delete('public/uploads/stok-barang/' . $formPo->model);
+            }
+            // Store new image
+            $formPo->model = $request->file('model')->store('uploads/stok-barang', 'public');
+        }
+
+        $formPo->save();
+
+        return redirect()->route('form-po.index')->with('success', 'Form PO berhasil diupdate.');
     }
 
     /**

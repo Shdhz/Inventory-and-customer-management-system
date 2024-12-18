@@ -8,7 +8,9 @@ use App\Models\transaksiDetail;
 use App\Observers\BarangMasukObserver;
 use App\Observers\BarangRusakObserver;
 use App\Observers\TransaksiDetailObserver;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,5 +30,8 @@ class AppServiceProvider extends ServiceProvider
         barangRusak::observe(BarangRusakObserver::class);
         barangMasuk::observe(BarangMasukObserver::class);
         transaksiDetail::observe(TransaksiDetailObserver::class);
+        Blade::directive('isActive', function ($route) {
+            return "<?php echo Request::is($route) ? 'active' : ''; ?>";
+        });
     }
 }

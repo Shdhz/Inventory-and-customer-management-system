@@ -21,4 +21,9 @@ class transaksiDetail extends Model
     {
         return $this->belongsTo(productStock::class, 'stok_id', 'id_stok');
     }
+
+    public function invoice()
+    {
+        return $this->hasMany(Invoice::class, 'transaksi_detail_id', 'id_transaksi_detail');
+    }
 }

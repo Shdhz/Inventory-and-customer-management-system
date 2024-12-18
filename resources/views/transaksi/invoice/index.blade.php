@@ -7,30 +7,24 @@
             <div class="card-body">
                 <div class="row g-2 align-items-center">
                     <div class="col">
-                        <h2 class="page-title">Data form po</h2>
+                        <h2 class="page-title">{{ $title }}</h2>
                     </div>
-                    @role('admin')
                     <div class="col-auto">
-                        <x-button.add-btn href="{{ route('form-po.create') }}" :button="'Tambah Form Po'" />
+                        <x-button.add-btn href="{{ route('kelola-invoice.create') }}" :button="'Tambah Invoice'" />
                     </div>
-                    @endrole
                 </div>
                 <div class="table-responsive mt-4">
                     <table class="table table-striped datatable" id="form-po" style="width: 100%">
                         <thead>
                             <tr>
                                 <th>No</th>
-                                <th>Po admin</th>
-                                <th>Nama customer</th>
-                                <th>Model</th>
-                                <th>Qty</th>
-                                <th>Ukuran</th>
-                                <th>Bahan</th>
-                                <th>Warna</th>
-                                <th>Aksesoris</th>
-                                <th>Keterangan</th>
-                                <th>Metode pembayaran</th>
-                                <th>status form</th>
+                                <th>Nama Customer</th>
+                                <th>Nama barang</th>
+                                <th>Tanggal terbit</th>
+                                <th>Tenggat Waktu</th>
+                                <th>Tenggat Waktu</th>
+                                <th>Tipe invoice</th>
+                                <th>Status</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -39,7 +33,7 @@
             </div>
         </div>
     </div>
-    <script>
+    {{-- <script>
         $(document).ready(function() {
             // Inisialisasi DataTables
             let table = $('#form-po').DataTable({
@@ -57,10 +51,6 @@
                     {
                         data: 'po_admin',
                         name: 'po_admin',
-                    },
-                    {
-                        data: 'nama_customer',
-                        name: 'nama_customer',
                     },
                     {
                         data: 'model',
@@ -147,5 +137,5 @@
                 });
             });
         });
-    </script>
+    </script> --}}
 @endsection

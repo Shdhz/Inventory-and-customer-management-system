@@ -5,6 +5,7 @@ namespace App\Http\Controllers\rencana_produksi;
 use App\Http\Controllers\Controller;
 use App\Models\formPo;
 use App\Models\rencanaProduksi;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -29,6 +30,12 @@ class rencanaProduksiController extends Controller
                 })
                 ->addColumn('nama_barang', function ($row) {
                     return $row->formPo->keterangan ?? 'Tidak Ada';
+                })
+                ->addColumn('mulai_produksi', function ($row) {
+                    return Carbon::parse($row->mulai_produksi)->format('d F Y');
+                })
+                ->addColumn('berakhir_produksi', function ($row) {
+                    return Carbon::parse($row->berakhir_produksi)->format('d F Y');
                 })
                 ->addColumn('actions', function ($row) {
                     if (auth()->user()->hasRole('produksi')) {

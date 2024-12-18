@@ -41,10 +41,10 @@
                         <div class="dropdown-menu">
                             <div class="dropdown-menu-columns">
                                 <div class="dropdown-menu-column">
-                                    <a class="dropdown-item" href="{{ route('draft-customer.index') }}">
+                                    <a class="dropdown-item @isActive('draft-customer*')" href="{{ route('draft-customer.index') }}">
                                         Draft Customer
                                     </a>
-                                    <a class="dropdown-item" href="{{ route('order-customer.index') }}">
+                                    <a class="dropdown-item @isActive('order-customer*')" href="{{ route('order-customer.index') }}">
                                         Order Customer
                                     </a>
                                 </div>
@@ -53,7 +53,7 @@
                     </li>
 
                     {{-- Nav - Manajemen Order --}}
-                    <li class="nav-item dropdown {{ Request::is('transaksi-customer') || Request::is('form-po') ? 'active' : ''}}">
+                    <li class="nav-item dropdown {{ Request::is('transaksi-customer') || Request::is('form-po') || Request::is('kelola-invoice') ? 'active' : ''}}">
                         <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
                             data-bs-auto-close="outside" role="button" aria-expanded="false">
                             <span
@@ -68,18 +68,18 @@
                         <div class="dropdown-menu">
                             <div class="dropdown-menu-columns">
                                 <div class="dropdown-menu-column">
-                                    <a class="dropdown-item" href="{{ route('transaksi-customer.index') }}">
+                                    <a class="dropdown-item @isActive('transaksi-customer*')" href="{{ route('transaksi-customer.index') }}">
                                         Transaksi Customer
                                     </a>
-                                    <a class="dropdown-item" href="">
+                                    <a class="dropdown-item @isActive('kelola-invoice*')" href="{{ route('kelola-invoice.index') }}">
                                         Kelola Invoice
                                     </a>
-                                    <a class="dropdown-item" href="{{ route('form-po.index') }}">
+                                    <a class="dropdown-item @isActive('form-po*')" href="{{ route('form-po.index') }}">
                                         Kelola Form Po
                                     </a>
                                 </div>
                             </div>
-                        </div>
+                        </div>                        
                     </li>
 
                     {{-- Nav - Kelola Produk --}}
@@ -98,13 +98,13 @@
                         <div class="dropdown-menu">
                             <div class="dropdown-menu-columns">
                                 <div class="dropdown-menu-column">
-                                    <a class="dropdown-item" href="{{ route('rencana-produksi.index') }}">
+                                    <a class="dropdown-item @isActive('rencana-produksi*')" href="{{ route('rencana-produksi.index') }}">
                                         Rencana Produksi
                                     </a>
-                                    <a class="dropdown-item" href="{{ route('stok-barang.index') }}">
+                                    <a class="dropdown-item @isActive('stok-barang*')" href="{{ route('stok-barang.index') }}">
                                         Stok Produk
                                     </a>
-                                    <a class="dropdown-item" href="{{ route('barang-rusak.index') }}">
+                                    <a class="dropdown-item @isActive('barang-rusak*')" href="{{ route('barang-rusak.index') }}">
                                         Kondisi Produk
                                     </a>
                                 </div>
@@ -113,7 +113,7 @@
                     </li>
 
                     {{-- Nav - Kelola Laporan --}}
-                    <li class="nav-item dropdown">
+                    <li class="nav-item dropdown {{ Request::is('riwayat-transaksi') || Request::is('laporan-penjualan') ? 'active' : ''}}">
                         <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
                             data-bs-auto-close="outside" role="button" aria-expanded="false">
                             <span
@@ -128,10 +128,10 @@
                         <div class="dropdown-menu">
                             <div class="dropdown-menu-columns">
                                 <div class="dropdown-menu-column">
-                                    <a class="dropdown-item" href="">
+                                    <a class="dropdown-item  @isActive('laporan-penjualan*')" href="{{ route('laporan.penjualan') }}">
                                         Laporan Penjualan
                                     </a>
-                                    <a class="dropdown-item" href="">
+                                    <a class="dropdown-item @isActive('riwayat-transaksi*')" href="{{ route('riwayat.transaksi') }}">
                                         Riwayat Transaksi
                                     </a>
                                 </div>
@@ -163,7 +163,7 @@
                     
                 </ul>
                 {{-- seacrh form --}}
-                <div class="my-2 my-md-0 flex-grow-1 flex-md-grow-0 order-first order-md-last">
+                {{-- <div class="my-2 my-md-0 flex-grow-1 flex-md-grow-0 order-first order-md-last">
                     <form action="./" method="get" autocomplete="off" novalidate>
                         <div class="input-icon">
                             <span class="input-icon-addon">
@@ -180,7 +180,7 @@
                                 aria-label="Search in website">
                         </div>
                     </form>
-                </div>
+                </div> --}}
             </div>
         </div>
     </div>
@@ -287,15 +287,15 @@
                     </li>
 
                     {{-- Nav - Kelola tugas harian --}}
-                    <li class="nav-item">
+                    {{-- <li class="nav-item">
                         <a class="btn btn-outline-primary border border-1 rounded-1 focus-ring focus-ring-primary " href="">
                             Kelola tugas
                         </a>
-                    </li>
+                    </li> --}}
                     
                 </ul>
                 {{-- seacrh form --}}
-                <div class="my-2 my-md-0 flex-grow-1 flex-md-grow-0 order-first order-md-last">
+                {{-- <div class="my-2 my-md-0 flex-grow-1 flex-md-grow-0 order-first order-md-last">
                     <form action="./" method="get" autocomplete="off" novalidate>
                         <div class="input-icon">
                             <span class="input-icon-addon">
@@ -312,7 +312,7 @@
                                 aria-label="Search in website">
                         </div>
                     </form>
-                </div>
+                </div> --}}
             </div>
         </div>
     </div>

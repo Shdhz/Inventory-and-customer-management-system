@@ -21,6 +21,7 @@ class TransaksiController extends Controller
     public function index(Request $request)
     {
         $button = "Tambah transaksi";
+        $btn_invoice = "Tambah Invoice";
 
         if (request()->ajax()) {
             $data = transaksi::with(['customerOrder', 'transaksiDetails.stok'])
@@ -87,7 +88,7 @@ class TransaksiController extends Controller
                 ->rawColumns(['actions', 'item_pilih', 'harga_satuan'])
                 ->make(true);
         }
-        return view('transaksi.transaksi-customer.index', compact('button'));
+        return view('transaksi.transaksi-customer.index', compact('button', 'btn_invoice'));
     }
 
     /**
@@ -121,82 +122,6 @@ class TransaksiController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    // public function store(Request $request)
-    // {
-    //     $validated = $request->validate([
-    //         'customer_order_id' => 'required|exists:tb_customer_orders,customer_order_id',
-    //         'products.*.stok_id' => 'required|exists:tb_products,id_stok',
-    //         'products.*.qty' => 'required|integer|min:1',
-    //         'products.*.harga_satuan' => 'required|numeric|min:1',
-    //         'payment_method' => 'required|string|in:cod,transfer',
-    //         'expedition' => 'nullable|string|max:255',
-    //         'discount_product_percent' => 'nullable|numeric|min:0|max:100',
-    //     ]);
-
-    //     // Validasi jika produk yang sama sudah dipilih lebih dari sekali
-    //     $selectedProductIds = collect($request->products)->pluck('stok_id')->toArray();
-    //     if (count($selectedProductIds) !== count(array_unique($selectedProductIds))) {
-    //         return redirect()->back()->withInput()->withErrors(['error' => 'Produk yang sama tidak boleh dipilih lebih dari sekali.']);
-    //     }
-
-    //     // Validasi stok produk
-    //     $insufficientStock = [];
-    //     foreach ($request->products as $product) {
-    //         $stok = ProductStock::findOrFail($product['stok_id']);
-    //         if ($product['qty'] > $stok->jumlah_stok) {
-    //             $insufficientStock[] = $stok->nama_produk;
-    //         }
-    //     }
-
-    //     if (!empty($insufficientStock)) {
-    //         return redirect()->back()->withInput()->withErrors([
-    //             'error' => "Stok tidak mencukupi untuk produk: " . implode(', ', $insufficientStock),
-    //         ]);
-    //     }
-
-    //     // Hitung subtotal transaksi
-    //     $subtotal = collect($request->products)->reduce(function ($carry, $product) {
-    //         return $carry + ($product['qty'] * $product['harga_satuan']);
-    //     }, 0);
-
-    //     // Hitung diskon produk
-    //     $discountProductPercent = $request->discount_product_percent ?? 0;
-    //     $discountProduct = ($subtotal * $discountProductPercent) / 100;
-    //     $total = $subtotal - $discountProduct;
-
-    //     // Simpan data transaksi
-    //     $transaksi = Transaksi::create([
-    //         'customer_order_id' => $request->customer_order_id,
-    //         'diskon_produk' => $discountProductPercent,
-    //         'diskon_ongkir' => 0,
-    //         'ekspedisi' => $request->expedition,
-    //         'metode_pembayaran' => $request->payment_method,
-    //     ]);
-
-    //     // Simpan detail transaksi
-    //     foreach ($request->products as $product) {
-    //         $subtotalDetail = $product['qty'] * $product['harga_satuan'];
-
-    //         $hargaSatuan = round($product['harga_satuan']);
-
-    //         transaksiDetail::create([
-    //             'transaksi_id' => $transaksi->id_transaksi,
-    //             'stok_id' => $product['stok_id'],
-    //             'qty' => $product['qty'],
-    //             'harga_satuan' => $hargaSatuan,
-    //             'subtotal' => $subtotalDetail,
-    //             'jumlah' => $product['qty'] * $product['harga_satuan'],
-    //             'tanggal_keluar' => now(),
-    //         ]);
-    //     }
-
-    //     // Update total transaksi setelah diskon
-    //     $transaksi->update([
-    //         'total' => $total,
-    //     ]);
-
-    //     return redirect()->route('transaksi-customer.index')->with('success', 'Transaksi berhasil disimpan!');
-    // }
     public function store(Request $request)
     {
         $validated = $request->validate([

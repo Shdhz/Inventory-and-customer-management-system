@@ -10,6 +10,9 @@
                         <h2 class="page-title">Data Transaksi Customer</h2>
                     </div>
                     <div class="col-auto">
+                        <x-button.invoice-btn href="{{ route('kelola-invoice.create') }}" :btn_invoice="'Tambah Invoice'" />
+                    </div>
+                    <div class="col-auto">
                         <x-button.add-btn href="{{ route('transaksi-customer.create') }}" :button="'Tambah Transaksi'" />
                     </div>
                 </div>
@@ -68,14 +71,6 @@
                             return day + '-' + month + '-' + year;
                         }
                     },
-                    // {
-                    //     data: 'nama_produk',
-                    //     name: 'nama_produk'
-                    // },
-                    // {
-                    //     data: 'jumlah_item',
-                    //     name: 'jumlah_item'
-                    // },
                     {
                         data: 'item_pilih',
                         name: 'item_pilih',
