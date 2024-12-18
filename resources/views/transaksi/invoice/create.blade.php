@@ -1,5 +1,6 @@
 @extends('layouts.admin')
 @section('content')
+<x-message.errors />
     <div class="container-lg mt-2">
         <div class="card">
             <div class="card-header row-cols-auto">
@@ -16,7 +17,7 @@
         <div class="card mt-3 p-2">
             <div class="card-body">
                 {{-- Form Start --}}
-                <form action="" method="POST">
+                <form action="{{ route('kelola-invoice.store') }}" method="POST">
                     @csrf
                     <div class="row">
                         <div class="col-8">
@@ -34,7 +35,7 @@
                             <div class="mb-3">
                                 <label for="nota_no" class="form-label">Nota No</label>
                                 <input type="text" id="nota_no" name="nota_no" class="form-control"
-                                    placeholder="Masukkan nomor nota" required>
+                                    placeholder="Nomor nota akan di generate otomatis">
                             </div>
                             <div class="mb-3">
                                 <label for="tanggal" class="form-label">Tanggal</label>
@@ -82,16 +83,16 @@
                                 placeholder="Masukkan Ongkir" required>
                         </div>
                         <div class="mt-4">
-                            <label for="dp" class="form-label">DP (Down Payment)</label>
-                            <input type="number" id="dp" name="dp" class="form-control"
-                                placeholder="Masukkan DP" required>
-                        </div>
+                            <label for="dp" class="form-label">DP (Down Payment) (%)</label>
+                            <input type="number" id="dp" name="dp" class="form-control" placeholder="Masukkan DP dalam persen" required>
+                        </div>                        
                     </div>
                     <hr>
                     <div class="text-end">
                         <p>Sub Total: <span id="subtotal">0</span></p>
                         <p>Biaya Kirim: <span id="biaya-kirim">0</span></p>
                         <p>Down Payment (DP): <span id="dp-total">0</span></p>
+                        <p class="badge text-bg-info">Status Pembayaran: <span id="status-dp"></span></p>
                         <p>Total/Sisa Belum: <span id="total-sisa">0</span></p>
                     </div>
 
@@ -109,118 +110,109 @@
     </div>
 
     <script>
-            $(document).ready(function() {
-                $('#nama_pelanggan').on('change', function() {
-                    // Clear existing rows
-                    $('.barang-item:not(:first)').remove();
+        $(document).ready(function() {
+            $('#nama_pelanggan').on('change', function() {
+                // Bersihkan baris barang kecuali yang pertama
+                $('.barang-item:not(:first)').remove();
 
-                    // Get selected option
-                    const selectedOption = $(this).find('option:selected');
+                // Ambil data produk dari opsi terpilih
+                const selectedOption = $(this).find('option:selected');
+                try {
+                    const produkData = JSON.parse(selectedOption.attr('data-produk') || '[]');
+                    const produkArray = Array.isArray(produkData) ? produkData : Object.values(produkData);
 
-                    try {
-                        // Parse product data with fallback
-                        const produkData = JSON.parse(selectedOption.attr('data-produk') || '[]');
+                    produkArray.forEach((produk, index) => {
+                        if (index === 0) {
+                            // Baris pertama
+                            $('input[name="Nama_Barang[]"]:first').val(produk.nama_produk || produk
+                                .name);
+                            $('input[name="qty[]"]:first').val(produk.jumlah || produk.qty || 1);
+                            $('input[name="harga[]"]:first').val(produk.harga_satuan || produk
+                                .harga);
+                        } else {
+                            // Kloning baris pertama untuk baris tambahan
+                            const newRow = $('.barang-item:first').clone();
 
-                        // Ensure produkData is an array
-                        const produkArray = Array.isArray(produkData) ? produkData :
-                            (typeof produkData === 'object' ? Object.values(produkData) : []);
+                            newRow.find('input[name="Nama_Barang[]"]').val(produk.nama_produk ||
+                                produk.name);
+                            newRow.find('input[name="qty[]"]').val(produk.jumlah || produk.qty ||
+                            1);
+                            newRow.find('input[name="harga[]"]').val(produk.harga_satuan || produk
+                                .harga);
 
-                        // Populate product rows
-                        produkArray.forEach((produk, index) => {
-                            // For first row
-                            if (index === 0) {
-                                $('input[name="Nama_Barang[]"]:first').val(produk.nama_produk || produk
-                                    .name);
-                                $('input[name="qty[]"]:first').val(produk.jumlah || produk.qty || 1);
-                                $('input[name="harga[]"]:first').val(produk.harga_satuan || produk
-                                    .harga_satuan);
-                            }
-                            // For additional rows
-                            else {
-                                // Clone the first row
-                                const newRow = $('.barang-item:first').clone();
-
-                                // Reset values in cloned row
-                                newRow.find('input[name="Nama_Barang[]"]').val(produk.nama_produk ||
-                                    produk.name);
-                                newRow.find('input[name="qty[]"]').val(produk.jumlah || produk.qty ||
-                                1);
-                                newRow.find('input[name="harga[]"]').val(produk.harga_satuan || produk
-                                    .harga_satuan);
-
-                                // Append to the container
-                                $('.barang-item:last').after(newRow);
-                            }
-                        });
-
-                        // Calculate totals
-                        calculateTotals();
-                    } catch (error) {
-                        console.error('Error parsing product data:', error,
-                            'Raw data:', selectedOption.attr('data-produk'));
-                        // Reset form or show error message
-                        resetForm();
-                    }
-                });
-
-                // Function to calculate totals
-                function calculateTotals() {
-                    let subtotal = 0;
-
-                    // Calculate subtotal
-                    $('.barang-item').each(function() {
-                        const qty = $(this).find('input[name="qty[]"]').val() || 0;
-                        const harga = $(this).find('input[name="harga[]"]').val() || 0;
-                        subtotal += qty * harga;
+                            // Tambahkan baris baru ke form
+                            $('.barang-item:last').after(newRow);
+                        }
                     });
 
-                    // Get ongkir and dp values
-                    const ongkir = $('#ongkir').val() || 0;
-                    const dp = $('#dp').val() || 0;
-
-                    // Calculate total and remaining amount
-                    const totalBelumDibayar = subtotal + parseInt(ongkir) - parseInt(dp);
-
-                    // Update display
-                    $('#subtotal').text(formatRupiah(subtotal));
-                    $('#biaya-kirim').text(formatRupiah(ongkir));
-                    $('#dp-total').text(formatPersen(dp, subtotal)); // Format DP as percentage
-                    $('#total-sisa').text(formatRupiah(totalBelumDibayar));
-                }
-
-                // Function to format number to Rupiah
-                function formatRupiah(angka) {
-                    return new Intl.NumberFormat('id-ID', {
-                        style: 'currency',
-                        currency: 'IDR',
-                        minimumFractionDigits: 0
-                    }).format(angka);
-                }
-
-                // Function to format number to percentage (e.g., 20%)
-                function formatPersen(dp, subtotal) {
-                    if (subtotal === 0) return '0%'; // Avoid dividing by zero
-                    const persen = (dp / subtotal) * 100;
-                    return `${persen.toFixed(2)}%`;
-                }
-
-                // Reset form function
-                function resetForm() {
-                    $('.barang-item:not(:first)').remove();
-                    $('.barang-item input').val('');
-                    $('#ongkir').val('');
-                    $('#dp').val('');
-
-                    $('#subtotal').text('0');
-                    $('#biaya-kirim').text('0');
-                    $('#dp-total').text('0');
-                    $('#total-sisa').text('0');
-                }
-
-                // Attach calculation to input changes
-                $(document).on('input', 'input[name="qty[]"], input[name="harga[]"], #ongkir, #dp', function() {
+                    // Hitung total setelah menambahkan produk
                     calculateTotals();
-                });
+                } catch (error) {
+                    console.error('Error parsing product data:', error, 'Raw data:', selectedOption.attr(
+                        'data-produk'));
+                    resetForm();
+                }
             });
+
+            // Fungsi menghitung total
+            function calculateTotals() {
+                let subtotal = 0;
+
+                // Hitung subtotal berdasarkan qty dan harga
+                $('.barang-item').each(function() {
+                    const qty = parseInt($(this).find('input[name="qty[]"]').val()) || 0;
+                    const harga = parseInt($(this).find('input[name="harga[]"]').val()) || 0;
+                    subtotal += qty * harga;
+                });
+
+                // Ambil ongkir dan DP (dalam persen)
+                const ongkir = parseInt($('#ongkir').val()) || 0;
+                const dpPersen = parseInt($('#dp').val()) || 0; // DP dalam persen
+
+                // Hitung DP berdasarkan persen
+                const dp = (subtotal + ongkir) * (dpPersen / 100);
+
+                // Hitung total sisa pembayaran
+                const totalBelumDibayar = subtotal + ongkir - dp;
+
+                // Update tampilan
+                $('#subtotal').text(formatRupiah(subtotal));
+                $('#biaya-kirim').text(formatRupiah(ongkir));
+                $('#dp-total').text(formatRupiah(dp)); // Menampilkan DP dalam bentuk Rupiah
+                $('#total-sisa').text(formatRupiah(totalBelumDibayar));
+
+                // Update status pembayaran
+                const statusDP = dp >= (subtotal + ongkir) ? 'Lunas' : 'Belum Lunas';
+                $('#status-dp').text(statusDP);
+            }
+
+
+            // Fungsi format Rupiah
+            function formatRupiah(angka) {
+                return new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR',
+                    minimumFractionDigits: 0
+                }).format(angka);
+            }
+
+            // Fungsi reset form
+            function resetForm() {
+                $('.barang-item:not(:first)').remove();
+                $('.barang-item input').val('');
+                $('#ongkir').val('');
+                $('#dp').val('');
+
+                $('#subtotal').text('0');
+                $('#biaya-kirim').text('0');
+                $('#total-sisa').text('0');
+                $('#status-dp').text('');
+            }
+
+            // Event listener untuk input perubahan qty, harga, ongkir, dan dp
+            $(document).on('input', 'input[name="qty[]"], input[name="harga[]"], #ongkir, #dp', function() {
+                calculateTotals();
+            });
+        });
     </script>
 @endsection

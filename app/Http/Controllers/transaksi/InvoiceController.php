@@ -8,6 +8,8 @@ use App\Models\FormPO;
 use App\Models\Invoice;
 use App\Models\TransaksiDetail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class InvoiceController extends Controller
 {
@@ -33,41 +35,41 @@ class InvoiceController extends Controller
             'transaksi.customerOrder.draftCustomer',
             'stok'
         ])
-        ->get()
-        ->groupBy(function ($item) {
-            return $item->transaksi->customerOrder->draftCustomer->draft_customers_id;
-        })
-        ->map(function ($group) {
-            $firstItem = $group->first();
-        
-            // Add null checks to prevent potential errors
-            $draftCustomer = optional($firstItem->transaksi->customerOrder)->draftCustomer;
-            $transaksi = $firstItem->transaksi;
-        
-            if (!$draftCustomer) {
-                return null; // Skip this group if no draft customer
-            }
-        
-            return [
-                'id' => $draftCustomer->draft_customers_id ?? null,
-                'nama' => $draftCustomer->Nama ?? 'Unnamed Customer',
-                'produk' => $group->map(function ($item) {
-                    return [
-                        'nama_produk' => optional($item->stok)->nama_produk ?? 'Unknown Product',
-                        'qty' => $item->qty ?? 0,  // Changed from 'jumlah' to 'qty'
-                        'harga_satuan' => $item->harga_satuan ?? 0,  // Changed from 'harga' to 'harga_satuan'
-                        'subtotal' => $item->subtotal ?? 0,
-                        'tanggal_keluar' => $item->tanggal_keluar ?? null
-                    ];
-                })->filter()->values()->toArray(),
-                'metode_pembayaran' => $transaksi->metode_pembayaran ?? null,
-                'diskon_produk' => $transaksi->diskon_produk ?? 0,
-                'diskon_ongkir' => $transaksi->diskon_ongkir ?? 0,
-                'ekspedisi' => $transaksi->ekspedisi ?? null
-            ];
-        })
-        ->filter() // Remove any null groups
-        ->values();
+            ->get()
+            ->groupBy(function ($item) {
+                return $item->transaksi->customerOrder->draftCustomer->draft_customers_id;
+            })
+            ->map(function ($group) {
+                $firstItem = $group->first();
+
+                // Add null checks to prevent potential errors
+                $draftCustomer = optional($firstItem->transaksi->customerOrder)->draftCustomer;
+                $transaksi = $firstItem->transaksi;
+
+                if (!$draftCustomer) {
+                    return null; // Skip this group if no draft customer
+                }
+
+                return [
+                    'id' => $draftCustomer->draft_customers_id ?? null,
+                    'nama' => $draftCustomer->Nama ?? 'Unnamed Customer',
+                    'produk' => $group->map(function ($item) {
+                        return [
+                            'nama_produk' => optional($item->stok)->nama_produk ?? 'Unknown Product',
+                            'qty' => $item->qty ?? 0,  // Changed from 'jumlah' to 'qty'
+                            'harga_satuan' => $item->harga_satuan ?? 0,  // Changed from 'harga' to 'harga_satuan'
+                            'subtotal' => $item->subtotal ?? 0,
+                            'tanggal_keluar' => $item->tanggal_keluar ?? null
+                        ];
+                    })->filter()->values()->toArray(),
+                    'metode_pembayaran' => $transaksi->metode_pembayaran ?? null,
+                    'diskon_produk' => $transaksi->diskon_produk ?? 0,
+                    'diskon_ongkir' => $transaksi->diskon_ongkir ?? 0,
+                    'ekspedisi' => $transaksi->ekspedisi ?? null
+                ];
+            })
+            ->filter()
+            ->values();
         return view('transaksi.invoice.create', compact('backUrl', 'title', 'formPo', 'customers'));
     }
 
@@ -76,24 +78,59 @@ class InvoiceController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'form_po_id' => 'required|exists:tb_form_po,id_form_po',
-            'transaksi_detail_id' => 'required|exists:tb_transaksi_detail,id_transaksi_detail',
-            'status_pembayaran' => 'required|in:cash,cashless',
-            'tipe_stock' => 'required|in:po,ready_stock',
-            'harga_satuan' => 'required|numeric',
-            'jumlah' => 'required|numeric',
-            'ongkir' => 'nullable|numeric',
-            'down_payment' => 'nullable|numeric',
+        $validated = $request->validate([
+            'nota_no' => 'required|string', // nota_no already set in the form as hidden
+            'tanggal' => 'required|date', // Ensure tanggal is a valid date
+            'nama_pelanggan' => 'required|exists:customers,id', // Validates if customer exists in the 'customers' table
+            'Nama_Barang' => 'required|array', // Nama_Barang should be an array (multiple items possible)
+            'Nama_Barang.*' => 'required|string', // Each Nama_Barang should be a string
+            'qty' => 'required|array', // qty should be an array
+            'qty.*' => 'required|numeric|min:1', // Each qty should be numeric and >= 1
+            'harga' => 'required|array', // harga should be an array
+            'harga.*' => 'required|numeric|min:0', // Each harga should be numeric and >= 0
+            'ongkir' => 'required|numeric|min:0', // ongkir (shipping cost)
+            'dp' => 'required|numeric|min:0', // dp (down payment)
         ]);
 
-        if ($request->input('tipe_stock') === 'po') {
-            $this->processFormPO($request);
-        } else {
-            $this->processTransaksiDetail($request);
-        }
+        // Generate nota_no in the format: INV-YYYYMMDD-00001
+        $nota_no = 'INV-' . date('Ymd') . '-' . str_pad(Invoice::count() + 1, 5, '0', STR_PAD_LEFT);
+        dd($request->all());
 
-        return response()->json(['message' => 'Invoice berhasil dibuat']);
+        try {
+            // Begin database transaction to ensure atomic operations
+            DB::beginTransaction();
+
+            // Prepare invoice data from the validated input
+            $invoiceData = [
+                'nota_no' => $nota_no,
+                'form_po_id' => $request->form_po_id, // Assuming you have a form_po_id field in your form
+                'transaksi_detail_id' => $request->transaksi_detail_id, // Similarly, transaksi_detail_id
+                'status_pembayaran' => $request->status_pembayaran,
+                'harga_satuan' => $request->harga_satuan,
+                'subtotal' => $request->subtotal,
+                'jumlah' => $request->jumlah,
+                'ongkir' => $request->ongkir,
+                'down_payment' => $request->dp, // You may want to rename 'dp' to 'down_payment' for consistency
+                'total' => $request->total,
+                'tenggat_invoice' => $request->tenggat_invoice,
+            ];
+
+            // Create the invoice record in the database
+            Invoice::create($invoiceData);
+
+            // Commit the transaction if everything is successful
+            DB::commit();
+
+            // Redirect to the invoice list with success message
+            return redirect()->route('invoice.index')->with('success', 'Invoice berhasil dibuat');
+        } catch (\Exception $e) {
+            // Rollback if there is any error
+            DB::rollBack();
+            Log::error('Error creating invoice: ' . $e->getMessage());
+
+            // Redirect back with error message
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat membuat invoice. Silakan coba lagi.');
+        }
     }
 
     /**
