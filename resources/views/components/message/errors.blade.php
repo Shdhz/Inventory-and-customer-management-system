@@ -7,7 +7,7 @@
 </div>
 @endif
 
-<script>
+{{-- <script>
     // Menghilangkan alert setelah 1 detik
     setTimeout(function () {
         const alert = document.getElementById('errors-alert');
@@ -17,4 +17,4 @@
             setTimeout(() => alert.remove(), 500); // Hapus elemen setelah fade-out
         }
     }, 2000); // 1 detik
-</script>
+</script> --}}

@@ -11,21 +11,18 @@ class invoice extends Model
 
     protected $guarded = ['invoice_id'];
 
-    protected $casts = [
-        'harga_satuan' => 'decimal:2',
-        'subtotal' => 'decimal:2',
-        'ongkir' => 'decimal:2',
-        'down_payment' => 'decimal:2',
-        'total' => 'decimal:2',
-    ];
-
-    public function formPO()
+    public function invoiceDetails()
     {
-        return $this->belongsTo(FormPO::class, 'form_po_id', 'id_form_po');
+        return $this->hasMany(InvoiceDetail::class, 'invoice_id', 'invoice_id');
     }
 
-    public function transaksiDetail()
-    {
-        return $this->belongsTo(TransaksiDetail::class, 'transaksi_detail_id', 'id_transaksi_detail');
-    }
+    // public function formPO()
+    // {
+    //     return $this->belongsTo(FormPO::class, 'form_po_id', 'id_form_po');
+    // }
+
+    // public function transaksiDetail()
+    // {
+    //     return $this->belongsTo(TransaksiDetail::class, 'transaksi_detail_id', 'id_transaksi_detail');
+    // }
 }

@@ -23,8 +23,6 @@
                                 <th>No</th>
                                 <th>Nama Customer</th>
                                 <th>Tanggal transaksi</th>
-                                {{-- <th>Nama produk</th>
-                                <th>Jumlah Item</th> --}}
                                 <th>Item dipilih</th>
                                 <th>Harga Satuan</th>
                                 <th>Total Harga</th>

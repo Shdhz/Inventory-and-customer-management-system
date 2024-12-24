@@ -9,22 +9,21 @@
                     <div class="col">
                         <h2 class="page-title">{{ $title }}</h2>
                     </div>
-                    <div class="col-auto">
-                        <x-button.add-btn href="{{ route('kelola-invoice.create') }}" :button="'Tambah Invoice'" />
-                    </div>
                 </div>
                 <div class="table-responsive mt-4">
-                    <table class="table table-striped datatable" id="form-po" style="width: 100%">
+                    <table class="table table-striped datatable" id="invoice-table" style="width: 100%">
                         <thead>
                             <tr>
                                 <th>No</th>
+                                <th>Nomor Nota</th>
                                 <th>Nama Customer</th>
-                                <th>Nama barang</th>
-                                <th>Tanggal terbit</th>
+                                <th>Item dipilih</th>
+                                <th>Subtotal</th>
+                                <th>Ongkir</th>
+                                <th>Total</th>
+                                <th>Down payment(Dp)</th>
+                                <th>Status Pembayaran</th>
                                 <th>Tenggat Waktu</th>
-                                <th>Tenggat Waktu</th>
-                                <th>Tipe invoice</th>
-                                <th>Status</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -33,14 +32,16 @@
             </div>
         </div>
     </div>
-    {{-- <script>
+
+    <script>
         $(document).ready(function() {
-            // Inisialisasi DataTables
-            let table = $('#form-po').DataTable({
+            $('#invoice-table').DataTable({
                 processing: true,
                 serverSide: true,
-                ajax: '{{ route('form-po.index') }}', // Sesuaikan dengan route index Anda
-                columns: [{
+                debug: true,
+                ajax: '{{ route('kelola-invoice.index') }}',
+                columns: [
+                    {
                         data: null,
                         render: function(data, type, row, meta) {
                             return meta.row + 1; // Nomor urut otomatis
@@ -49,60 +50,52 @@
                         searchable: false
                     },
                     {
-                        data: 'po_admin',
-                        name: 'po_admin',
+                        data: 'nota_no',
+                        name: 'nota_no'
                     },
                     {
-                        data: 'model',
-                        name: 'model'
+                        data: 'customer_name',
+                        name: 'customer_name'
                     },
                     {
-                        data: 'qty',
-                        name: 'qty'
+                        data: 'nama_produk',
+                        name: 'nama_produk'
                     },
                     {
-                        data: 'ukuran',
-                        name: 'ukuran'
+                        data: 'subtotal',
+                        name: 'subtotal'
                     },
                     {
-                        data: 'bahan',
-                        name: 'bahan'
+                        data: 'ongkir',
+                        name: 'ongkir'
                     },
                     {
-                        data: 'warna',
-                        name: 'warna'
+                        data: 'total',
+                        name: 'total'
                     },
                     {
-                        data: 'aksesoris',
-                        name: 'aksesoris'
+                        data: 'dp',
+                        name: 'dp'
                     },
                     {
-                        data: 'keterangan',
-                        name: 'keterangan'
+                        data: 'status_pembayaran',
+                        name: 'status_pembayaran'
                     },
                     {
-                        data: 'metode_pembayaran',
-                        name: 'metode_pembayaran',
-                        render: function(data) {
-                            return data.charAt(0).toUpperCase() + data.slice(
-                            1); // Capitalize first letter
-                        }
-                    },
-                    {
-                        data: 'status_form_po',
-                        name: 'status_form_po'
+                        data: 'tenggat_invoice',
+                        name: 'tenggat_invoice'
                     },
                     {
                         data: 'actions',
                         name: 'actions',
                         orderable: false,
                         searchable: false
-                    }
+                    },
                 ],
                 dom: '<"d-flex justify-content-between align-items-center mb-3"<"entries-filter"l><"search-bar"f>>rt<"d-flex justify-content-between align-items-center"ip>',
                 language: {
                     search: '',
-                    searchPlaceholder: 'Cari data PO...',
+                    searchPlaceholder: 'Cari invoice...',
                     lengthMenu: 'Tampilkan _MENU_ data',
                     paginate: {
                         next: 'Berikutnya',
@@ -110,32 +103,6 @@
                     },
                 }
             });
-
-            // Event untuk dropdown status
-            $(document).on('change', '.update-status', function() {
-                const formPoId = $(this).data('id');
-                const newStatus = $(this).val();
-
-                $.ajax({
-                    url: '{{ route('form-po.update-status', ':id') }}'.replace(':id', formPoId),
-                    method: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}',
-                        status: newStatus
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            // Reload tabel jika berhasil
-                            table.ajax.reload();
-                        } else {
-                            alert('Gagal memperbarui status.');
-                        }
-                    },
-                    error: function() {
-                        alert('Terjadi kesalahan saat memperbarui status.');
-                    }
-                });
-            });
         });
-    </script> --}}
+    </script>
 @endsection

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 @section('content')
-<x-message.errors />
+    <x-message.errors />
     <div class="container-lg mt-2">
         <div class="card">
             <div class="card-header row-cols-auto">
@@ -35,15 +35,19 @@
                             <div class="mb-3">
                                 <label for="nota_no" class="form-label">Nota No</label>
                                 <input type="text" id="nota_no" name="nota_no" class="form-control"
-                                    placeholder="Nomor nota akan di generate otomatis">
+                                    placeholder="Nomor nota akan di generate otomatis" readonly>
                             </div>
                             <div class="mb-3">
-                                <label for="tanggal" class="form-label">Tanggal</label>
-                                <input type="date" id="tanggal" name="tanggal" class="form-control" required>
+                                <label for="tanggal" class="form-label">Tenggat waktu</label>
+                                <input type="date" id="tanggal" name="tenggat_invoice" class="form-control" required>
+                                @error('tanggal')
+                                    <div class="alert alert-danger">{{ $message }}</div>
+                                @enderror
                             </div>
                             <div class="mb-3">
                                 <label for="nama_pelanggan" class="form-label">Kepada</label>
-                                <select id="nama_pelanggan" class="form-select" style="width: 100%;" required>
+                                <select id="nama_pelanggan" name="nama_pelanggan" class="form-select" style="width: 100%;"
+                                    required>
                                     <option value="">-- Pilih Nama Pelanggan --</option>
                                     @foreach ($customers as $customer)
                                         <option value="{{ $customer['id'] }}"
@@ -52,6 +56,9 @@
                                         </option>
                                     @endforeach
                                 </select>
+                                @error('nama_pelanggan')
+                                    <div class="alert alert-danger">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
                     </div>
@@ -63,29 +70,46 @@
                             <div class="col">
                                 <label for="Nama_Barang_1" class="form-label">Nama Barang</label>
                                 <input type="text" name="Nama_Barang[]" id="Nama_Barang_1" class="form-control"
-                                    placeholder="Masukkan Nama Barang" required>
+                                    placeholder="Masukkan Nama Barang" required readonly>
+                                <input type="hidden" name="transaksi_detail_id[]" id="transaksi_detail_id_1">
+                                @error('Nama_Barang.*')
+                                    <div class="alert alert-danger">{{ $message }}</div>
+                                @enderror
                             </div>
                             <div class="col">
                                 <label for="qty_1" class="form-label">Jumlah (Qty)</label>
                                 <input type="number" name="qty[]" id="qty_1" class="form-control"
-                                    placeholder="Jumlah" min="1" required>
+                                    placeholder="Jumlah" min="1" required readonly>
+                                @error('qty.*')
+                                    <div class="alert alert-danger">{{ $message }}</div>
+                                @enderror
                             </div>
                             <div class="col">
                                 <label for="harga_1" class="form-label">Harga Satuan</label>
                                 <input type="number" name="harga[]" id="harga_1" class="form-control"
-                                    placeholder="Harga per item" required>
+                                    placeholder="Harga per item" required readonly>
+                                @error('harga.*')
+                                    <div class="alert alert-danger">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
                         <hr>
-                        <div class="">
+                        <div class="mt-4">
                             <label for="ongkir" class="form-label">Ongkir</label>
                             <input type="number" id="ongkir" name="ongkir" class="form-control"
                                 placeholder="Masukkan Ongkir" required>
+                            @error('ongkir')
+                                <div class="alert alert-danger">{{ $message }}</div>
+                            @enderror
                         </div>
                         <div class="mt-4">
                             <label for="dp" class="form-label">DP (Down Payment) (%)</label>
-                            <input type="number" id="dp" name="dp" class="form-control" placeholder="Masukkan DP dalam persen" required>
-                        </div>                        
+                            <input type="number" id="dp" name="dp" class="form-control"
+                                placeholder="Masukkan DP dalam persen" required min="0" max="100">
+                            @error('dp')
+                                <div class="alert alert-danger">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
                     <hr>
                     <div class="text-end">
@@ -111,6 +135,21 @@
 
     <script>
         $(document).ready(function() {
+            // Fungsi untuk generate nomor nota
+            function generateNotaNo() {
+                const date = new Date();
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                const seconds = String(date.getSeconds()).padStart(2, '0');
+                const notaNo = `INV/${year}${month}${day}${minutes}${seconds}`;
+                $('#nota_no').val(notaNo);
+            }
+
+            // Generate nomor nota saat halaman dimuat
+            generateNotaNo();
+
             $('#nama_pelanggan').on('change', function() {
                 // Bersihkan baris barang kecuali yang pertama
                 $('.barang-item:not(:first)').remove();
@@ -129,6 +168,9 @@
                             $('input[name="qty[]"]:first').val(produk.jumlah || produk.qty || 1);
                             $('input[name="harga[]"]:first').val(produk.harga_satuan || produk
                                 .harga);
+                            $('input[name="transaksi_detail_id[]"]:first').val(produk
+                                .transaksi_detail_id || produk.id
+                                ); // Menambahkan transaksi_detail_id
                         } else {
                             // Kloning baris pertama untuk baris tambahan
                             const newRow = $('.barang-item:first').clone();
@@ -139,6 +181,9 @@
                             1);
                             newRow.find('input[name="harga[]"]').val(produk.harga_satuan || produk
                                 .harga);
+                            newRow.find('input[name="transaksi_detail_id[]"]').val(produk
+                                .transaksi_detail_id || produk.id
+                                ); // Menambahkan transaksi_detail_id
 
                             // Tambahkan baris baru ke form
                             $('.barang-item:last').after(newRow);
@@ -154,6 +199,7 @@
                 }
             });
 
+
             // Fungsi menghitung total
             function calculateTotals() {
                 let subtotal = 0;
@@ -167,7 +213,12 @@
 
                 // Ambil ongkir dan DP (dalam persen)
                 const ongkir = parseInt($('#ongkir').val()) || 0;
-                const dpPersen = parseInt($('#dp').val()) || 0; // DP dalam persen
+                const dpPersen = parseInt($('#dp').val()) || 0;
+
+                if (dpPersen > 100) {
+                    dpPersen = 0;
+                    $('#dp').val(dpPersen);
+                }
 
                 // Hitung DP berdasarkan persen
                 const dp = (subtotal + ongkir) * (dpPersen / 100);
@@ -180,39 +231,38 @@
                 $('#biaya-kirim').text(formatRupiah(ongkir));
                 $('#dp-total').text(formatRupiah(dp)); // Menampilkan DP dalam bentuk Rupiah
                 $('#total-sisa').text(formatRupiah(totalBelumDibayar));
-
-                // Update status pembayaran
-                const statusDP = dp >= (subtotal + ongkir) ? 'Lunas' : 'Belum Lunas';
-                $('#status-dp').text(statusDP);
+                $('#status-dp').text(dpPersen === 100 ? 'LUNAS' : 'BELUM LUNAS');
             }
 
-
-            // Fungsi format Rupiah
+            // Format angka menjadi Rupiah
             function formatRupiah(angka) {
-                return new Intl.NumberFormat('id-ID', {
-                    style: 'currency',
-                    currency: 'IDR',
-                    minimumFractionDigits: 0
-                }).format(angka);
+                return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
             }
 
-            // Fungsi reset form
+            // Event listeners untuk hitung total
+            $(document).on('input', 'input[name="qty[]"], input[name="harga[]"], #ongkir, #dp', calculateTotals);
+
+            // Reset form function
             function resetForm() {
-                $('.barang-item:not(:first)').remove();
-                $('.barang-item input').val('');
+                $('input[name="Nama_Barang[]"]:first').val('');
+                $('input[name="qty[]"]:first').val(1);
+                $('input[name="harga[]"]:first').val('');
                 $('#ongkir').val('');
                 $('#dp').val('');
-
-                $('#subtotal').text('0');
-                $('#biaya-kirim').text('0');
-                $('#total-sisa').text('0');
-                $('#status-dp').text('');
+                calculateTotals();
             }
 
-            // Event listener untuk input perubahan qty, harga, ongkir, dan dp
-            $(document).on('input', 'input[name="qty[]"], input[name="harga[]"], #ongkir, #dp', function() {
+
+            $('#dp').on('input', function() {
+                let dp = parseInt($(this).val()) || 0;
+                if (dp > 100) {
+                    dp = 0;
+                    $(this).val(dp);
+                }
                 calculateTotals();
             });
+
+            calculateTotals();
         });
     </script>
 @endsection
