@@ -8,14 +8,14 @@
             </button>
             <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
                 <a href=".">
-                    <h3>KAIFACRAFT</h3>
+                    <h3>SIMDIPAL - KAIFACRAFT</h3>
                 </a>
             </h1>
             <div class="d-flex justify-content-end gap-3 align-items-center">
-                <form action="{{ route('logout') }}" method="post">
+                <form action="{{ route('logout') }}" id="logout-form" method="post">
                     @csrf
-                    <button type="submit" class="btn btn-danger border border-1 rounded-2 focus-ring focus-ring-danger "
-                        href="">
+                    <button type="button" class="btn btn-danger border border-1 rounded-2 focus-ring focus-ring-danger "
+                        id="logout-btn">
                         Logout
                     </button>
                 </form>
@@ -78,15 +78,15 @@
             </button>
             <h1 class="navbar-brand navbar-brand-autodark d-none-navbar">
                 <a href=".">
-                    <h3>KAIFACRAFT</h3>
+                    <h3>SIMDIPAL - KAIFACRAFT</h3>
                 </a>
             </h1>
 
             <div class="d-flex justify-content-end gap-3 align-items-center">
-                <form action="{{ route('logout') }}" method="post">
+                <form action="{{ route('logout') }}" id="logout-form" method="post">
                     @csrf
                     <button type="submit" class="btn btn-danger border border-1 rounded-2 focus-ring focus-ring-danger "
-                        href="">
+                        id="logout-btn">
                         Logout
                     </button>
                 </form>
@@ -137,3 +137,26 @@
         {{-- Header atas end --}}
     </header>
 @endrole
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.getElementById('logout-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: "Anda akan keluar dari sesi ini.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, keluar!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('logout-form').submit();
+            }
+        });
+    });
+</script>
