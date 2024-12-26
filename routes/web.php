@@ -38,6 +38,10 @@ Route::group(['middleware' => ['auth', 'verified', 'role:admin|supervisor']], fu
     Route::resource('transaksi-customer', TransaksiController::class);
     Route::resource('form-po', formPoController::class);
     Route::resource('kelola-invoice', InvoiceController::class);
+    Route::prefix('kelola-invoice')->group(function () {
+        Route::get('{invoice_id}/download-pdf', [InvoiceController::class, 'downloadPdf'])->name('invoice.downloadPdf');
+    });
+    
 
 
     Route::get('laporan-penjualan', [LaporanPenjualanController::class, 'index'])->name('laporan.penjualan');

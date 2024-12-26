@@ -1,78 +1,140 @@
+@extends('layouts.admin')
+@section('content')
+    <div class="container-lg mt-2">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                {{-- Bagian Kiri --}}
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        {{-- Komponen Backurl --}}
+                        <x-button.backUrl href="{{ $backUrl }}" />
+                    </div>
+                    <h2 class="page-title mb-0">{{ $title }}</h2>
+                </div>
 
-<div class="container-lg mt-2">
-    <div class="card">
-        <div class="card-header row-cols-auto">
-            {{-- <div class="col">
-                <x-button.backUrl href="{{ $backUrl }}" />
-            </div> --}}
-            <div class="col px-2">
-                <h2 class="page-title">{{ $title }}</h2>
+                {{-- Bagian Kanan --}}
+                <div>
+                    {{-- Tombol Download PDF --}}
+                    <a href="{{ route('invoice.downloadPdf', $invoice->invoice_id) }}" class="btn btn-danger">
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="icon icon-tabler icons-tabler-outline icon-tabler-file-type-pdf">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+                                <path d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4" />
+                                <path d="M5 18h1.5a1.5 1.5 0 0 0 0 -3h-1.5v6" />
+                                <path d="M17 18h2" />
+                                <path d="M20 15h-3v6" />
+                                <path d="M11 15v6h1a2 2 0 0 0 2 -2v-2a2 2 0 0 0 -2 -2h-1z" />
+                            </svg>
+                        </span> Cetak PDF
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
-    <form method="POST" action="">
-        @csrf
-        <div class="card mt-3 p-2">
+        <div class="card mt-3 p-3">
             <div class="card-body">
-                <!-- Informasi Produk -->
-                <div class="row mb-3">
-                    <div class="col">
-                        <label for="produk_id" class="form-label">Pilih Produk</label>
-                        <select id="produk_id" class="form-select">
-                            <option value="">-- Pilih Produk --</option>
-                            @foreach($products as $product)
-                                <option value="{{ $product->id }}" 
-                                    data-nama="{{ $product->nama }}" 
-                                    data-harga="{{ $product->harga }}">
-                                    {{ $product->nama }}
-                                </option>
-                            @endforeach
-                        </select>
+                <div class="d-flex justify-content-between">
+                    {{-- Informasi Kaifacraft --}}
+                    <div class="col-8">
+                        <img src="\dist\logo.gif" alt="logo_kaifacraft.jpg" class="img-fluid mb-2" width="30%">
+                        <p>Sentra kerajinan tangan unggulan</p>
+                        <address>
+                            Jl. Cikuya RT.03/07 Desa/kec. Rajapolah<br>
+                            Kab. Tasikmalaya - Jawa Barat<br>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-whatsapp"
+                                width="20" height="20" viewBox="0 0 24 24" stroke="currentColor" fill="none">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M3 21l1.65 -3.8a9 9 0 1 1 3.4 2.9l-5.05 .9" />
+                                <path
+                                    d="M9 10a.5 .5 0 0 0 1 0v-1a.5 .5 0 0 0 -1 0v1a5 5 0 0 0 5 5h1a.5 .5 0 0 0 0 -1h-1a.5 .5 0 0 0 0 1" />
+                            </svg> 089639152588, 081779200583<br>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-instagram"
+                                width="20" height="20" viewBox="0 0 24 24" stroke="currentColor" fill="none">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M4 8a4 4 0 0 1 4 -4h8a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-8a4 4 0 0 1 -4 -4z" />
+                                <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+                                <path d="M16.5 7.5v.01" />
+                            </svg> @kaifa_craft, @kaifacraft, @kerajinanbamburajapolah
+                        </address>
                     </div>
-                    <div class="col">
-                        <label for="nama_produk" class="form-label">Nama Produk</label>
-                        <input type="text" id="nama_produk" class="form-control" readonly>
-                    </div>
-                    <div class="col">
-                        <label for="harga_produk" class="form-label">Harga Produk</label>
-                        <input type="text" id="harga_produk" class="form-control" readonly>
+                    <div class="col-4 text-end">
+                        <div class="mb-3">
+                            <p><strong>Tenggat waktu:</strong>
+                                {{ \Carbon\Carbon::parse($invoice->tenggat_invoice)->format('d F Y') }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <p><strong>Nota No:</strong> {{ $invoice->nota_no }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <p><strong>Kepada:</strong>
+                                {{ $invoice->invoiceDetails->first()->transaksiDetail->transaksi->customerOrder->draftCustomer->Nama ?? '-' }}
+                            </p>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Tabel Barang -->
-                <table class="table table-bordered" id="barang-table">
-                    <thead>
+                {{-- Tabel Detail Produk --}}
+                <table class="table table-bordered mt-4">
+                    <thead class="table-secondary">
                         <tr>
-                            <th>Kode</th>
                             <th>Nama Barang</th>
                             <th class="text-center">Qty</th>
                             <th class="text-end">Harga Satuan</th>
-                            <th class="text-end">Jumlah</th>
-                            <th class="text-center">Aksi</th>
+                            <th class="text-end">Subtotal</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Rows will be added dynamically -->
+                        @foreach ($invoiceDetails as $detail)
+                            <tr>
+                                <td>{{ $detail->transaksiDetail->stok->nama_produk ?? 'Tidak ada data' }}</td>
+                                <td class="text-center">{{ $detail->transaksiDetail->qty ?? 0 }}</td>
+                                <td class="text-end">
+                                    {{ number_format($detail->transaksiDetail->harga_satuan ?? 0, 0, ',', '.') }}
+                                </td>
+                                <td class="text-end">
+                                    {{ number_format($detail->transaksiDetail->subtotal ?? 0, 0, ',', '.') }}
+                                </td>
+                            </tr>
+                        @endforeach
                     </tbody>
                 </table>
+
+                {{-- Rincian Total --}}
+                <div class="row mt-4">
+                    <div class="col-8">
+                        <p>Pembayaran via transfer:</p>
+                        <p>
+                            <span class="me-2">
+                                <img src="/BCA.svg" alt="BCA Logo">
+                            </span> : 6320 3530 82 <span class="ms-3">
+                        </p>
+                        <p>
+                            <span class="me-2">
+                                <img src="/BRI.svg" alt="BRI Logo">
+                            </span>: 3466-01-035685-53-3
+                        </p>
+                        <p>a.n. <strong>Sandi Susandi</strong></p>
+                    </div>
+                    <div class="col-4 text-end">
+                        <p><strong>Sub Total:</strong> {{ number_format($invoice->subtotal ?? 0, 0, ',', '.') }}</p>
+                        <p><strong>Biaya Kirim:</strong> {{ number_format($invoice->ongkir ?? 0, 0, ',', '.') }}</p>
+                        <p><strong>Down Payment (DP):</strong>
+                            {{ number_format($invoice->down_payment ?? 0, 0, ',', '.') }}</p>
+                        <p><strong>Total:</strong> {{ number_format($invoice->total ?? 0, 0, ',', '.') }}</p>
+                    </div>
+                </div>
+
+                <p class="text-end mt-4">Hormat Kami,</p>
+                <p class="text-end"><strong>Kaifacraft</strong></p>
+            </div>
+            <hr>
+            <div class="mt-4">
+                <h3>Members :</h3>
+                <img src="\dist\members.svg" alt="" width="100%">
             </div>
         </div>
-    </form>
-</div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const produkSelect = document.getElementById('produk_id');
-        const namaProdukInput = document.getElementById('nama_produk');
-        const hargaProdukInput = document.getElementById('harga_produk');
-
-        produkSelect.addEventListener('change', function () {
-            const selectedOption = this.options[this.selectedIndex];
-            const namaProduk = selectedOption.dataset.nama || '';
-            const hargaProduk = selectedOption.dataset.harga || '';
-
-            namaProdukInput.value = namaProduk;
-            hargaProdukInput.value = hargaProduk;
-        });
-    });
-</script>
+    </div>
+@endsection

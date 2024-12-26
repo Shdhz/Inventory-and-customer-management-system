@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use App\Models\InvoiceDetail;
 use App\Models\TransaksiDetail;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -80,9 +81,9 @@ class InvoiceController extends Controller
                 })
                 ->addColumn('actions', function ($row) {
                     return view('components.button.inv-actionbtn', [
-                        'show' => route('kelola-invoice.show', $row->invoice_detail_id),
                         'edit' => route('kelola-invoice.edit', $row->invoice_detail_id),
                         'delete' => route('kelola-invoice.destroy', $row->invoice_detail_id),
+                        'show' => route('kelola-invoice.show', $row->invoice->invoice_id)
                     ])->render();
                 })
                 ->rawColumns(['actions'])
@@ -212,11 +213,41 @@ class InvoiceController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Invoice $invoice)
+    public function show($invoice_id)
     {
+        $invoice = Invoice::with([
+            'invoiceDetails.transaksiDetail.stok',
+            'invoiceDetails.transaksiDetail.transaksi.customerOrder.draftCustomer',
+        ])->findOrFail($invoice_id);
+
+        $invoiceDetails = $invoice->invoiceDetails;
+
         $title = 'Detail Invoice';
-        return view('transaksi.invoice.show', compact('invoice', 'title'));
+        $backUrl = url()->previous();
+
+        return view('transaksi.invoice.show', compact('invoice', 'invoiceDetails', 'title', 'backUrl'));
     }
+
+    public function downloadPdf($invoice_id)
+    {
+        $invoice = Invoice::with([
+            'invoiceDetails.transaksiDetail.stok',
+            'invoiceDetails.transaksiDetail.transaksi.customerOrder.draftCustomer',
+        ])->findOrFail($invoice_id);
+    
+        $invoiceDetails = $invoice->invoiceDetails;
+    
+        // Sanitize the nota_no for filename
+        $nota_no = $invoice->nota_no ?? 'DefaultNota';
+        $nota_no = preg_replace('/[\/\\\]/', '_', $nota_no);
+        $filename = 'Invoice-' . $nota_no . '.pdf';
+    
+        $pdf = Pdf::loadView('transaksi.invoice.pdf', compact('invoice', 'invoiceDetails'));
+        $pdf->setPaper('b5', 'portrait');
+        return $pdf->download($filename);
+    }
+
+
 
     /**
      * Show the form for editing the specified resource.
@@ -230,10 +261,7 @@ class InvoiceController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Invoice $invoice)
-    {
-        
-    }
+    public function update(Request $request, Invoice $invoice) {}
 
     /**
      * Remove the specified resource from storage.

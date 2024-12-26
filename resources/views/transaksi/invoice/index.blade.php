@@ -2,6 +2,7 @@
 
 @section('content')
     <x-message.success />
+
     <div class="container-lg mt-4">
         <div class="card">
             <div class="card-body">
