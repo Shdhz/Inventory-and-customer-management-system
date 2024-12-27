@@ -26,7 +26,7 @@
                         </a>
                     </li>
                     {{-- Nav - data customer --}}
-                    <li class="nav-item dropdown {{ Request::is('draft-customer') || Request::is('order-customer') ? 'active' : ''}}">
+                    <li class="nav-item dropdown {{ Request::is('draft-customer*') || Request::is('order-customer*') ? 'active' : ''}}">
                         <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
                             data-bs-auto-close="outside" role="button" aria-expanded="false">
                             <span
@@ -53,7 +53,7 @@
                     </li>
 
                     {{-- Nav - Manajemen Order --}}
-                    <li class="nav-item dropdown {{ Request::is('transaksi-customer') || Request::is('form-po') || Request::is('kelola-invoice') ? 'active' : ''}}">
+                    <li class="nav-item dropdown {{ Request::is('transaksi-customer*') || Request::is('form-po*') || Request::is('kelola-invoice*') ? 'active' : ''}}">
                         <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
                             data-bs-auto-close="outside" role="button" aria-expanded="false">
                             <span
@@ -113,7 +113,7 @@
                     </li>
 
                     {{-- Nav - Kelola Laporan --}}
-                    <li class="nav-item dropdown {{ Request::is('riwayat-transaksi') || Request::is('laporan-penjualan') ? 'active' : ''}}">
+                    <li class="nav-item dropdown {{ Request::is('riwayat-transaksi*') || Request::is('laporan-penjualan*') ? 'active' : ''}}">
                         <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
                             data-bs-auto-close="outside" role="button" aria-expanded="false">
                             <span
@@ -217,7 +217,7 @@
                     </li>
 
                     {{-- Nav - data produk --}}
-                    <li class="nav-item dropdown {{ Request::is('kategori-barang') || Request::is('stok-barang') || Request::is('barang-rusak') ? 'active' : ''}}">
+                    <li class="nav-item dropdown {{ Request::is('kategori-barang*') || Request::is('stok-barang*') || Request::is('barang-rusak*') ? 'active' : ''}}">
                         <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
                             data-bs-auto-close="outside" role="button" aria-expanded="false">
                             <span
@@ -247,7 +247,7 @@
                     </li>
 
                     {{-- Nav - manajemen barang masuk/keluar --}}
-                    <li class="nav-item dropdown {{ Request::is('barang-masuk') ? 'active' : ''}}">
+                    <li class="nav-item dropdown {{ Request::is('barang-masuk*') || Request::is('barang-keluar*')  ? 'active' : ''}}">
                         <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
                             data-bs-auto-close="outside" role="button" aria-expanded="false">
                             <span
@@ -274,7 +274,7 @@
                     </li>
 
                     {{-- Nav - Kelola Produksi --}}
-                    <li class="nav-item {{ Request::is('rencana-produksi') ? 'active' : ''}}">
+                    <li class="nav-item {{ Request::is('rencana-produksi*') ? 'active' : ''}}">
                         <a class="nav-link" href="{{ route('rencana-produksi.index') }}" role="button" aria-expanded="false">
                             <span
                                 class="nav-link-icon d-md-none d-lg-inline-block">

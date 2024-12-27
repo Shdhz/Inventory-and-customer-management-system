@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Transaksi;
 
 use App\Http\Controllers\Controller;
+use App\Models\formPo;
 use App\Models\Invoice;
 use App\Models\InvoiceDetail;
 use App\Models\TransaksiDetail;
@@ -17,6 +18,8 @@ class InvoiceController extends Controller
     /**
      * Display a listing of the resource.
      */
+
+    // Invoice ready stock 
     public function index(Request $request)
     {
         $title = "Kelola Invoice";
@@ -101,7 +104,6 @@ class InvoiceController extends Controller
         $backUrl = url()->previous();
         $title = 'Tambah Invoice';
 
-        // $formPo = FormPO::with(['customerOrder.draftCustomer', 'products'])->get();
         $customers = TransaksiDetail::with([
             'transaksi.customerOrder.draftCustomer',
             'stok'
@@ -143,7 +145,7 @@ class InvoiceController extends Controller
             })
             ->filter()
             ->values();
-        return view('transaksi.invoice.create', compact('backUrl', 'title', 'customers'));
+        return view('transaksi.invoice.ready_stok.create', compact('backUrl', 'title', 'customers'));
     }
 
     /**
@@ -188,9 +190,8 @@ class InvoiceController extends Controller
         // Simpan data ke tabel tb_invoice
         $invoice = Invoice::create([
             'nota_no' => $validatedData['nota_no'],
-            'form_po_id' => null, // Sesuaikan jika diperlukan
             'status_pembayaran' => $statusPembayaran,
-            'harga_satuan' => $subtotal / $totalQty, // Rata-rata harga satuan
+            'harga_satuan' => $subtotal / $totalQty,
             'subtotal' => $subtotal,
             'jumlah' => $totalQty,
             'ongkir' => $validatedData['ongkir'],
@@ -225,7 +226,7 @@ class InvoiceController extends Controller
         $title = 'Detail Invoice';
         $backUrl = url()->previous();
 
-        return view('transaksi.invoice.show', compact('invoice', 'invoiceDetails', 'title', 'backUrl'));
+        return view('transaksi.invoice.ready_stok.show', compact('invoice', 'invoiceDetails', 'title', 'backUrl'));
     }
 
     public function downloadPdf($invoice_id)
@@ -234,15 +235,15 @@ class InvoiceController extends Controller
             'invoiceDetails.transaksiDetail.stok',
             'invoiceDetails.transaksiDetail.transaksi.customerOrder.draftCustomer',
         ])->findOrFail($invoice_id);
-    
+
         $invoiceDetails = $invoice->invoiceDetails;
-    
+
         // Sanitize the nota_no for filename
         $nota_no = $invoice->nota_no ?? 'DefaultNota';
         $nota_no = preg_replace('/[\/\\\]/', '_', $nota_no);
         $filename = 'Invoice-' . $nota_no . '.pdf';
-    
-        $pdf = Pdf::loadView('transaksi.invoice.pdf', compact('invoice', 'invoiceDetails'));
+
+        $pdf = Pdf::loadView('transaksi.invoice.ready_stok.pdf', compact('invoice', 'invoiceDetails'));
         $pdf->setPaper('b5', 'portrait');
         return $pdf->download($filename);
     }
@@ -255,7 +256,7 @@ class InvoiceController extends Controller
     public function edit(Invoice $invoice)
     {
         $title = 'Edit Invoice';
-        return view('transaksi.invoice.edit', compact('invoice', 'title'));
+        return view('transaksi.invoice.ready_stok.edit', compact('invoice', 'title'));
     }
 
     /**

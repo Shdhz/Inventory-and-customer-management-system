@@ -16,6 +16,7 @@ use App\Http\Controllers\stok\stokBarangController;
 use App\Http\Controllers\transaksi\barangMasukController;
 use App\Http\Controllers\transaksi\formPoController;
 use App\Http\Controllers\transaksi\InvoiceController;
+use App\Http\Controllers\transaksi\invoiceFormpoController;
 use App\Http\Controllers\transaksi\TransaksiController;
 use App\Http\Controllers\transaksi\TransaksiDetailController;
 use Illuminate\Support\Facades\Route;
@@ -36,13 +37,14 @@ Route::group(['middleware' => ['auth', 'verified', 'role:admin|supervisor']], fu
     Route::resource('draft-customer', draftCustomerController::class);
     Route::resource('order-customer', orderController::class);
     Route::resource('transaksi-customer', TransaksiController::class);
-    Route::resource('form-po', formPoController::class);
-    Route::resource('kelola-invoice', InvoiceController::class);
-    Route::prefix('kelola-invoice')->group(function () {
-        Route::get('{invoice_id}/download-pdf', [InvoiceController::class, 'downloadPdf'])->name('invoice.downloadPdf');
-    });
-    
 
+    Route::controller(InvoiceController::class)->group(function () {
+        Route::resource('kelola-invoice', InvoiceController::class);
+        Route::get('kelola-invoice/{invoice_id}/download-pdf', 'downloadPdf')->name('invoice.downloadPdf');
+        Route::resource('form-po-invoice', invoiceFormpoController::class);
+    });
+
+    Route::resource('form-po', formPoController::class);
 
     Route::get('laporan-penjualan', [LaporanPenjualanController::class, 'index'])->name('laporan.penjualan');
 

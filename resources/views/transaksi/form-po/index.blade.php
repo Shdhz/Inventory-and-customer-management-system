@@ -11,6 +11,9 @@
                     </div>
                     @role('admin')
                     <div class="col-auto">
+                        <x-button.invoice-btn href="{{ route('form-po-invoice.create') }}" :btn_invoice="'Tambah Invoice'" />
+                    </div>
+                    <div class="col-auto">
                         <x-button.add-btn href="{{ route('form-po.create') }}" :button="'Tambah Form Po'" />
                     </div>
                     @endrole
