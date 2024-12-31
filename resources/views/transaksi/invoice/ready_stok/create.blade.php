@@ -150,6 +150,34 @@
             // Generate nomor nota saat halaman dimuat
             generateNotaNo();
 
+            // Validasi tanggal tidak boleh kurang dari tanggal sekarang
+            $('#tanggal').on('input', function() {
+                const selectedDate = new Date($(this).val());
+                const currentDate = new Date();
+
+                selectedDate.setHours(0, 0, 0, 0);
+                currentDate.setHours(0, 0, 0, 0);
+
+                const errorElement = $('#tanggal').next('.form-text');
+
+                if (selectedDate < currentDate) {
+                    if (errorElement.length === 0) {
+                        const message = $(
+                            '<div class="form-text text-danger">Tenggat waktu tidak boleh kurang dari tanggal sekarang.</div>'
+                            );
+                        $(this).after(message);
+                        setTimeout(() => {
+                            message.fadeOut(500, function() {
+                                $(this).remove();
+                            });
+                        }, 2500);
+                    }
+                    $(this).val('');
+                } else {
+                    errorElement.remove();
+                }
+            });
+
             $('#nama_pelanggan').on('change', function() {
                 // Bersihkan baris barang kecuali yang pertama
                 $('.barang-item:not(:first)').remove();
@@ -211,7 +239,6 @@
                     subtotal += qty * harga;
                 });
 
-                // Ambil ongkir dan DP (dalam persen)
                 const ongkir = parseInt($('#ongkir').val()) || 0;
                 const dpPersen = parseInt($('#dp').val()) || 0;
 

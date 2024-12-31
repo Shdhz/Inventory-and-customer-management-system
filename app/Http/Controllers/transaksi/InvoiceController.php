@@ -25,16 +25,18 @@ class InvoiceController extends Controller
         $title = "Kelola Invoice";
 
         if ($request->ajax()) {
+            // Ambil data invoice detail dengan relasi yang dibutuhkan
             $data = InvoiceDetail::with([
                 'invoice',
                 'transaksiDetail.transaksi.customerOrder.draftCustomer',
-                'transaksiDetail.stok',  // Mengambil stok produk yang terkait
+                'transaksiDetail.stok',
             ])
                 ->whereHas('transaksiDetail.transaksi.customerOrder.draftCustomer', function ($query) {
                     $query->where('user_id', Auth::id());
                 })
                 ->get();
 
+            // Kelompokkan data berdasarkan nama customer
             $groupedData = $data->groupBy(function ($item) {
                 return $item->transaksiDetail->transaksi->customerOrder->draftCustomer->Nama ?? '-';
             });
@@ -52,14 +54,14 @@ class InvoiceController extends Controller
                     return $row->invoice->nota_no ?? 'N/A';
                 })
                 ->addColumn('nama_produk', function ($row) {
-                    $produkNames = InvoiceDetail::where('invoice_id', $row->invoice_id)
-                        ->get()
-                        ->map(function ($invoiceDetail) {
-                            return $invoiceDetail->transaksiDetail->stok->nama_produk ?? '-';
+                    // Gabungkan nama produk dari setiap invoice_detail
+                    $produkNames = $row->invoice
+                        ->invoiceDetails
+                        ->map(function ($detail) {
+                            return $detail->transaksiDetail->stok->nama_produk ?? '-';
                         })
                         ->toArray();
 
-                    // Gabungkan nama produk dengan koma
                     return implode(', ', $produkNames);
                 })
                 ->addColumn('subtotal', function ($row) {

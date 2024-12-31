@@ -15,6 +15,10 @@ class invoice extends Model
     {
         return $this->hasMany(InvoiceDetail::class, 'invoice_id', 'invoice_id');
     }
+    public function invoiceFormPo()
+    {
+        return $this->hasMany(invoiceFormPo::class, 'invoice_id', 'invoice_id');
+    }
 
     // public function formPO()
     // {

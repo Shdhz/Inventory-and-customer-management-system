@@ -27,13 +27,13 @@ class formPo extends Model
         return $this->hasMany(rencanaProduksi::class);
     }
 
-    public function invoice()
-    {
-        return $this->hasMany(Invoice::class, 'form_po_id', 'id_form_po');
-    }
-
     public function products()
     {
         return $this->hasMany(productStock::class, 'kategori_id', 'id_kategori');
+    }
+
+    public function invoiceFormPo()
+    {
+        return $this->hasMany(invoiceFormPo::class, 'form_po_id', 'id_form_po');
     }
 }
