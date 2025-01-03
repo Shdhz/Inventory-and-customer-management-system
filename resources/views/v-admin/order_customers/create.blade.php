@@ -31,6 +31,7 @@
                                         </option>
                                     @endforeach
                                 </select>
+                                <div class="form-text">Hanya menampilkan data draft customer yang belum tercatat dalam database.</div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Sumber</label>

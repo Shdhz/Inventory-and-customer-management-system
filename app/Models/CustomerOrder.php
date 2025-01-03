@@ -14,7 +14,6 @@ class CustomerOrder extends Model
         'customer_order_id'
     ];
 
-        // Relasi ke tb_draft_customer
     public function draftCustomer()
     {
         return $this->belongsTo(DraftCustomer::class, 'draft_customer_id', 'draft_customers_id');

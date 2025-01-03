@@ -18,5 +18,10 @@ class DraftCustomer extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function customerOrder()
+    {
+        return $this->hasOne(CustomerOrder::class, 'draft_customer_id', 'draft_customers_id');
+    }
     
 }

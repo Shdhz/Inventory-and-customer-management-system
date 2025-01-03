@@ -54,12 +54,14 @@ class orderController extends Controller
     public function create()
     {
         $title = "Tambah order Customer";
-        $backUrl = Route('order-customer.index');
+        $backUrl = url()->previous();
 
         $draftCustomers = DraftCustomer::select('draft_customers_id', 'Nama', 'sumber')
             ->whereHas('user', function ($query) {
                 $query->where('user_id', Auth::id());
-            })->get();
+            })
+            ->whereDoesntHave('CustomerOrder')
+            ->get();
 
         return view('v-admin.order_customers.create', compact('title', 'backUrl', 'draftCustomers'));
     }
@@ -102,12 +104,15 @@ class orderController extends Controller
     public function edit(string $id)
     {
         $title = "Edit Order Customer";
-        $backUrl = route('order-customer.index');
+        $backUrl = url()->previous();
 
         $orderCustomer = CustomerOrder::findOrFail($id);
 
         // Ambil daftar draft customer untuk dropdown
-        $draftCustomers = DraftCustomer::select('draft_customers_id', 'Nama', 'sumber')->get();
+        $draftCustomers = DraftCustomer::select('draft_customers_id', 'Nama', 'sumber')
+        ->whereHas('user', function ($query) {
+            $query->where('user_id', Auth::id());
+        })->get();
 
         return view('v-admin.order_customers.edit', compact('title', 'backUrl', 'orderCustomer', 'draftCustomers'));
     }

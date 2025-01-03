@@ -97,11 +97,13 @@ class TransaksiController extends Controller
     public function create()
     {
         $title = "Tambah Data Transaksi";
-        $backUrl = route('transaksi-customer.index');
+        $backUrl = url()->previous();
 
-        // Ambil hanya customer dengan jenis_order 'ready stock'
         $customers = CustomerOrder::with('draftCustomer')
-            ->where('jenis_order', 'ready stock')->get();
+            ->where('jenis_order', 'ready stock')
+            ->whereHas('draftCustomer.user', function ($query) {
+                $query->where('user_id', Auth::id());
+            })->get();
 
         // Tambahkan sumber dari draftCustomer
         foreach ($customers as $customer) {

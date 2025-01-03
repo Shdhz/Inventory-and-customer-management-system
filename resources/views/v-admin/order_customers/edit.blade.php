@@ -23,16 +23,8 @@
                         <div class="flex-grow-1">
                             <div class="mb-3">
                                 <label class="form-label">Draft Customer <span class="text-danger">*</span></label>
-                                <select class="form-control" name="draft_customer_id" id="draft_customer_select" required>
-                                    <option value="">-- Pilih Draft Customer --</option>
-                                    @foreach ($draftCustomers as $customer)
-                                        <option value="{{ $customer->draft_customers_id }}"
-                                            data-sumber="{{ $customer->sumber }}"
-                                            {{ $orderCustomer->draft_customer_id == $customer->draft_customers_id ? 'selected' : '' }}>
-                                            {{ $customer->Nama }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                <input type="text" class="form-control" value="{{ $orderCustomer->draftCustomer->Nama ?? '-- Pilih Draft Customer --' }}" readonly>
+                                <input type="hidden" name="draft_customer_id" value="{{ $orderCustomer->draft_customer_id }}">
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Sumber</label>
@@ -78,9 +70,16 @@
     </div>
 
     <script>
+        $(document).ready(function() {
+            // Apply Select2 to the select element
+            $('#draft_customer_select').select2({
+                placeholder: "-- Pilih Draft Customer --",
+                allowClear: true
+            });
+        });
         document.getElementById('draft_customer_select').addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
-            const sumber = selectedOption.getAttribute('data-sumber') || ''; 
+            const sumber = selectedOption.getAttribute('data-sumber') || '';
             document.getElementById('sumber_display').value = sumber;
 
             const cashlessSources = ['shopee', 'tokopedia', 'lazada', 'tiktok shop', 'tiktok'];
