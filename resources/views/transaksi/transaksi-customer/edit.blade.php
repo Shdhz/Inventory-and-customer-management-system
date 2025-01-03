@@ -1,7 +1,5 @@
 @extends('layouts.admin')
-
 @section('content')
-    <x-message.errors />
     <div class="container">
         <div class="card mt-3">
             <div class="row card-header row-cols-auto">
@@ -21,17 +19,11 @@
                     <input type="hidden" name="transaction_id" value="{{ $transaksi->id }}">
                     <div class="row mb-3">
                         <label for="customer_order_id" class="form-label">Pilih Customer</label>
-                        <select class="form-control @error('customer_order_id') is-invalid @enderror"
-                            name="customer_order_id" id="customer" required>
-                            <option value="" selected>-- Pilih Customer --</option>
-                            @foreach ($customers as $customer)
-                                <option value="{{ $customer->customer_order_id }}"
-                                    {{ old('customer_order_id', $transaksi->customer_order_id) == $customer->customer_order_id ? 'selected' : '' }}>
-                                    {{ $customer->draftCustomer->Nama ?? $customer->Nama }}
-                                    - ({{ $customer->sumber ?? 'Tidak Diketahui' }})
-                                </option>
-                            @endforeach
-                        </select>
+                        <input type="text" class="form-control @error('customer_order_id') is-invalid @enderror"
+                            name="customer_order_name" id="customer"
+                            value="{{ old('customer_order_id', $transaksi->customerOrder->draftCustomer->Nama ?? $transaksi->customerOrder->Nama) }} - ({{ $transaksi->customerOrder->draftCustomer->sumber ?? 'Tidak Diketahui' }})"
+                            required readonly>
+                        <input type="hidden" name="customer_order_id" value="{{ $transaksi->customer_order_id }}">
                         @error('customer_order_id')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -134,10 +126,10 @@
                         <select class="form-control product-select" name="products[${index}][stok_id]" required>
                             <option value="" selected>-- Pilih Produk --</option>
                             ${products.map(product => `
-                                    <option value="${product.id_stok}" data-stok="${product.jumlah_stok}" 
-                                        ${product.id_stok == stokId ? "selected" : ""}>
-                                        ${product.nama_produk} (Stok: ${product.jumlah_stok})
-                                    </option>`).join('')}
+                                                <option value="${product.id_stok}" data-stok="${product.jumlah_stok}" 
+                                                    ${product.id_stok == stokId ? "selected" : ""}>
+                                                    ${product.nama_produk} (Stok: ${product.jumlah_stok})
+                                                </option>`).join('')}
                         </select>
                         <input type="text" class="form-control qty-input" name="products[${index}][qty]" 
                             value="${qty}" placeholder="Qty" required>

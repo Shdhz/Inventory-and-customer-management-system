@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('content')
-<x-message.success />
+    <x-message.success />
     <div class="container-lg mt-4">
         <div class="card">
             <div class="card-body">
@@ -45,8 +45,7 @@
                 processing: true,
                 serverSide: true,
                 ajax: '{{ route('transaksi-customer.index') }}',
-                columns: [
-                    {
+                columns: [{
                         data: null,
                         render: function(data, type, row, meta) {
                             return meta.row + 1; // Nomor urut otomatis
@@ -131,5 +130,45 @@
                 }
             });
         });
+
+        function confirmDelete(url) {
+            Swal.fire({
+                title: 'Apakah Anda yakin?',
+                text: "Data ini akan dihapus secara permanen.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: url,
+                        type: 'POST',
+                        data: {
+                            "_token": "{{ csrf_token() }}",
+                            "_method": "DELETE"
+                        },
+                        success: function(response) {
+                            Swal.fire(
+                                'Dihapus!',
+                                'Data berhasil dihapus.',
+                                'success'
+                            ).then(() => {
+                                location.reload();
+                            });
+                        },
+                        error: function(xhr, status, error) {
+                            Swal.fire(
+                                'Gagal!',
+                                'Terjadi kesalahan saat menghapus data.',
+                                'error'
+                            );
+                        }
+                    });
+                }
+            });
+        }
     </script>
 @endsection

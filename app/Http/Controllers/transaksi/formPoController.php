@@ -80,7 +80,9 @@ class formPoController extends Controller
         $backUrl = url()->previous();
         $customers = CustomerOrder::with('draftCustomer')
             ->where('jenis_order', 'pre order')
-            ->get();
+            ->whereHas('draftCustomer.user', function ($query) {
+                $query->where('user_id', Auth::user()->id);
+            })->get();
 
         foreach ($customers as $customer) {
             $customer->sumber = $customer->draftCustomer->sumber ?? 'Tidak Diketahui';

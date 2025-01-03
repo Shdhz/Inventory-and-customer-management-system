@@ -15,7 +15,7 @@ class draftCustomerController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {   
+    {
         $button = "Tambah draft customer";
         if (request()->ajax()) {
             $data = DraftCustomer::with('user')->where('user_id', Auth::id())->get();
@@ -46,15 +46,30 @@ class draftCustomerController extends Controller
      */
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'Nama' => 'required|min:5|max:50',
-            'no_hp' => 'required|numeric',
-            'email' => 'nullable|email',
-            'provinsi' => 'nullable|string',
-            'kota' => 'nullable|string',
-            'alamat_lengkap' => 'nullable|string',
-            'sumber' => 'required',
-        ]);
+        $validatedData = $request->validate(
+            [
+                'Nama' => 'required|min:5|max:50',
+                'no_hp' => 'required|numeric',
+                'email' => 'nullable|email',
+                'provinsi' => 'nullable|string',
+                'kota' => 'nullable|string',
+                'alamat_lengkap' => 'nullable|string',
+                'sumber' => ['required', 'regex:/^(shopee|tokopedia|lazada|tiktok shop|tiktok|whatsapp|instagram|facebook)$/i'],
+            ],
+            [
+                'Nama.required' => 'Nama wajib diisi.',
+                'Nama.min' => 'Nama harus memiliki minimal 5 karakter.',
+                'Nama.max' => 'Nama tidak boleh lebih dari 50 karakter.',
+                'no_hp.required' => 'Nomor HP wajib diisi.',
+                'no_hp.numeric' => 'Nomor HP hanya boleh berisi angka.',
+                'email.email' => 'Format email yang Anda masukkan tidak valid.',
+                'provinsi.string' => 'Provinsi harus berupa teks.',
+                'kota.string' => 'Kota harus berupa teks.',
+                'alamat_lengkap.string' => 'Alamat lengkap harus berupa teks.',
+                'sumber.required' => 'Sumber wajib dipilih.',
+                'sumber.regex' => 'Sumber tidak valid. Pilih salah satu dari sumber dibawah ini.',
+            ]
+        );
 
         // Tambahkan user_id secara manual
         $validatedData['user_id'] = Auth::id();
@@ -69,7 +84,6 @@ class draftCustomerController extends Controller
         $title = 'Edit draft customer';
         $backUrl = Route('draft-customer.index');
 
-        // Ambil data berdasarkan draft_customer_id dan validasi user_id
         $id = DraftCustomer::with('user')
             ->where('draft_customers_id', $id)->where('user_id', Auth::id())
             ->firstOrFail();
@@ -82,16 +96,31 @@ class draftCustomerController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $validatedData = $request->validate([
-            'Nama' => 'required|min:5|max:50',
-            'no_hp' => 'required|numeric',
-            'email' => 'nullable|email',
-            'provinsi' => 'nullable|string',
-            'kota' => 'nullable|string',
-            'alamat_lengkap' => 'nullable|string',
-            'sumber' => 'required',
-        ]);
-        // dd($validatedData);
+        $validatedData = $request->validate(
+            [
+                'Nama' => 'required|min:5|max:50',
+                'no_hp' => 'required|numeric',
+                'email' => 'nullable|email',
+                'provinsi' => 'nullable|string',
+                'kota' => 'nullable|string',
+                'alamat_lengkap' => 'nullable|string',
+                'sumber' => ['required', 'regex:/^(shopee|tokopedia|lazada|tiktok shop|tiktok|whatsapp|instagram|facebook)$/i'],
+            ],
+            [
+                'Nama.required' => 'Nama wajib diisi.',
+                'Nama.min' => 'Nama harus memiliki minimal 5 karakter.',
+                'Nama.max' => 'Nama tidak boleh lebih dari 50 karakter.',
+                'no_hp.required' => 'Nomor HP wajib diisi.',
+                'no_hp.numeric' => 'Nomor HP hanya boleh berisi angka.',
+                'email.email' => 'Format email yang Anda masukkan tidak valid.',
+                'provinsi.string' => 'Provinsi harus berupa teks.',
+                'kota.string' => 'Kota harus berupa teks.',
+                'alamat_lengkap.string' => 'Alamat lengkap harus berupa teks.',
+                'sumber.required' => 'Sumber wajib dipilih.',
+                'sumber.regex' => 'Sumber tidak valid. Pilih salah satu dari sumber dibawah ini.',
+            ]
+        );
+
         $draftCustomer = DraftCustomer::findOrFail($id);
         $draftCustomer->update($validatedData);
 

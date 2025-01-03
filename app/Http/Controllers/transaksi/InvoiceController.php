@@ -96,7 +96,7 @@ class InvoiceController extends Controller
                 ->addColumn('actions', function ($row) {
                     return view('components.button.inv-actionbtn', [
                         'edit' => route('kelola-invoice.edit', $row->invoice_detail_id),
-                        'delete' => route('kelola-invoice.destroy', $row->invoice_detail_id),
+                        'delete' => route('kelola-invoice.destroy', $row->invoice_id),
                         'show' => route('kelola-invoice.show', $row->invoice->invoice_id)
                     ])->render();
                 })
@@ -121,6 +121,9 @@ class InvoiceController extends Controller
             'stok',
             'invoiceDetails'
         ])
+            ->whereHas('transaksi.customerOrder.draftCustomer.user', function ($query) {
+                $query->where('user_id', Auth::id());
+            })
             ->get()
             ->groupBy(function ($item) {
                 return $item->transaksi->customerOrder->draftCustomer->draft_customers_id;
@@ -286,9 +289,11 @@ class InvoiceController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Invoice $invoice)
+    public function destroy(string $id)
     {
+        $invoice = Invoice::findOrFail($id);
         $invoice->delete();
-        return response()->json(['message' => 'Invoice berhasil dihapus']);
+
+        return back()->with('success', 'Order Customer berhasil dihapus!');
     }
 }

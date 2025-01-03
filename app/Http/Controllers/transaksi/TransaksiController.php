@@ -32,14 +32,14 @@ class TransaksiController extends Controller
 
             return DataTables::of($data)
                 ->addColumn('customer_name', function ($row) {
-                    return $row->customerOrder->draftCustomer->Nama ?? 'N/A';  // Nama customer
+                    return $row->customerOrder->draftCustomer->Nama ?? '-';
                 })
                 ->addColumn('ekspedisi', function ($row) {
                     return $row->ekspedisi ?? 'N/A';  // Nama customer
                 })
                 ->addColumn('item_pilih', function ($row) {
                     $produkDanJumlah = $row->transaksiDetails->map(function ($detail) {
-                        $namaProduk = $detail->stok->nama_produk ?? 'N/A';
+                        $namaProduk = $detail->stok->nama_produk ?? '-';
                         $jumlahItem = $detail->qty ?? 0;
                         return "$namaProduk : $jumlahItem";
                     })->implode('<br>');
@@ -61,7 +61,7 @@ class TransaksiController extends Controller
                     $total_harga = $row->transaksiDetails->sum(function ($detail) {
                         return $detail->harga_satuan * $detail->qty;
                     });
-                    return  number_format($total_harga, 2, ',', '.');
+                    return  number_format($total_harga, 0, ',', '.');
                 })
                 ->addColumn('diskon', function ($row) {
                     return number_format($row->diskon_produk ?? 0, 2, '.', ',');
@@ -74,7 +74,7 @@ class TransaksiController extends Controller
                     $diskon = $row->diskon_produk ?? 0;
                     // Pastikan grand total dihitung dengan benar
                     $grand_total = $total_harga - ($total_harga * $diskon / 100);
-                    return number_format($grand_total, 2, ',', '.');
+                    return number_format($grand_total, 0, ',', '.');
                 })
                 ->addColumn('metode_pembayaran', function ($row) {
                     return ucfirst($row->metode_pembayaran);
@@ -103,7 +103,9 @@ class TransaksiController extends Controller
             ->where('jenis_order', 'ready stock')
             ->whereHas('draftCustomer.user', function ($query) {
                 $query->where('user_id', Auth::id());
-            })->get();
+            })
+            ->whereDoesntHave('transaksi')
+            ->get();
 
         // Tambahkan sumber dari draftCustomer
         foreach ($customers as $customer) {
@@ -211,7 +213,13 @@ class TransaksiController extends Controller
         $transaksi = Transaksi::with(['customerOrder.draftCustomer', 'transaksiDetails.stok'])
             ->findOrFail($id);
 
-        $customers = CustomerOrder::with('draftCustomer')->get();
+        $customers = CustomerOrder::with('draftCustomer')
+        ->whereHas('draftCustomer.user', function ($query) {
+            $query->where('user_id', Auth::id());
+        })
+        ->where('customer_order_id', $transaksi->customer_order_id) 
+        ->get();
+        
         foreach ($customers as $customer) {
             $customer->sumber = $customer->draftCustomer->sumber ?? 'Tidak Diketahui';
         }

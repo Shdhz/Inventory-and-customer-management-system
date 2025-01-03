@@ -27,13 +27,13 @@ class orderController extends Controller
             return Datatables::of($customerOrders)
                 ->addIndexColumn()
                 ->addColumn('updated_at', function ($row) {
-                    return Carbon::parse($row->updated_at)->format('d M Y, H:i'); // Contoh: 01 Dec 2024, 19:59
+                    return Carbon::parse($row->updated_at)->format('d F Y'); 
                 })
                 ->addColumn('Nama', function ($row) {
-                    return $row->draftCustomer ? $row->draftCustomer->Nama : 'N/A';
+                    return $row->draftCustomer ? $row->draftCustomer->Nama : '-';
                 })
                 ->addColumn('sumber', function ($row) {
-                    return $row->draftCustomer ? $row->draftCustomer->sumber : 'N/A';
+                    return $row->draftCustomer ? $row->draftCustomer->sumber : '-';
                 })
                 ->addColumn('actions', function ($row) {
                     return view('components.button.action-btn', [

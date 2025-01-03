@@ -18,6 +18,9 @@
 
         .custom-file-upload label:hover {
             background-color: #f5f5f5;
+            border: 2px dashed #381bdd;
+            color: black
+
         }
 
         .image-preview img {

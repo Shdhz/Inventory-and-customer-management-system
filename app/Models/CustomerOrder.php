@@ -18,4 +18,9 @@ class CustomerOrder extends Model
     {
         return $this->belongsTo(DraftCustomer::class, 'draft_customer_id', 'draft_customers_id');
     }
+
+    public function transaksi()
+    {
+        return $this->hasMany(transaksi::class, 'customer_order_id', 'customer_order_id');
+    }
 }
