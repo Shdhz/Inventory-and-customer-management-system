@@ -62,7 +62,7 @@ class InvoiceController extends Controller
                         })
                         ->toArray();
 
-                    return implode(', ', $produkNames);
+                    return implode(',<br>', $produkNames);
                 })
                 ->addColumn('subtotal', function ($row) {
                     return number_format($row->invoice->subtotal ?? 0, 0, ',', '.');
@@ -77,11 +77,20 @@ class InvoiceController extends Controller
                     return number_format($row->invoice->down_payment ?? 0, 0, ',', '.');
                 })
                 ->addColumn('status_pembayaran', function ($row) {
-                    return ucfirst($row->invoice->status_pembayaran ?? 'N/A');
+                    $status = ucfirst($row->invoice->status_pembayaran ?? 'N/A');
+
+                    // Menentukan badge berdasarkan status pembayaran
+                    if ($status === 'Lunas') {
+                        return '<span class="badge bg-primary text-white">' . $status . '</span>';
+                    } elseif ($status === 'Belum lunas') {
+                        return '<span class="badge bg-danger text-white">' . $status . '</span>';
+                    } else {
+                        return '<span class="badge bg-secondary text-white">' . $status . '</span>';
+                    }
                 })
                 ->addColumn('tenggat_invoice', function ($row) {
                     return $row->invoice->tenggat_invoice
-                        ? \Carbon\Carbon::parse($row->invoice->tenggat_invoice)->format('d-m-Y')
+                        ? \Carbon\Carbon::parse($row->invoice->tenggat_invoice)->format('d F Y')
                         : '-';
                 })
                 ->addColumn('actions', function ($row) {
@@ -91,7 +100,7 @@ class InvoiceController extends Controller
                         'show' => route('kelola-invoice.show', $row->invoice->invoice_id)
                     ])->render();
                 })
-                ->rawColumns(['actions'])
+                ->rawColumns(['actions', 'status_pembayaran', 'nama_produk'])
                 ->make(true);
         }
 
@@ -106,9 +115,11 @@ class InvoiceController extends Controller
         $backUrl = url()->previous();
         $title = 'Tambah Invoice';
 
+        // pengambilna data invoice ready stock belum sesuai user login
         $customers = TransaksiDetail::with([
             'transaksi.customerOrder.draftCustomer',
-            'stok'
+            'stok',
+            'invoiceDetails'
         ])
             ->get()
             ->groupBy(function ($item) {
@@ -125,25 +136,31 @@ class InvoiceController extends Controller
                     return null;
                 }
 
-                return [
-                    'id' => $draftCustomer->draft_customers_id ?? null,
-                    'nama' => $draftCustomer->Nama ?? 'Unnamed Customer',
-                    'produk' => $group->map(function ($item) {
-                        $stok = optional($item->stok);
-                        return [
-                            'transaksi_detail_id' => optional($item)->id_transaksi_detail ?? null,
-                            'nama_produk' => $stok->nama_produk ?? 'Unknown Product',
-                            'qty' => $item->qty ?? 0,
-                            'harga_satuan' => $item->harga_satuan ?? 0,
-                            'subtotal' => $item->subtotal ?? 0,
-                            'tanggal_keluar' => $item->tanggal_keluar ?? null
-                        ];
-                    })->filter()->values()->toArray(),
-                    'metode_pembayaran' => $transaksi->metode_pembayaran ?? null,
-                    'diskon_produk' => $transaksi->diskon_produk ?? 0,
-                    'diskon_ongkir' => $transaksi->diskon_ongkir ?? 0,
-                    'ekspedisi' => $transaksi->ekspedisi ?? null
-                ];
+                $invoiceDetails = $firstItem->invoiceDetails;
+
+                if ($invoiceDetails->isEmpty()) { 
+                    return [
+                        'id' => $draftCustomer->draft_customers_id ?? null,
+                        'nama' => $draftCustomer->Nama ?? 'Unnamed Customer',
+                        'produk' => $group->map(function ($item) {
+                            $stok = optional($item->stok);
+                            return [
+                                'transaksi_detail_id' => optional($item)->id_transaksi_detail ?? null,
+                                'nama_produk' => $stok->nama_produk ?? 'Unknown Product',
+                                'qty' => $item->qty ?? 0,
+                                'harga_satuan' => $item->harga_satuan ?? 0,
+                                'subtotal' => $item->subtotal ?? 0,
+                                'tanggal_keluar' => $item->tanggal_keluar ?? null
+                            ];
+                        })->filter()->values()->toArray(),
+                        'metode_pembayaran' => $transaksi->metode_pembayaran ?? null,
+                        'diskon_produk' => $transaksi->diskon_produk ?? 0,
+                        'diskon_ongkir' => $transaksi->diskon_ongkir ?? 0,
+                        'ekspedisi' => $transaksi->ekspedisi ?? null
+                    ];
+                }
+
+                return null;
             })
             ->filter()
             ->values();

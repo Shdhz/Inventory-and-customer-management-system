@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 @section('content')
-<x-message.errors />
+    <x-message.errors />
     <div class="container-lg mt-2">
         <div class="card">
             <div class="card-header card-header row-cols-auto">
@@ -70,15 +70,22 @@
     </div>
 
     <script>
+        $(document).ready(function() {
+            // Apply Select2 to the select element
+            $('#draft_customer_select').select2({
+                placeholder: "-- Pilih Draft Customer --",
+                allowClear: true
+            });
+        });
         document.getElementById('draft_customer_select').addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
             const sumber = selectedOption.getAttribute('data-sumber') || ''; // Ambil data-sumber dari option
             document.getElementById('sumber_display').value = sumber; // Tampilkan sumber di input
-    
+
             // Menentukan tipe order berdasarkan sumber (case insensitive)
             const cashlessSources = ['shopee', 'tokopedia', 'lazada', 'tiktok shop', 'tiktok'];
             const cashSources = ['whatsapp', 'instagram', 'facebook'];
-    
+
             const sumberLower = sumber.toLowerCase();
             if (cashlessSources.includes(sumberLower)) {
                 document.getElementById('tipe_order').value = 'cashless';
@@ -89,5 +96,4 @@
             }
         });
     </script>
-    
 @endsection

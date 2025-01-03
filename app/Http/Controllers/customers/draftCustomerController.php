@@ -71,7 +71,7 @@ class draftCustomerController extends Controller
 
         // Ambil data berdasarkan draft_customer_id dan validasi user_id
         $id = DraftCustomer::with('user')
-            ->where('draft_customers_id', $id)->where('user_id', Auth::id()) // Validasi hanya data milik user yang sedang login
+            ->where('draft_customers_id', $id)->where('user_id', Auth::id())
             ->firstOrFail();
         // Pass data ke view
         return view('v-admin.draft_customers.edit', compact('title', 'backUrl', 'id'));

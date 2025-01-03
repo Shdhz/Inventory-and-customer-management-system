@@ -60,7 +60,7 @@ class invoiceFormpoController extends Controller
                         })
                         ->toArray();
 
-                    return implode(',', $produkNames);
+                    return implode(',<br>', $produkNames);
                 })
                 ->addColumn('ongkir', function ($row) {
                     return number_format($row->invoice->ongkir ?? 0, 0, ',', '.');
@@ -72,7 +72,16 @@ class invoiceFormpoController extends Controller
                     return number_format($row->invoice->down_payment ?? 0, 0, ',', '.');
                 })
                 ->addColumn('status_pembayaran', function ($row) {
-                    return ucfirst($row->invoice->status_pembayaran ?? 'N/A');
+                    $status = ucfirst($row->invoice->status_pembayaran ?? 'N/A');
+
+                    // Menentukan badge berdasarkan status pembayaran
+                    if ($status === 'Lunas') {
+                        return '<span class="badge bg-primary text-white">' . $status . '</span>';
+                    } elseif ($status === 'Belum lunas') {
+                        return '<span class="badge bg-danger text-white">' . $status . '</span>';
+                    } else {
+                        return '<span class="badge bg-secondary text-white">' . $status . '</span>';
+                    }
                 })
                 ->addColumn('tenggat_invoice', function ($row) {
                     return $row->invoice->tenggat_invoice
@@ -86,7 +95,7 @@ class invoiceFormpoController extends Controller
                         'show' => route('kelola-invoice.show', $row->invoice->invoice_id)
                     ])->render();
                 })
-                ->rawColumns(['actions'])
+                ->rawColumns(['actions', 'nama_produk', 'status_pembayaran'])
                 ->make(true);
         }
 
@@ -101,7 +110,7 @@ class invoiceFormpoController extends Controller
         $backUrl = url()->previous();
         $title = 'Tambah Invoice';
 
-        $formPoQuery = formPo::with(['customerOrder.draftCustomer'])
+        $formPoQuery = formPo::with(['customerOrder.draftCustomer', 'invoiceFormPo'])
             ->where('status_form_po', true)
             ->whereHas('customerOrder.draftCustomer', function ($query) {
                 $query->where('user_id', Auth::id());
@@ -114,18 +123,26 @@ class invoiceFormpoController extends Controller
         }
 
         $formPo = $formPoQuery->get()->groupBy('customer_order_id')->map(function ($items) {
-            return [
-                'customer_order_id' => $items->first()->id_form_po,
-                'customer_name' => $items->first()->customerOrder->draftCustomer->Nama ?? 'Nama Tidak Ditemukan',
-                'data' => $items->map(function ($item) {
-                    return [
-                        'form_po_id' => $item->id_form_po,
-                        'keterangan' => $item->keterangan,
-                        'qty' => $item->qty,
-                    ];
-                }),
-            ];
-        })->values();
+            $firstItem = $items->first();
+
+            $invoiceFormPo = $firstItem->invoiceFormPo;
+
+            if ($invoiceFormPo && $invoiceFormPo->isEmpty()) {
+                return [
+                    'customer_order_id' => $firstItem->id_form_po,
+                    'customer_name' => $firstItem->customerOrder->draftCustomer->Nama ?? 'Nama Tidak Ditemukan',
+                    'data' => $items->map(function ($item) {
+                        return [
+                            'form_po_id' => $item->id_form_po,
+                            'keterangan' => $item->keterangan,
+                            'qty' => $item->qty,
+                        ];
+                    }),
+                ];
+            }
+
+            return null;
+        })->filter()->values();
         // dd($formPo);
 
         return view('transaksi.invoice.pre_order.create', compact('backUrl', 'title', 'formPo'));
@@ -221,8 +238,6 @@ class invoiceFormpoController extends Controller
                     'form_po_id' => $formPoId,
                 ]);
             }
-
-
             // Commit transaksi
             DB::commit();
 

@@ -89,8 +89,8 @@
                         searchable: false
                     },
                     {
-                        data: 'invoice_id',
-                        name: 'invoice_id'
+                        data: 'nota_no',
+                        name: 'nota_no'
                     },
                     {
                         data: 'customer_name',

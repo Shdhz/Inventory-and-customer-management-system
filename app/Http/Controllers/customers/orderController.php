@@ -56,7 +56,10 @@ class orderController extends Controller
         $title = "Tambah order Customer";
         $backUrl = Route('order-customer.index');
 
-        $draftCustomers = DraftCustomer::select('draft_customers_id', 'Nama', 'sumber')->get();
+        $draftCustomers = DraftCustomer::select('draft_customers_id', 'Nama', 'sumber')
+            ->whereHas('user', function ($query) {
+                $query->where('user_id', Auth::id());
+            })->get();
 
         return view('v-admin.order_customers.create', compact('title', 'backUrl', 'draftCustomers'));
     }

@@ -84,28 +84,37 @@
                                     <div class="alert alert-danger">{{ $message }}</div>
                                 @enderror
                             </div>
-                            <div class="col">
+                            <div class="col input-group">
                                 <label for="harga_1" class="form-label">Harga Satuan</label>
-                                <input type="number" name="harga[]" id="harga_1" class="form-control"
+                                <div class="input-group">
+                                    <span class="input-group-text" id="basic-addon1">Rp</span>
+                                    <input type="number" name="harga[]" id="harga_1" class="form-control"
                                     placeholder="Harga per item" required readonly>
+                                </div>
                                 @error('harga.*')
                                     <div class="alert alert-danger">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
                         <hr>
-                        <div class="mt-4">
+                        <div class="mt-4 input-group">
                             <label for="ongkir" class="form-label">Ongkir</label>
-                            <input type="number" id="ongkir" name="ongkir" class="form-control"
+                            <div class="input-group">
+                                <span class="input-group-text" id="basic-addon1">Rp</span>
+                                <input type="number" id="ongkir" name="ongkir" class="form-control"
                                 placeholder="Masukkan Ongkir" required>
+                            </div>
                             @error('ongkir')
                                 <div class="alert alert-danger">{{ $message }}</div>
                             @enderror
                         </div>
-                        <div class="mt-4">
+                        <div class="mt-4 input-group">
                             <label for="dp" class="form-label">DP (Down Payment) (%)</label>
-                            <input type="number" id="dp" name="dp" class="form-control"
+                            <div class="input-group">
+                                <input type="number" id="dp" name="dp" class="form-control"
                                 placeholder="Masukkan DP dalam persen" required min="0" max="100">
+                                <span class="input-group-text" id="basic-addon1">%</span>
+                            </div>
                             @error('dp')
                                 <div class="alert alert-danger">{{ $message }}</div>
                             @enderror
