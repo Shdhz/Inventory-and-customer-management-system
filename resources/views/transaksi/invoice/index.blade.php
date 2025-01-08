@@ -34,10 +34,10 @@
                                         <th>Nomor Invoice</th>
                                         <th>Nama Customer</th>
                                         <th>Item dipilih</th>
-                                        <th>Subtotal</th>
                                         <th>Ongkir</th>
-                                        <th>Total</th>
+                                        <th>Subtotal</th>
                                         <th>Down payment (Dp)</th>
+                                        <th>Total Sisa</th>
                                         <th>Status Pembayaran</th>
                                         <th>Tenggat Waktu</th>
                                         <th>Aksi</th>
@@ -56,10 +56,10 @@
                                         <th>Nomor Invoice</th>
                                         <th>Nama Customer</th>
                                         <th>Item dipilih</th>
-                                        <th>Subtotal</th>
                                         <th>Ongkir</th>
-                                        <th>Total</th>
+                                        <th>Subtotal</th>
                                         <th>Down payment (Dp)</th>
+                                        <th>Total Sisa</th>
                                         <th>Status Pembayaran</th>
                                         <th>Tenggat Waktu</th>
                                         <th>Aksi</th>
@@ -101,20 +101,20 @@
                         name: 'nama_produk'
                     },
                     {
-                        data: 'subtotal',
-                        name: 'subtotal'
-                    },
-                    {
                         data: 'ongkir',
                         name: 'ongkir'
                     },
                     {
-                        data: 'total',
-                        name: 'total'
+                        data: 'subtotal',
+                        name: 'subtotal'
                     },
                     {
                         data: 'dp',
                         name: 'dp'
+                    },
+                    {
+                        data: 'total',
+                        name: 'total'
                     },
                     {
                         data: 'status_pembayaran',
@@ -169,20 +169,20 @@
                         name: 'nama_produk'
                     },
                     {
-                        data: 'subtotal',
-                        name: 'subtotal'
-                    },
-                    {
                         data: 'ongkir',
                         name: 'ongkir'
                     },
                     {
-                        data: 'total',
-                        name: 'total'
+                        data: 'subtotal',
+                        name: 'subtotal'
                     },
                     {
                         data: 'dp',
                         name: 'dp'
+                    },
+                    {
+                        data: 'total',
+                        name: 'total'
                     },
                     {
                         data: 'status_pembayaran',

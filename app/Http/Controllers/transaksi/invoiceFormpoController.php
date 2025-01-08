@@ -49,7 +49,7 @@ class invoiceFormpoController extends Controller
                     return $row->invoice->nota_no ?? 'N/A';
                 })
                 ->addColumn('subtotal', function ($row) {
-                    return number_format($row->invoice->subtotal ?? 0, 0, ',', '.');
+                    return 'Rp.' . number_format($row->invoice->subtotal ?? 0, 0, ',', '.');
                 })
                 ->addColumn('nama_produk', function ($row) {
                     // Gabungkan nama produk dari setiap invoice_detail
@@ -63,13 +63,13 @@ class invoiceFormpoController extends Controller
                     return implode(',<br>', $produkNames);
                 })
                 ->addColumn('ongkir', function ($row) {
-                    return number_format($row->invoice->ongkir ?? 0, 0, ',', '.');
+                    return 'Rp.' . number_format($row->invoice->ongkir ?? 0, 0, ',', '.');
                 })
                 ->addColumn('total', function ($row) {
-                    return number_format($row->invoice->total ?? 0, 0, ',', '.');
+                    return 'Rp.' . number_format($row->invoice->total ?? 0, 0, ',', '.');
                 })
                 ->addColumn('dp', function ($row) {
-                    return number_format($row->invoice->down_payment ?? 0, 0, ',', '.');
+                    return 'Rp.' . number_format($row->invoice->down_payment ?? 0, 0, ',', '.');
                 })
                 ->addColumn('status_pembayaran', function ($row) {
                     $status = ucfirst($row->invoice->status_pembayaran ?? 'N/A');
@@ -90,9 +90,9 @@ class invoiceFormpoController extends Controller
                 })
                 ->addColumn('actions', function ($row) {
                     return view('components.button.inv-actionbtn', [
-                        'edit' => route('kelola-invoice.edit', $row->id_invoice_form_po),
-                        'delete' => route('kelola-invoice.destroy', $row->id_invoice_form_po),
-                        'show' => route('kelola-invoice.show', $row->invoice->invoice_id)
+                        'edit' => route('form-po-invoice.edit', $row->id_invoice_form_po),
+                        'delete' => route('form-po-invoice.destroy', $row->invoice->invoice_id),
+                        'show' => route('form-po-invoice.show', $row->invoice->invoice_id)
                     ])->render();
                 })
                 ->rawColumns(['actions', 'nama_produk', 'status_pembayaran'])
@@ -205,12 +205,13 @@ class invoiceFormpoController extends Controller
             $subtotal += $qty * $harga;
             $totalQty += $qty;
         }
+        $subtotal += $validatedData['ongkir'];
+    
+        // Perhitungan total: dp - subtotal
+        $downPayment = ($validatedData['dp'] / 100) * $subtotal;
+        $total = $subtotal - $downPayment;
 
-        // Ambil ongkir dan DP persen
-        $total = $subtotal + $validatedData['ongkir'];
-        $downPayment = ($validatedData['dp'] / 100) * $total;
-
-        $statusPembayaran = $downPayment >= $total ? 'Lunas' : 'Belum Lunas';
+        $statusPembayaran = $downPayment >= $subtotal ? 'Lunas' : 'Belum Lunas';
 
         // dd($request->all());
         DB::beginTransaction();
@@ -254,7 +255,21 @@ class invoiceFormpoController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $invoice = invoice::with([
+            'invoiceFormPo.formPo.customerOrder.draftCustomer',
+            'invoiceFormPo.formPo', 
+        ])->findOrFail($id);
+    
+        $invoiceFormPo = $invoice->invoiceFormPo;
+
+        // Debug data untuk melihat semua informasi
+        // dd($invoice, $invoiceFormPo);
+
+
+        $title = 'Detail Invoice';
+        $backUrl = url()->previous();
+
+        return view('transaksi.invoice.pre_order.show', compact('invoice', 'invoiceFormPo', 'title', 'backUrl'));
     }
 
     /**
@@ -278,6 +293,9 @@ class invoiceFormpoController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $invoice = Invoice::findOrFail($id);
+        $invoice->delete();
+
+        return back()->with('success', 'Order Customer berhasil dihapus!');
     }
 }

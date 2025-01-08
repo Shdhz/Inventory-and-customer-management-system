@@ -7,6 +7,7 @@ use App\Models\formPo;
 use App\Models\rencanaProduksi;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\Facades\DataTables;
 
 class rencanaProduksiController extends Controller
@@ -17,16 +18,23 @@ class rencanaProduksiController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = rencanaProduksi::with([
-                'formPo.customerOrder.draftCustomer' => function ($queryDraft) {
-                    $queryDraft->where('user_id', auth()->id());
-                }
-            ])->get();
+
+            if (Auth::user()->hasRole('admin')) {
+                $data = rencanaProduksi::with([
+                    'formPo.customerOrder.draftCustomer'
+                ])->whereHas('formPo.customerOrder.draftCustomer', function ($query) {
+                    $query->where('user_id', Auth::id());
+                })->get();
+            } else {
+                $data = rencanaProduksi::with([
+                    'formPo.customerOrder.draftCustomer'
+                ])->get();
+            }
         
             return DataTables::of($data)
                 ->addIndexColumn()
-                ->addColumn('nomor_po', function ($row) {
-                    return $row->formPo->id_form_po ?? 'Tidak Ada';
+                ->addColumn('po_admin', function ($row) {
+                    return $row->formPo->customerOrder->draftCustomer->user->username ?? 'Tidak Ada';
                 })
                 ->addColumn('nama_barang', function ($row) {
                     return $row->formPo->keterangan ?? 'Tidak Ada';
@@ -38,7 +46,7 @@ class rencanaProduksiController extends Controller
                     return Carbon::parse($row->berakhir_produksi)->format('d F Y');
                 })
                 ->addColumn('actions', function ($row) {
-                    if (auth()->user()->hasRole('produksi')) {
+                    if (Auth::user()->hasRole('produksi')) {
                         return view('components.button.action-btn', [
                             'edit' => route('rencana-produksi.edit', $row->id_rencana_produksi),
                             'delete' => route('rencana-produksi.destroy', $row->id_rencana_produksi),
@@ -46,11 +54,11 @@ class rencanaProduksiController extends Controller
                     }
                     return '-';
                 })
-                ->rawColumns(['actions'])
+                ->rawColumns(['actions', 'po_admin'])
                 ->make(true);
         }
 
-        $canAdd = auth()->user()->hasRole('produksi');
+        $canAdd = Auth::user()->hasRole('produksi');
 
         return view('v-produksi.rencana-produksi.index', [
             'title' => 'Kelola Rencana Produksi',

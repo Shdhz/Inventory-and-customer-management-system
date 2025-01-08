@@ -65,16 +65,16 @@ class InvoiceController extends Controller
                     return implode(',<br>', $produkNames);
                 })
                 ->addColumn('subtotal', function ($row) {
-                    return number_format($row->invoice->subtotal ?? 0, 0, ',', '.');
+                    return 'Rp.' . number_format($row->invoice->subtotal ?? 0, 0, ',', '.');
                 })
                 ->addColumn('ongkir', function ($row) {
-                    return number_format($row->invoice->ongkir ?? 0, 0, ',', '.');
+                    return 'Rp.' . number_format($row->invoice->ongkir ?? 0, 0, ',', '.');
                 })
                 ->addColumn('total', function ($row) {
-                    return number_format($row->invoice->total ?? 0, 0, ',', '.');
+                    return 'Rp.' . number_format($row->invoice->total ?? 0, 0, ',', '.');
                 })
                 ->addColumn('dp', function ($row) {
-                    return number_format($row->invoice->down_payment ?? 0, 0, ',', '.');
+                    return 'Rp.' . number_format($row->invoice->down_payment ?? 0, 0, ',', '.');
                 })
                 ->addColumn('status_pembayaran', function ($row) {
                     $status = ucfirst($row->invoice->status_pembayaran ?? 'N/A');
@@ -95,7 +95,7 @@ class InvoiceController extends Controller
                 })
                 ->addColumn('actions', function ($row) {
                     return view('components.button.inv-actionbtn', [
-                        'edit' => route('kelola-invoice.edit', $row->invoice_detail_id),
+                        'edit' => route('kelola-invoice.edit', $row->invoice->invoice_id),
                         'delete' => route('kelola-invoice.destroy', $row->invoice_id),
                         'show' => route('kelola-invoice.show', $row->invoice->invoice_id)
                     ])->render();
@@ -141,7 +141,7 @@ class InvoiceController extends Controller
 
                 $invoiceDetails = $firstItem->invoiceDetails;
 
-                if ($invoiceDetails->isEmpty()) { 
+                if ($invoiceDetails->isEmpty()) {
                     return [
                         'id' => $draftCustomer->draft_customers_id ?? null,
                         'nama' => $draftCustomer->Nama ?? 'Unnamed Customer',
@@ -193,44 +193,54 @@ class InvoiceController extends Controller
             'transaksi_detail_id.*' => 'required|exists:tb_transaksi_detail,id_transaksi_detail',
         ]);
 
-        $subtotal = 0;
-        $totalQty = 0;
+        DB::beginTransaction();
 
-        // Hitung subtotal dan total jumlah barang
-        foreach ($validatedData['qty'] as $index => $qty) {
-            $harga = $validatedData['harga'][$index];
-            $subtotal += $qty * $harga;
-            $totalQty += $qty;
-        }
+        try {
+            $subtotal = 0;
+            $totalQty = 0;
 
-        $total = $subtotal + $validatedData['ongkir'];
-        $downPayment = ($validatedData['dp'] / 100) * $total;
+            // Hitung subtotal dan total jumlah barang
+            foreach ($validatedData['qty'] as $index => $qty) {
+                $harga = $validatedData['harga'][$index];
+                $subtotal += $qty * $harga;
+                $totalQty += $qty;
+            }
+            $subtotal += $validatedData['ongkir'];
 
-        $statusPembayaran = $downPayment >= $total ? 'Lunas' : 'Belum Lunas';
+            $downPayment = ($validatedData['dp'] / 100) * $subtotal;
+            $total = $subtotal - $downPayment;
 
+            $statusPembayaran = $downPayment >= $subtotal ? 'Lunas' : 'Belum Lunas';
 
-        // Simpan data ke tabel tb_invoice
-        $invoice = Invoice::create([
-            'nota_no' => $validatedData['nota_no'],
-            'status_pembayaran' => $statusPembayaran,
-            'harga_satuan' => $subtotal / $totalQty,
-            'subtotal' => $subtotal,
-            'jumlah' => $totalQty,
-            'ongkir' => $validatedData['ongkir'],
-            'down_payment' => $downPayment,
-            'total' => $total,
-            'tenggat_invoice' => $validatedData['tenggat_invoice'],
-        ]);
-
-        // Simpan detail barang ke tabel tb_invoice_detail
-        foreach ($validatedData['transaksi_detail_id'] as $transaksiDetailId) {
-            InvoiceDetail::create([
-                'invoice_id' => $invoice->invoice_id,
-                'transaksi_detail_id' => $transaksiDetailId,
+            // Simpan data ke tabel tb_invoice
+            $invoice = Invoice::create([
+                'nota_no' => $validatedData['nota_no'],
+                'status_pembayaran' => $statusPembayaran,
+                'harga_satuan' => $subtotal / $totalQty,
+                'subtotal' => $subtotal,
+                'jumlah' => $totalQty,
+                'ongkir' => $validatedData['ongkir'],
+                'down_payment' => $downPayment,
+                'total' => $total,
+                'tenggat_invoice' => $validatedData['tenggat_invoice'],
             ]);
-        }
 
-        return redirect()->route('kelola-invoice.index')->with('success', 'Invoice berhasil dibuat');
+            // Simpan detail barang ke tabel tb_invoice_detail
+            foreach ($validatedData['transaksi_detail_id'] as $transaksiDetailId) {
+                InvoiceDetail::create([
+                    'invoice_id' => $invoice->invoice_id,
+                    'transaksi_detail_id' => $transaksiDetailId,
+                ]);
+            }
+
+            DB::commit();
+
+            return redirect()->route('kelola-invoice.index')->with('success', 'Invoice berhasil dibuat');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return back()->with('error', 'Terjadi kesalahan saat membuat invoice: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -275,16 +285,136 @@ class InvoiceController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Invoice $invoice)
+    public function edit($id)
     {
+        $backUrl = url()->previous();
         $title = 'Edit Invoice';
-        return view('transaksi.invoice.ready_stok.edit', compact('invoice', 'title'));
+
+        // Mengambil data invoice berdasarkan ID yang sesuai dengan user login
+        $invoice = Invoice::with([
+            'invoiceDetails.transaksiDetail.stok',
+            'invoiceDetails.transaksiDetail.transaksi.customerOrder.draftCustomer',
+        ])->whereHas('invoiceDetails.transaksiDetail.transaksi.customerOrder.draftCustomer.user', function ($query) {
+            $query->where('user_id', Auth::id());
+        })->findOrFail($id);
+
+        $invoiceDetails = $invoice->invoiceDetails;
+
+        if ($invoiceDetails->isEmpty()) {
+            return back()->with('message', 'Tidak ada Invoice Ready stock.');
+        }
+
+        $subtotal = $invoice->subtotal ?? 0;
+        $dpReal = $invoice->down_payment ?? 0;
+        $dpPersen = $subtotal > 0 ? ($dpReal / $subtotal) * 100 : 0;
+
+        $customers = $invoiceDetails
+            ->groupBy(function ($id) {
+                return $id->transaksiDetail->transaksi->customerOrder->draftCustomer->draft_customers_id ?? 'Unknown Customer';
+            })
+            ->map(function ($group) {
+                $firstItem = $group->first();
+                $draftCustomer = optional($firstItem->transaksiDetail->transaksi->customerOrder)->draftCustomer;
+
+                return [
+                    'id' => $draftCustomer->draft_customers_id ?? 'Unknown ID',
+                    'nama' => $draftCustomer->Nama ?? 'Unnamed Customer',
+                    'produk' => $group->map(function ($item) {
+                        $stok = optional($item->stok);
+                        return [
+                            'transaksi_detail_id' => $item->transaksiDetail->id_transaksi_detail ?? 'Unknown ID',
+                            'nama_produk' => $item->transaksiDetail->stok->nama_produk ?? 'Unnamed Product',
+                            'qty' => $item->qty ?? 1,
+                            'harga_satuan' => $item->harga_satuan ?? 0,
+                            'subtotal' => $item->subtotal ?? 0,
+                            'tanggal_keluar' => $item->tanggal_keluar ?? now()
+                        ];
+                    })->toArray(),
+                ];
+            })
+            ->values();
+
+        // dd($customers);
+        return view('transaksi.invoice.ready_stok.edit', compact('backUrl', 'title', 'customers', 'invoice', 'dpPersen'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Invoice $invoice) {}
+    public function update(Request $request, $id)
+    {
+        // Validasi data
+        $validatedData = $request->validate([
+            'nota_no' => 'required|string',
+            'tenggat_invoice' => 'required|date',
+            'nama_pelanggan' => 'required|string',
+            'Nama_Barang' => 'required|array',
+            'Nama_Barang.*' => 'required|string',
+            'qty' => 'required|array',
+            'qty.*' => 'required|integer|min:1',
+            'harga' => 'required|array',
+            'harga.*' => 'required|numeric|min:0',
+            'ongkir' => 'required|numeric|min:0',
+            'dp' => 'required|numeric|min:0|max:100',
+            'transaksi_detail_id' => 'required|array',
+            'transaksi_detail_id.*' => 'required|exists:tb_transaksi_detail,id_transaksi_detail',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $subtotal = 0;
+            $totalQty = 0;
+
+            // Hitung subtotal dan total jumlah barang
+            foreach ($validatedData['qty'] as $index => $qty) {
+                $harga = $validatedData['harga'][$index];
+                $subtotal += $qty * $harga;
+                $totalQty += $qty;
+            }
+            $subtotal += $validatedData['ongkir'];
+
+            $downPayment = ($validatedData['dp'] / 100) * $subtotal;
+            $total = $subtotal - $downPayment;
+
+            $statusPembayaran = $downPayment >= $subtotal ? 'Lunas' : 'Belum Lunas';
+
+            // Ambil invoice berdasarkan ID
+            $invoice = Invoice::findOrFail($id);
+
+            $invoice->update([
+                'nota_no' => $validatedData['nota_no'],
+                'status_pembayaran' => $statusPembayaran,
+                'harga_satuan' => $subtotal / $totalQty,
+                'subtotal' => $subtotal,
+                'jumlah' => $totalQty,
+                'ongkir' => $validatedData['ongkir'],
+                'down_payment' => $downPayment,
+                'total' => $total,
+                'tenggat_invoice' => $validatedData['tenggat_invoice'],
+            ]);
+
+            // Hapus detail barang lama dari tb_invoice_detail
+            InvoiceDetail::where('invoice_id', $invoice->invoice_id)->delete();
+
+            // Simpan detail barang baru ke tabel tb_invoice_detail
+            foreach ($validatedData['transaksi_detail_id'] as $transaksiDetailId) {
+                InvoiceDetail::create([
+                    'invoice_id' => $invoice->invoice_id,
+                    'transaksi_detail_id' => $transaksiDetailId,
+                ]);
+            }
+
+            DB::commit();
+
+            return redirect()->route('kelola-invoice.index')->with('success', 'Invoice berhasil diperbarui');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return back()->with('error', 'Terjadi kesalahan saat memperbarui invoice: ' . $e->getMessage());
+        }
+    }
+
 
     /**
      * Remove the specified resource from storage.
@@ -294,6 +424,6 @@ class InvoiceController extends Controller
         $invoice = Invoice::findOrFail($id);
         $invoice->delete();
 
-        return back()->with('success', 'Order Customer berhasil dihapus!');
+        return back()->with('success', 'Invoice berhasil dihapus!');
     }
 }

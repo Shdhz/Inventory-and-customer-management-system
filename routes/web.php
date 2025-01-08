@@ -47,6 +47,7 @@ Route::group(['middleware' => ['auth', 'verified', 'role:admin|supervisor']], fu
     Route::resource('form-po', formPoController::class);
 
     Route::get('laporan-penjualan', [LaporanPenjualanController::class, 'index'])->name('laporan.penjualan');
+    Route::get('laporan-penjualan/export-pdf', [LaporanPenjualanController::class, 'exportPdf'])->name('laporan.penjualan.pdf');
 
     Route::get('riwayat-transaksi', [riwayatTransaksiController::class, 'index'])->name('riwayat.transaksi');
     Route::get('riwayat-transaksi/export-pdf', [riwayatTransaksiController::class, 'exportPdf'])->name('riwayat.transaksi.pdf');

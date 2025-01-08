@@ -133,8 +133,8 @@
                         </div>
                         <hr>
                         <div class="text-end">
-                            <p>Sub Total: <span id="subtotal">0</span></p>
                             <p>Biaya Kirim: <span id="biaya-kirim">0</span></p>
+                            <p>Sub Total: <span id="subtotal">0</span></p>
                             <p>Down Payment (DP): <span id="dp-total">0</span></p>
                             <p class="badge text-bg-info">Status Pembayaran: <span id="status-dp"></span></p>
                             <p>Total/Sisa Belum: <span id="total-sisa">0</span></p>
@@ -218,12 +218,13 @@
                         newRow.find('input[name="Nama_Barang[]"]').val(item.keterangan || '-');
                         newRow.find('input[name="qty[]"]').val(item.qty || 1);
                         newRow.find('input[name="harga[]"]').val('');
-                        newRow.find('input[name="form_po_id[]"]').val(item.form_po_id); // Update form_po_id in each row
+                        newRow.find('input[name="form_po_id[]"]').val(item
+                        .form_po_id); // Update form_po_id in each row
 
                         // Update the IDs for the new row to ensure uniqueness
                         const rowIndex = index + 1; // Adding 1 to the index to start from 1
                         newRow.find('input[name="Nama_Barang[]"]').attr('id', 'Nama_Barang_' +
-                        rowIndex);
+                            rowIndex);
                         newRow.find('input[name="qty[]"]').attr('id', 'qty_' + rowIndex);
                         newRow.find('input[name="harga[]"]').attr('id', 'harga_' + rowIndex);
                         newRow.find('input[name="form_po_id[]"]').attr('id', 'form_po_id_' + rowIndex);
@@ -273,6 +274,8 @@
                     const ongkir = validateNumberInput($('#ongkir'));
                     let dpPersen = validateNumberInput($('#dp'));
 
+                    subtotal += ongkir;
+
 
                     // Validasi DP untuk mencegah angka lebih dari 100
                     if (dpPersen > 100) {
@@ -280,11 +283,11 @@
                         $('#dp').val(dpPersen);
                     }
 
-                    // Hitung DP dalam angka
-                    const dp = (subtotal + ongkir) * (dpPersen / 100);
+                    // Hitung DP dalam angka   Bug dalam angka 7
+                    const dp = (dpPersen / 100) * subtotal;
 
                     // Hitung total yang belum dibayar
-                    const totalBelumDibayar = subtotal + ongkir - dp;
+                    const totalBelumDibayar = subtotal - dp;
 
                     // Perbarui tampilan
                     $('#subtotal').text(formatRupiah(subtotal));
@@ -296,10 +299,20 @@
 
                 // Event listener untuk input harga, qty, ongkir
                 $(document).on('input', 'input[name="qty[]"], input[name="harga[]"], #ongkir', function() {
-                    validateNumberInput($(this)); // Validasi angka tanpa reset
-                    calculateTotals(); // Hitung ulang total
+                    validateNumberInput($(this));
+                    calculateTotals();
                 });
 
+                // Reset form function
+                function resetForm() {
+                    $('input[name="Nama_Barang[]"]:first').val('');
+                    $('input[name="qty[]"]:first').val(1);
+                    $('input[name="harga[]"]:first').val('');
+                    $('#ongkir').val('');
+                    $('#dp').val('');
+                    calculateTotals();
+                }
+                
                 // Event listener khusus untuk DP
                 $('#dp').on('input', function() {
                     let dp = validateNumberInput($(this));

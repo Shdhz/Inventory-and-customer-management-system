@@ -52,10 +52,12 @@ class formPoController extends Controller
                     if (Auth::user()->hasRole('supervisor')) {
                         // Dropdown untuk supervisor
                         $statusOptions = '
-                            <select class="form-select form-select-sm update-status" data-id="' . $row->id_form_po . '">
-                                <option value="1" ' . ($row->status_form_po ? 'selected' : '') . '>Active</option>
-                                <option value="0" ' . (!$row->status_form_po ? 'selected' : '') . '>Inactive</option>
-                            </select>';
+                        <select class="form-select form-select-sm update-status" 
+                                data-id="' . $row->id_form_po . '" 
+                                style="width: auto; min-width: 90px;">
+                            <option value="1" ' . ($row->status_form_po ? 'selected' : '') . '>Active</option>
+                            <option value="0" ' . (!$row->status_form_po ? 'selected' : '') . '>Inactive</option>
+                        </select>';
                         return $statusOptions;
                     } elseif (Auth::user()->hasRole('admin')) {
                         // Tombol aksi untuk admin

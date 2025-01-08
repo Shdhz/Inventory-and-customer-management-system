@@ -132,11 +132,11 @@
                 <p>a.n. <strong>Sandi Susandi</strong></p>
             </td>
             <td class="total-details">
-                <p><strong>Sub Total:</strong> {{ number_format($invoice->subtotal ?? 0, 0, ',', '.') }}</p>
                 <p><strong>Biaya Kirim:</strong> {{ number_format($invoice->ongkir ?? 0, 0, ',', '.') }}</p>
+                <p><strong>Grand Total:</strong> {{ number_format($invoice->subtotal ?? 0, 0, ',', '.') }}</p>
                 <p><strong>Down Payment (DP):</strong> {{ number_format($invoice->down_payment ?? 0, 0, ',', '.') }}
                 </p>
-                <p><strong>Total:</strong> {{ number_format($invoice->total ?? 0, 0, ',', '.') }}</p>
+                <p><strong>Total Sisa:</strong> {{ number_format($invoice->total ?? 0, 0, ',', '.') }}</p>
             </td>
         </tr>
     </table>

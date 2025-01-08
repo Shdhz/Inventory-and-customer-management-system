@@ -25,7 +25,7 @@
                                     <option value="" selected>-- Pilih Form PO --</option>
                                     @foreach ($formPo as $po)
                                         <option value="{{ $po->id_form_po }}">
-                                            {{ $po->keterangan ?? 'No description' }} (ID: {{ $po->id_form_po }})
+                                            {{ $po->keterangan ?? 'No description' }} (admin : {{ $po->customerOrder->draftCustomer->user->username }})
                                         </option>
                                     @endforeach
                                 </select>                                                                                          

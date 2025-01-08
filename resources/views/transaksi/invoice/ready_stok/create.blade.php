@@ -41,7 +41,7 @@
                                 <label for="tanggal" class="form-label">Tenggat waktu</label>
                                 <input type="date" id="tanggal" name="tenggat_invoice" class="form-control" required>
                                 @error('tanggal')
-                                    <div class="alert alert-danger">{{ $message }}</div>
+                                    <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="mb-3">
@@ -57,7 +57,7 @@
                                     @endforeach
                                 </select>
                                 @error('nama_pelanggan')
-                                    <div class="alert alert-danger">{{ $message }}</div>
+                                    <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
@@ -73,7 +73,7 @@
                                     placeholder="Masukkan Nama Barang" required readonly>
                                 <input type="hidden" name="transaksi_detail_id[]" id="transaksi_detail_id_1">
                                 @error('Nama_Barang.*')
-                                    <div class="alert alert-danger">{{ $message }}</div>
+                                    <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="col">
@@ -81,7 +81,7 @@
                                 <input type="number" name="qty[]" id="qty_1" class="form-control"
                                     placeholder="Jumlah" min="1" required readonly>
                                 @error('qty.*')
-                                    <div class="alert alert-danger">{{ $message }}</div>
+                                    <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="col input-group">
@@ -89,10 +89,10 @@
                                 <div class="input-group">
                                     <span class="input-group-text" id="basic-addon1">Rp</span>
                                     <input type="number" name="harga[]" id="harga_1" class="form-control"
-                                    placeholder="Harga per item" required readonly>
+                                        placeholder="Harga per item" required readonly>
                                 </div>
                                 @error('harga.*')
-                                    <div class="alert alert-danger">{{ $message }}</div>
+                                    <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
@@ -102,28 +102,28 @@
                             <div class="input-group">
                                 <span class="input-group-text" id="basic-addon1">Rp</span>
                                 <input type="number" id="ongkir" name="ongkir" class="form-control"
-                                placeholder="Masukkan Ongkir" required>
+                                    placeholder="Masukkan Ongkir" required>
                             </div>
                             @error('ongkir')
-                                <div class="alert alert-danger">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                         <div class="mt-4 input-group">
                             <label for="dp" class="form-label">DP (Down Payment) (%)</label>
                             <div class="input-group">
                                 <input type="number" id="dp" name="dp" class="form-control"
-                                placeholder="Masukkan DP dalam persen" required min="0" max="100">
+                                    placeholder="Masukkan DP dalam persen" required min="0" max="100">
                                 <span class="input-group-text" id="basic-addon1">%</span>
                             </div>
                             @error('dp')
-                                <div class="alert alert-danger">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                     </div>
                     <hr>
                     <div class="text-end">
-                        <p>Sub Total: <span id="subtotal">0</span></p>
                         <p>Biaya Kirim: <span id="biaya-kirim">0</span></p>
+                        <p>Sub Total: <span id="subtotal">0</span></p>
                         <p>Down Payment (DP): <span id="dp-total">0</span></p>
                         <p class="badge text-bg-info">Status Pembayaran: <span id="status-dp"></span></p>
                         <p>Total/Sisa Belum: <span id="total-sisa">0</span></p>
@@ -173,7 +173,7 @@
                     if (errorElement.length === 0) {
                         const message = $(
                             '<div class="form-text text-danger">Tenggat waktu tidak boleh kurang dari tanggal sekarang.</div>'
-                            );
+                        );
                         $(this).after(message);
                         setTimeout(() => {
                             message.fadeOut(500, function() {
@@ -207,7 +207,7 @@
                                 .harga);
                             $('input[name="transaksi_detail_id[]"]:first').val(produk
                                 .transaksi_detail_id || produk.id
-                                ); // Menambahkan transaksi_detail_id
+                            ); // Menambahkan transaksi_detail_id
                         } else {
                             // Kloning baris pertama untuk baris tambahan
                             const newRow = $('.barang-item:first').clone();
@@ -215,12 +215,12 @@
                             newRow.find('input[name="Nama_Barang[]"]').val(produk.nama_produk ||
                                 produk.name);
                             newRow.find('input[name="qty[]"]').val(produk.jumlah || produk.qty ||
-                            1);
+                                1);
                             newRow.find('input[name="harga[]"]').val(produk.harga_satuan || produk
                                 .harga);
                             newRow.find('input[name="transaksi_detail_id[]"]').val(produk
                                 .transaksi_detail_id || produk.id
-                                ); // Menambahkan transaksi_detail_id
+                            ); // Menambahkan transaksi_detail_id
 
                             // Tambahkan baris baru ke form
                             $('.barang-item:last').after(newRow);
@@ -251,21 +251,23 @@
                 const ongkir = parseInt($('#ongkir').val()) || 0;
                 const dpPersen = parseInt($('#dp').val()) || 0;
 
+                subtotal += ongkir;
+
                 if (dpPersen > 100) {
                     dpPersen = 0;
                     $('#dp').val(dpPersen);
                 }
 
                 // Hitung DP berdasarkan persen
-                const dp = (subtotal + ongkir) * (dpPersen / 100);
+                const dp = (dpPersen / 100) * subtotal;
 
-                // Hitung total sisa pembayaran
-                const totalBelumDibayar = subtotal + ongkir - dp;
+                // Hitung total yang belum dibayar
+                const totalBelumDibayar = subtotal - dp;
 
                 // Update tampilan
                 $('#subtotal').text(formatRupiah(subtotal));
                 $('#biaya-kirim').text(formatRupiah(ongkir));
-                $('#dp-total').text(formatRupiah(dp)); // Menampilkan DP dalam bentuk Rupiah
+                $('#dp-total').text(formatRupiah(dp));
                 $('#total-sisa').text(formatRupiah(totalBelumDibayar));
                 $('#status-dp').text(dpPersen === 100 ? 'LUNAS' : 'BELUM LUNAS');
             }

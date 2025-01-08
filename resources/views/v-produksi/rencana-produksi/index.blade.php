@@ -20,7 +20,7 @@
                         <thead>
                             <tr>
                                 <th>No</th>
-                                <th>Nomor Po</th>
+                                <th>Po admin</th>
                                 <th>Prioritas PO</th>
                                 <th>Nama barang</th>
                                 <th>Nama Pengrajin</th>
@@ -49,9 +49,9 @@
                     searchable: false
                 },
                 {
-                    data: 'nomor_po',
-                    name: 'nomor_po'
-                }, // Perbaiki nama kolom
+                    data: 'po_admin',
+                    name: 'po_admin'
+                },
                 {
                     data: 'prioritas',
                     name: 'prioritas'

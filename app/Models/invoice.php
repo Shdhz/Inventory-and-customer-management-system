@@ -19,14 +19,4 @@ class invoice extends Model
     {
         return $this->hasMany(invoiceFormPo::class, 'invoice_id', 'invoice_id');
     }
-
-    // public function formPO()
-    // {
-    //     return $this->belongsTo(FormPO::class, 'form_po_id', 'id_form_po');
-    // }
-
-    // public function transaksiDetail()
-    // {
-    //     return $this->belongsTo(TransaksiDetail::class, 'transaksi_detail_id', 'id_transaksi_detail');
-    // }
 }

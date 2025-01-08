@@ -70,7 +70,7 @@
                         </div>
                         <div class="mb-3">
                             <p><strong>Kepada:</strong>
-                                {{ $invoice->invoiceDetails->first()->transaksiDetail->transaksi->customerOrder->draftCustomer->Nama ?? '-' }}
+                                {{-- {{ $customerOrder->first() }} --}}
                             </p>
                         </div>
                     </div>
@@ -87,15 +87,15 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($invoiceDetails as $detail)
+                        @foreach ($invoiceFormPo as $detail)
                             <tr>
-                                <td>{{ $detail->transaksiDetail->stok->nama_produk ?? 'Tidak ada data' }}</td>
-                                <td class="text-center">{{ $detail->transaksiDetail->qty ?? 0 }}</td>
+                                <td>{{ $detail->formPo->keterangan ?? 'Tidak ada data' }}</td>
+                                <td class="text-center">{{ $detail->formPo->qty ?? 0 }}</td>
                                 <td class="text-end">
-                                    {{ number_format($detail->transaksiDetail->harga_satuan ?? 0, 0, ',', '.') }}
+                                    {{ 'Rp ' . number_format($detail->invoice->harga_satuan ?? 0, 0, ',', '.') }}
                                 </td>
                                 <td class="text-end">
-                                    {{ number_format($detail->transaksiDetail->subtotal ?? 0, 0, ',', '.') }}
+                                    {{ 'Rp ' . number_format($detail->invoice->subtotal ?? 0, 0, ',', '.') }}
                                 </td>
                             </tr>
                         @endforeach
@@ -120,10 +120,10 @@
                     </div>
                     <div class="col-4 text-end">
                         <p><strong>Biaya Kirim:</strong> {{ number_format($invoice->ongkir ?? 0, 0, ',', '.') }}</p>
-                        <p><strong>Grand Total:</strong> {{ number_format($invoice->subtotal ?? 0, 0, ',', '.') }}</p>
+                        <p><strong>Sub Total:</strong> {{ number_format($invoice->subtotal ?? 0, 0, ',', '.') }}</p>
                         <p><strong>Down Payment (DP):</strong>
                             {{ number_format($invoice->down_payment ?? 0, 0, ',', '.') }}</p>
-                        <p><strong>Total Sisa:</strong> {{ number_format($invoice->total ?? 0, 0, ',', '.') }}</p>
+                        <p><strong>Total/sisa belum:</strong> {{ number_format($invoice->total ?? 0, 0, ',', '.') }}</p>
                     </div>
                 </div>
 
