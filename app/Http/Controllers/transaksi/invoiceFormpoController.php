@@ -90,7 +90,7 @@ class invoiceFormpoController extends Controller
                 })
                 ->addColumn('actions', function ($row) {
                     return view('components.button.inv-actionbtn', [
-                        'edit' => route('form-po-invoice.edit', $row->id_invoice_form_po),
+                        'edit' => route('form-po-invoice.edit', $row->invoice->invoice_id),
                         'delete' => route('form-po-invoice.destroy', $row->invoice->invoice_id),
                         'show' => route('form-po-invoice.show', $row->invoice->invoice_id)
                     ])->render();
@@ -206,7 +206,7 @@ class invoiceFormpoController extends Controller
             $totalQty += $qty;
         }
         $subtotal += $validatedData['ongkir'];
-    
+
         // Perhitungan total: dp - subtotal
         $downPayment = ($validatedData['dp'] / 100) * $subtotal;
         $total = $subtotal - $downPayment;
@@ -221,7 +221,6 @@ class invoiceFormpoController extends Controller
             $invoice = Invoice::create([
                 'nota_no' => $validatedData['nota_no'],
                 'status_pembayaran' => $statusPembayaran,
-                'harga_satuan' => $subtotal / $totalQty,
                 'subtotal' => $subtotal,
                 'jumlah' => $totalQty,
                 'ongkir' => $validatedData['ongkir'],
@@ -234,9 +233,15 @@ class invoiceFormpoController extends Controller
             $uniqueFormPoIds = array_unique($validatedData['form_po_id']);
 
             foreach ($uniqueFormPoIds as $index => $formPoId) {
+                $qty = $validatedData['qty'][$index];
+                $hargaSatuan = $validatedData['harga'][$index];
+                $subtotalHargaSatuan = $qty * $hargaSatuan;
+
                 invoiceFormPo::create([
                     'invoice_id' => $invoice->invoice_id,
                     'form_po_id' => $formPoId,
+                    'harga_satuan' => $hargaSatuan,
+                    'subtotal' => $subtotalHargaSatuan,
                 ]);
             }
             // Commit transaksi
@@ -257,14 +262,10 @@ class invoiceFormpoController extends Controller
     {
         $invoice = invoice::with([
             'invoiceFormPo.formPo.customerOrder.draftCustomer',
-            'invoiceFormPo.formPo', 
+            'invoiceFormPo.formPo',
         ])->findOrFail($id);
-    
+
         $invoiceFormPo = $invoice->invoiceFormPo;
-
-        // Debug data untuk melihat semua informasi
-        // dd($invoice, $invoiceFormPo);
-
 
         $title = 'Detail Invoice';
         $backUrl = url()->previous();
@@ -275,17 +276,113 @@ class invoiceFormpoController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit($id)
     {
-        //
+        $title = 'Edit Invoice';
+        $backUrl = url()->previous();
+
+        $invoice = Invoice::with([
+            'invoiceFormPo.formPo.customerOrder.draftCustomer',
+            'invoiceFormPo.formPo.products',
+        ])->findOrFail($id);
+
+        $invoiceFormPo = $invoice->invoiceFormPo;
+
+        // Mengambil nama pelanggan dari item pertama
+        $firstItem = $invoiceFormPo->first();
+        $namaPelanggan = optional($firstItem?->formPo?->customerOrder?->draftCustomer)->Nama ?? 'Tidak ada nama';
+
+        $detail_produk = $invoiceFormPo->map(function ($item) {
+            return [
+                'form_po_id' => $item->form_po_id ?? null,
+                'keterangan' => $item->formPo->keterangan ?? 'Tidak ada keterangan',
+                'qty' => $item->formPo->qty ?? 0,
+                'harga_satuan' => $item->harga_satuan ?? 0,
+            ];
+        });
+
+        $subtotal = $invoice->subtotal ?? 0;
+        $dpReal = $invoice->down_payment ?? 0;
+        $dpPersen = $subtotal > 0 ? ($dpReal / $subtotal) * 100 : 0;
+
+        // Kirim data ke view
+        return view('transaksi.invoice.pre_order.edit', compact('title', 'backUrl', 'invoice', 'namaPelanggan', 'detail_produk', 'dpPersen'));
     }
+
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request,  $id)
     {
-        //
+        $validatedData = $request->validate([
+            'nota_no' => 'required|string|max:255',
+            'tenggat_invoice' => 'required|date|after_or_equal:today',
+            'nama_pelanggan' => 'required|string',
+            'keterangan.*' => 'required|string|max:255',
+            'qty.*' => 'required|integer|min:1',
+            'harga_satuan.*' => 'required|numeric|min:1',
+            'ongkir' => 'required|numeric|min:0',
+            'dp' => 'required|numeric|min:0|max:100',
+            'form_po_id' => 'required|array',
+            'form_po_id.*' => 'required|exists:tb_form_po,id_form_po',
+        ]);
+    
+        DB::beginTransaction();
+
+    try {
+        // Temukan invoice berdasarkan ID
+        $invoice = Invoice::findOrFail($id);
+
+        // Perhitungan subtotal dan total
+        $subtotal = 0;
+        $totalQty = 0;
+
+        foreach ($validatedData['qty'] as $index => $qty) {
+            $hargaSatuan = $validatedData['harga_satuan'][$index];
+            $subtotal += $qty * $hargaSatuan;
+            $totalQty += $qty;
+        }
+        $subtotal += $validatedData['ongkir'];
+
+        $downPayment = ($validatedData['dp'] / 100) * $subtotal;
+        $total = $subtotal - $downPayment;
+
+        $statusPembayaran = $downPayment >= $subtotal ? 'Lunas' : 'Belum Lunas';
+
+        $invoice->update([
+            'nota_no' => $validatedData['nota_no'],
+            'status_pembayaran' => $statusPembayaran,
+            'subtotal' => $subtotal,
+            'jumlah' => $totalQty,
+            'ongkir' => $validatedData['ongkir'],
+            'down_payment' => $downPayment,
+            'total' => $total,
+            'tenggat_invoice' => $validatedData['tenggat_invoice'],
+        ]);
+
+        $invoice->invoiceFormPo()->delete(); // Hapus data lama
+
+        foreach ($validatedData['keterangan'] as $index => $keterangan) {
+            $qty = $validatedData['qty'][$index];
+            $hargaSatuan = $validatedData['harga_satuan'][$index];
+            $subtotalHargaSatuan = $qty * $hargaSatuan;
+
+            invoiceFormPo::create([
+                'invoice_id' => $invoice->invoice_id,
+                'form_po_id' => $request->form_po_id[$index],
+                'harga_satuan' => $hargaSatuan,
+                'subtotal' => $subtotalHargaSatuan,
+            ]);
+        }
+
+        DB::commit();
+
+        return redirect()->route('kelola-invoice.index')->with('success', 'Invoice berhasil diperbarui');
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->withErrors(['error' => 'Gagal memperbarui invoice. ' . $e->getMessage()]);
+    }
     }
 
     /**

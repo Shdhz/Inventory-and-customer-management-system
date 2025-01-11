@@ -61,7 +61,7 @@
                                     </select>
 
                                     @error('nama_pelanggan')
-                                        <div class="form-text text-danger">{{ $message }}</div>
+                                        <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                     <div class="form-text">Invoice pre order hanya untuk pre order yang sudah aktif.</div>
                                 </div>
@@ -79,7 +79,7 @@
                                         placeholder="Masukkan Nama Barang" required readonly>
                                     <input type="hidden" name="form_po_id[]" id="form_po_id_1">
                                     @error('Nama_Barang.*')
-                                        <div class="form-text text-danger">{{ $message }}</div>
+                                        <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                                 <div class="col">
@@ -88,7 +88,7 @@
                                     <input type="number" name="qty[]" id="qty_1" class="form-control"
                                         placeholder="Jumlah" min="1" required readonly>
                                     @error('qty.*')
-                                        <div class="form-text text-danger">{{ $message }}</div>
+                                        <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                                 <div class="col input-group mb-3">
@@ -101,7 +101,7 @@
                                             required>
                                     </div>
                                     @error('harga.*')
-                                        <div class="form-text text-danger">{{ $message }}</div>
+                                        <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
 
@@ -115,7 +115,7 @@
                                         placeholder="Masukkan Ongkir" required>
                                 </div>
                                 @error('ongkir')
-                                    <div class="form-text text-danger">{{ $message }}</div>
+                                    <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="mt-4 input-group">
@@ -127,7 +127,7 @@
                                     <span class="input-group-text" id="basic-addon1">%</span>
                                 </div>
                                 @error('dp')
-                                    <div class="alert alert-danger">{{ $message }}</div>
+                                    <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>

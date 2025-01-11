@@ -92,10 +92,10 @@
                                 <td>{{ $detail->formPo->keterangan ?? 'Tidak ada data' }}</td>
                                 <td class="text-center">{{ $detail->formPo->qty ?? 0 }}</td>
                                 <td class="text-end">
-                                    {{ 'Rp ' . number_format($detail->invoice->harga_satuan ?? 0, 0, ',', '.') }}
+                                    {{ 'Rp ' . number_format($detail->harga_satuan ?? 0, 0, ',', '.') }}
                                 </td>
                                 <td class="text-end">
-                                    {{ 'Rp ' . number_format($detail->invoice->subtotal ?? 0, 0, ',', '.') }}
+                                    {{ 'Rp ' . number_format($detail->subtotal ?? 0, 0, ',', '.') }}
                                 </td>
                             </tr>
                         @endforeach
