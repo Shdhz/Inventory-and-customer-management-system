@@ -42,6 +42,7 @@ Route::group(['middleware' => ['auth', 'verified', 'role:admin|supervisor']], fu
         Route::resource('kelola-invoice', InvoiceController::class);
         Route::get('kelola-invoice/{invoice_id}/download-pdf', 'downloadPdf')->name('invoice.downloadPdf');
         Route::resource('form-po-invoice', invoiceFormpoController::class);
+        Route::get('form-po-invoice/downloadPdf/{invoice_id}', [invoiceFormpoController::class, 'downloadPdf'])->name('invoiceFormPo.downloadPdf');
     });
 
     Route::resource('form-po', formPoController::class);

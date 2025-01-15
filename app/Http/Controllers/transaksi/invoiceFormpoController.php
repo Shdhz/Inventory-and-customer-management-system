@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\formPo;
 use App\Models\invoice;
 use App\Models\invoiceFormPo;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -267,10 +268,13 @@ class invoiceFormpoController extends Controller
 
         $invoiceFormPo = $invoice->invoiceFormPo;
 
+        $firstItem = $invoiceFormPo->first();
+        $namaPelanggan = optional($firstItem?->formPo?->customerOrder?->draftCustomer)->Nama ?? 'Tidak ada nama';
+
         $title = 'Detail Invoice';
         $backUrl = url()->previous();
 
-        return view('transaksi.invoice.pre_order.show', compact('invoice', 'invoiceFormPo', 'title', 'backUrl'));
+        return view('transaksi.invoice.pre_order.show', compact('invoice', 'invoiceFormPo', 'title', 'backUrl', 'namaPelanggan'));
     }
 
     /**
@@ -327,62 +331,62 @@ class invoiceFormpoController extends Controller
             'form_po_id' => 'required|array',
             'form_po_id.*' => 'required|exists:tb_form_po,id_form_po',
         ]);
-    
+
         DB::beginTransaction();
 
-    try {
-        // Temukan invoice berdasarkan ID
-        $invoice = Invoice::findOrFail($id);
+        try {
+            // Temukan invoice berdasarkan ID
+            $invoice = Invoice::findOrFail($id);
 
-        // Perhitungan subtotal dan total
-        $subtotal = 0;
-        $totalQty = 0;
+            // Perhitungan subtotal dan total
+            $subtotal = 0;
+            $totalQty = 0;
 
-        foreach ($validatedData['qty'] as $index => $qty) {
-            $hargaSatuan = $validatedData['harga_satuan'][$index];
-            $subtotal += $qty * $hargaSatuan;
-            $totalQty += $qty;
-        }
-        $subtotal += $validatedData['ongkir'];
+            foreach ($validatedData['qty'] as $index => $qty) {
+                $hargaSatuan = $validatedData['harga_satuan'][$index];
+                $subtotal += $qty * $hargaSatuan;
+                $totalQty += $qty;
+            }
+            $subtotal += $validatedData['ongkir'];
 
-        $downPayment = ($validatedData['dp'] / 100) * $subtotal;
-        $total = $subtotal - $downPayment;
+            $downPayment = ($validatedData['dp'] / 100) * $subtotal;
+            $total = $subtotal - $downPayment;
 
-        $statusPembayaran = $downPayment >= $subtotal ? 'Lunas' : 'Belum Lunas';
+            $statusPembayaran = $downPayment >= $subtotal ? 'Lunas' : 'Belum Lunas';
 
-        $invoice->update([
-            'nota_no' => $validatedData['nota_no'],
-            'status_pembayaran' => $statusPembayaran,
-            'subtotal' => $subtotal,
-            'jumlah' => $totalQty,
-            'ongkir' => $validatedData['ongkir'],
-            'down_payment' => $downPayment,
-            'total' => $total,
-            'tenggat_invoice' => $validatedData['tenggat_invoice'],
-        ]);
-
-        $invoice->invoiceFormPo()->delete(); // Hapus data lama
-
-        foreach ($validatedData['keterangan'] as $index => $keterangan) {
-            $qty = $validatedData['qty'][$index];
-            $hargaSatuan = $validatedData['harga_satuan'][$index];
-            $subtotalHargaSatuan = $qty * $hargaSatuan;
-
-            invoiceFormPo::create([
-                'invoice_id' => $invoice->invoice_id,
-                'form_po_id' => $request->form_po_id[$index],
-                'harga_satuan' => $hargaSatuan,
-                'subtotal' => $subtotalHargaSatuan,
+            $invoice->update([
+                'nota_no' => $validatedData['nota_no'],
+                'status_pembayaran' => $statusPembayaran,
+                'subtotal' => $subtotal,
+                'jumlah' => $totalQty,
+                'ongkir' => $validatedData['ongkir'],
+                'down_payment' => $downPayment,
+                'total' => $total,
+                'tenggat_invoice' => $validatedData['tenggat_invoice'],
             ]);
+
+            $invoice->invoiceFormPo()->delete(); // Hapus data lama
+
+            foreach ($validatedData['keterangan'] as $index => $keterangan) {
+                $qty = $validatedData['qty'][$index];
+                $hargaSatuan = $validatedData['harga_satuan'][$index];
+                $subtotalHargaSatuan = $qty * $hargaSatuan;
+
+                invoiceFormPo::create([
+                    'invoice_id' => $invoice->invoice_id,
+                    'form_po_id' => $request->form_po_id[$index],
+                    'harga_satuan' => $hargaSatuan,
+                    'subtotal' => $subtotalHargaSatuan,
+                ]);
+            }
+
+            DB::commit();
+
+            return redirect()->route('kelola-invoice.index')->with('success', 'Invoice berhasil diperbarui');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors('error', 'Gagal memperbarui invoice. ');
         }
-
-        DB::commit();
-
-        return redirect()->route('kelola-invoice.index')->with('success', 'Invoice berhasil diperbarui');
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return back()->withErrors(['error' => 'Gagal memperbarui invoice. ' . $e->getMessage()]);
-    }
     }
 
     /**
@@ -394,5 +398,29 @@ class invoiceFormpoController extends Controller
         $invoice->delete();
 
         return back()->with('success', 'Order Customer berhasil dihapus!');
+    }
+
+    public function downloadPdf($invoice_id)
+    {
+        try {
+            $invoice = Invoice::with([
+                'invoiceFormPo.formPo.customerOrder.draftCustomer',
+                'invoiceFormPo.formPo.products',
+            ])->findOrFail($invoice_id);
+
+            $invoiceFormPo = $invoice->invoiceFormPo;
+
+            // Sanitize the nota_no for filename
+            $nota_no = $invoice->nota_no ?? 'DefaultNota';
+            $nota_no = preg_replace('/[\/\\\]/', '_', $nota_no);
+            $filename = 'Invoice-' . $nota_no . '.pdf';
+
+            $pdf = Pdf::loadView('transaksi.invoice.pre_order.pdf', compact('invoice', 'invoiceFormPo'));
+            $pdf->setPaper([176, 250], 'portrait');
+
+            return $pdf->download($filename);
+        } catch (\Exception $e) {
+            return back()->withErrors('error', 'Invoice Gagal dicetak.');
+        }
     }
 }

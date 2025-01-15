@@ -1,5 +1,6 @@
 @extends('layouts.admin')
 @section('content')
+<x-message.errors />
     <div class="container-lg mt-2">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
@@ -15,7 +16,7 @@
                 {{-- Bagian Kanan --}}
                 <div>
                     {{-- Tombol Download PDF --}}
-                    <a href="{{ route('invoice.downloadPdf', $invoice->invoice_id) }}" class="btn btn-danger">
+                    <a href="{{ route('invoiceFormPo.downloadPdf', $invoice->invoice_id) }}" class="btn btn-danger">
                         <span>
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -70,7 +71,7 @@
                         </div>
                         <div class="mb-3">
                             <p><strong>Kepada:</strong>
-                                {{-- {{ $customerOrder->first() }} --}}
+                                {{ $namaPelanggan }}
                             </p>
                         </div>
                     </div>
