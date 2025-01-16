@@ -25,8 +25,10 @@ class TransaksiController extends Controller
 
         if (request()->ajax()) {
             $data = transaksi::with(['customerOrder', 'transaksiDetails.stok'])
-                ->whereHas('customerOrder.draftCustomer', function ($query) {
-                    $query->where('user_id', Auth::id());
+                ->when(Auth::user()->hasRole('admin'), function ($query) {
+                    $query->whereHas('customerOrder.draftCustomer', function ($subQuery) {
+                        $subQuery->where('user_id', Auth::id());
+                    });
                 })
                 ->get();
 
@@ -101,8 +103,10 @@ class TransaksiController extends Controller
 
         $customers = CustomerOrder::with('draftCustomer')
             ->where('jenis_order', 'ready stock')
-            ->whereHas('draftCustomer.user', function ($query) {
-                $query->where('user_id', Auth::id());
+            ->when(Auth::user()->hasRole('admin'), function ($query) {
+                $query->whereHas('draftCustomer.user', function ($subQuery) {
+                    $subQuery->where('user_id', Auth::id());
+                });
             })
             ->whereDoesntHave('transaksi')
             ->get();
@@ -169,7 +173,6 @@ class TransaksiController extends Controller
         $discountProduct = ($subtotal * $discountProductPercent) / 100;
         $total = $subtotal - $discountProduct;
 
-        // dd($request->all());
         // Simpan data transaksi
         $transaksi = Transaksi::create([
             'customer_order_id' => $request->customer_order_id,
@@ -214,12 +217,14 @@ class TransaksiController extends Controller
             ->findOrFail($id);
 
         $customers = CustomerOrder::with('draftCustomer')
-        ->whereHas('draftCustomer.user', function ($query) {
-            $query->where('user_id', Auth::id());
-        })
-        ->where('customer_order_id', $transaksi->customer_order_id) 
-        ->get();
-        
+            ->when(Auth::user()->hasRole('admin'), function ($query) {
+                $query->whereHas('draftCustomer.user', function ($subQuery) {
+                    $subQuery->where('user_id', Auth::id());
+                });
+            })
+            ->where('customer_order_id', $transaksi->customer_order_id)
+            ->get();
+
         foreach ($customers as $customer) {
             $customer->sumber = $customer->draftCustomer->sumber ?? 'Tidak Diketahui';
         }
@@ -260,7 +265,6 @@ class TransaksiController extends Controller
 
     public function update(Request $request, $id)
     {
-        // Validasi input
         $validated = $request->validate([
             'customer_order_id' => 'required|exists:tb_customer_orders,customer_order_id',
             'products.*.stok_id' => 'required|exists:tb_products,id_stok',
@@ -271,15 +275,12 @@ class TransaksiController extends Controller
             'discount_product_percent' => 'nullable|numeric|min:0|max:100',
         ]);
 
-        // Ambil transaksi yang ada berdasarkan ID
         $transaksi = Transaksi::findOrFail($id);
-
-        // Update data transaksi utama
         $transaksi->update([
             'customer_order_id' => $request->customer_order_id,
-            'diskon_produk' => $request->discount_product_percent ?? 0, // Diskon produk
-            'metode_pembayaran' => $request->payment_method,            // Metode pembayaran
-            'ekspedisi' => $request->expedition,                         // Ekspedisi
+            'diskon_produk' => $request->discount_product_percent ?? 0,
+            'metode_pembayaran' => $request->payment_method,
+            'ekspedisi' => $request->expedition,
         ]);
 
         // Update atau tambahkan detail transaksi
@@ -287,14 +288,12 @@ class TransaksiController extends Controller
             $detail = $transaksi->transaksiDetails()->where('stok_id', $product['stok_id'])->first();
 
             if ($detail) {
-                // Jika detail transaksi sudah ada, update nilai qty dan harga satuan
                 $detail->update([
                     'qty' => $product['qty'],
                     'harga_satuan' => round(str_replace('.', '', $product['harga_satuan'])),
                     'subtotal' => $product['qty'] * round(str_replace('.', '', $product['harga_satuan'])),
                 ]);
             } else {
-                // Jika detail transaksi belum ada, buat detail transaksi baru
                 TransaksiDetail::create([
                     'transaksi_id' => $transaksi->id_transaksi,
                     'stok_id' => $product['stok_id'],
@@ -306,11 +305,7 @@ class TransaksiController extends Controller
                 ]);
             }
         }
-
-        // Menghitung subtotal dan total transaksi
         $this->calculateTotal($transaksi);
-
-        // Redirect ke halaman daftar transaksi
         return redirect()->route('transaksi-customer.index')->with('success', 'Transaksi berhasil diperbarui');
     }
 
@@ -325,17 +320,16 @@ class TransaksiController extends Controller
                 foreach ($transaksi->transaksiDetails as $detail) {
                     $detail->delete();
                 }
-    
+
                 // Hapus transaksi utama
                 $transaksi->delete();
             });
-    
+
             return back()->with('success', 'Transaksi berhasil dihapus!');
         } catch (\Exception $e) {
             Log::error("Error menghapus transaksi ID: $id. Pesan: " . $e->getMessage());
-    
+
             return back()->with('error', 'Gagal menghapus transaksi. Silakan coba lagi.');
         }
     }
-    
 }

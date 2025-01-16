@@ -24,7 +24,7 @@
                                     <path d="M20 15h-3v6" />
                                     <path d="M11 15v6h1a2 2 0 0 0 2 -2v-2a2 2 0 0 0 -2 -2h-1z" />
                                 </svg>
-                            </span>Export PDF</a>
+                            </span>Download PDF</a>
                         {{-- <a href="{{ route('laporan.penjualan.excel') }}" class="btn btn-success">Export Excel</a> --}}
                     </div>
                 </div>

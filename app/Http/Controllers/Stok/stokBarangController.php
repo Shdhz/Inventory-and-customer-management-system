@@ -18,10 +18,9 @@ class stokBarangController extends Controller
     public function index(Request $request)
     {
         $title = 'Stok Barang';
-        
-         null; // Default button is null.
 
-        // Check if the user has 'manage stok' permission (produksi role)
+        null;
+
         if (Auth::user()->hasRole('produksi')) {
             $button = 'Tambah Stok barang';
 
@@ -53,10 +52,7 @@ class stokBarangController extends Controller
                     ->make(true);
             }
             return view('v-produksi.stok-barang.stok.index', compact('title', 'button'));
-        }
-
-        // For Admin: Can only view the stock
-        if (Auth::user()->hasRole('admin')) {
+        } else {
             if ($request->ajax()) {
                 $productStocks = productStock::with('category')->get();
                 return DataTables::of($productStocks)
@@ -81,7 +77,6 @@ class stokBarangController extends Controller
             }
             return view('v-produksi.stok-barang.stok.index', compact('title'));
         }
-        abort(403, 'Anda tidak memiliki akses ke halaman ini.');
     }
 
 

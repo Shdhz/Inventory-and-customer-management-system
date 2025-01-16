@@ -19,15 +19,17 @@ class orderController extends Controller
     {
         if ($request->ajax()) {
             $customerOrders = CustomerOrder::with('draftCustomer')
-                ->whereHas('draftCustomer', function ($query) {
-                    $query->where('user_id', Auth::id()); // Filter berdasarkan user yang sedang login
+                ->when(Auth::user()->hasRole('admin'), function ($query) {
+                    $query->whereHas('draftCustomer', function ($subQuery) {
+                        $subQuery->where('user_id', Auth::id());
+                    });
                 })
                 ->get();
 
             return Datatables::of($customerOrders)
                 ->addIndexColumn()
                 ->addColumn('updated_at', function ($row) {
-                    return Carbon::parse($row->updated_at)->format('d F Y'); 
+                    return Carbon::parse($row->updated_at)->format('d F Y');
                 })
                 ->addColumn('Nama', function ($row) {
                     return $row->draftCustomer ? $row->draftCustomer->Nama : '-';
@@ -57,7 +59,7 @@ class orderController extends Controller
         $backUrl = url()->previous();
 
         $draftCustomers = DraftCustomer::select('draft_customers_id', 'Nama', 'sumber')
-            ->whereHas('user', function ($query) {
+            ->when(Auth::user()->hasRole('admin'), function ($query) {
                 $query->where('user_id', Auth::id());
             })
             ->whereDoesntHave('CustomerOrder')
@@ -110,9 +112,11 @@ class orderController extends Controller
 
         // Ambil daftar draft customer untuk dropdown
         $draftCustomers = DraftCustomer::select('draft_customers_id', 'Nama', 'sumber')
-        ->whereHas('user', function ($query) {
-            $query->where('user_id', Auth::id());
-        })->get();
+            ->when(Auth::user()->hasRole('admin'), function ($query) {
+                $query->whereHas('user', function ($subQuery) {
+                    $subQuery->where('user_id', Auth::id());
+                });
+            })->get();
 
         return view('v-admin.order_customers.edit', compact('title', 'backUrl', 'orderCustomer', 'draftCustomers'));
     }

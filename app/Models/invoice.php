@@ -10,6 +10,7 @@ class invoice extends Model
     protected $primaryKey = 'invoice_id';
 
     protected $guarded = ['invoice_id'];
+    public $timestamps = true;
 
     public function invoiceDetails()
     {

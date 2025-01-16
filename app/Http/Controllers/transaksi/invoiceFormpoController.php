@@ -27,10 +27,11 @@ class invoiceFormpoController extends Controller
                 'invoice',
                 'formPO.customerOrder.draftCustomer'
             ])
-                ->whereHas('formPO.customerOrder.draftCustomer', function ($query) {
-                    $query->where('user_id', Auth::id());
-                })
-                ->get();
+                ->when(Auth::user()->hasRole('admin'), function ($query) {
+                    $query->whereHas('formPO.customerOrder.draftCustomer', function ($Subquery) {
+                        $Subquery->where('user_id', Auth::id());
+                    });
+                })->get();
 
             // Kelompokkan data berdasarkan nama customer
             $groupedData = $data->groupBy(function ($item) {

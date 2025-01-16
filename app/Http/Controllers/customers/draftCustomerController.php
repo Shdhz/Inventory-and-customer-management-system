@@ -18,7 +18,12 @@ class draftCustomerController extends Controller
     {
         $button = "Tambah draft customer";
         if (request()->ajax()) {
-            $data = DraftCustomer::with('user')->where('user_id', Auth::id())->get();
+            $data = DraftCustomer::with('user')
+                ->when(Auth::user()->hasRole('admin'), function ($query) {
+                    $query->where('user_id', Auth::id());
+                })
+                ->get();
+                
             return DataTables::of($data)
                 ->addColumn('actions', function ($row) {
                     return view('components.button.action-btn', [
@@ -85,8 +90,12 @@ class draftCustomerController extends Controller
         $backUrl = Route('draft-customer.index');
 
         $id = DraftCustomer::with('user')
-            ->where('draft_customers_id', $id)->where('user_id', Auth::id())
+            ->when(Auth::user()->hasRole('admin'), function ($query) {
+                $query->where('user_id', Auth::id());
+            })
+            ->where('draft_customers_id', $id)
             ->firstOrFail();
+
         // Pass data ke view
         return view('v-admin.draft_customers.edit', compact('title', 'backUrl', 'id'));
     }

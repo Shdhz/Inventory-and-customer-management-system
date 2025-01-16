@@ -31,10 +31,11 @@ class InvoiceController extends Controller
                 'transaksiDetail.transaksi.customerOrder.draftCustomer',
                 'transaksiDetail.stok',
             ])
-                ->whereHas('transaksiDetail.transaksi.customerOrder.draftCustomer', function ($query) {
-                    $query->where('user_id', Auth::id());
-                })
-                ->get();
+                ->when(Auth::user()->hasRole('admin'), function ($query) {
+                    $query->whereHas('transaksiDetail.transaksi.customerOrder.draftCustomer', function ($Subquery) {
+                        $Subquery->where('user_id', Auth::id());
+                    });
+                })->get();
 
             // Kelompokkan data berdasarkan nama customer
             $groupedData = $data->groupBy(function ($item) {
@@ -121,8 +122,10 @@ class InvoiceController extends Controller
             'stok',
             'invoiceDetails'
         ])
-            ->whereHas('transaksi.customerOrder.draftCustomer.user', function ($query) {
-                $query->where('user_id', Auth::id());
+            ->when(Auth::user()->hasRole('admin'), function ($query) {
+                $query->whereHas('transaksi.customerOrder.draftCustomer.user', function ($Subquery) {
+                    $Subquery->where('user_id', Auth::id());
+                });
             })
             ->get()
             ->groupBy(function ($item) {
@@ -294,8 +297,11 @@ class InvoiceController extends Controller
         $invoice = Invoice::with([
             'invoiceDetails.transaksiDetail.stok',
             'invoiceDetails.transaksiDetail.transaksi.customerOrder.draftCustomer',
-        ])->whereHas('invoiceDetails.transaksiDetail.transaksi.customerOrder.draftCustomer.user', function ($query) {
-            $query->where('user_id', Auth::id());
+        ])
+        ->when(Auth::user()->hasRole('admin'), function ($query) {
+            $query->whereHas('invoiceDetails.transaksiDetail.transaksi.customerOrder.draftCustomer.user', function ($Subquery) {
+                $Subquery->where('user_id', Auth::id());
+            });
         })->findOrFail($id);
 
         $invoiceDetails = $invoice->invoiceDetails;

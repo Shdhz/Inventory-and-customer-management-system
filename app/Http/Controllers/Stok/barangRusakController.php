@@ -45,9 +45,7 @@ class barangRusakController extends Controller
                     ->make(true);
             }
             return view('v-produksi.stok-barang.barang_rusak.index', compact('title', 'button'));
-        }
-
-        if (Auth::user()->hasRole('admin')) {
+        }else{
             if ($request->ajax()) {
                 $barangRusak = barangRusak::with('product.category')->get();
                 return DataTables::of($barangRusak)

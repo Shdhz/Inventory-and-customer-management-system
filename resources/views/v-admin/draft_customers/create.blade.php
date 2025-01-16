@@ -62,7 +62,7 @@
                         <div class="flex-grow-1">
                             <div class="mb-3">
                                 <label class="form-label">No HP <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('no_hp') is-invalid @enderror"
+                                <input type="number" class="form-control @error('no_hp') is-invalid @enderror"
                                     name="no_hp" placeholder="No HP" value="{{ old('no_hp') }}" required maxlength="13"/>
                                 @error('no_hp')
                                     <div class="invalid-feedback">{{ $message }}</div>

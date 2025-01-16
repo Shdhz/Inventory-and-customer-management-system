@@ -7,6 +7,7 @@ use App\Http\Controllers\stok\kategoriBarangController;
 use App\Http\Controllers\loginController;
 use App\Http\Controllers\customers\orderController;
 use App\Http\Controllers\dashboardSupervisorController;
+use App\Http\Controllers\getSalesStatistics;
 use App\Http\Controllers\laporan\LaporanPenjualanController;
 use App\Http\Controllers\laporan\riwayatTransaksiController;
 use App\Http\Controllers\manageAdmiinController;
@@ -34,6 +35,9 @@ Route::controller(LoginController::class)->group(function () {
 // admin + supervisor
 Route::group(['middleware' => ['auth', 'verified', 'role:admin|supervisor']], function () {
     Route::get('dashboard-admin', [dashboardAdminController::class, 'index'])->name('dashboardAdmin.index');
+    Route::get('/sales-statistics', [dashboardAdminController::class, 'salesStatistics'])->name('salesStatistics');
+    Route::get('/unpaid-invoices', [dashboardAdminController::class, 'unpaidInvoice'])->name('admin.unpaidInvoice');
+    Route::get('/admin/production-plan', [dashboardAdminController::class, 'getProductionPlan'])->name('admin.getProductionPlan');
     Route::resource('draft-customer', draftCustomerController::class);
     Route::resource('order-customer', orderController::class);
     Route::resource('transaksi-customer', TransaksiController::class);

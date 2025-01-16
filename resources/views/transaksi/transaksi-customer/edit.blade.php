@@ -51,7 +51,7 @@
                                     <input type="text" class="form-control price-input"
                                         name="products[{{ $index }}][harga_satuan]" placeholder="Harga"
                                         value="{{ number_format($detail->harga_satuan, 0, ',', '.') }}" required>
-                                    <button type="button" class="btn btn-danger remove-product">Hapus</button>
+                                    <button type="button" class="btn btn-danger remove-product" disabled>Hapus</button>
                                 </div>
                             @endforeach
                         </div>
@@ -116,7 +116,7 @@
     {{-- Script untuk Form Dinamis --}}
     <script>
         $(document).ready(function() {
-            let productIndex = {{ $transaksiDetails->count() }}; // Mulai dari jumlah data transaksiDetail yang ada
+            let productIndex = {{ $transaksiDetails->count() }};
             const products = @json($products); // Data semua produk
 
             // Fungsi untuk menambahkan baris produk
