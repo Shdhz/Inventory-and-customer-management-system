@@ -93,4 +93,5 @@
             ],
         });
     </script>
+    <x-button.confirmdelete />
 @endsection

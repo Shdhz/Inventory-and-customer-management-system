@@ -7,13 +7,13 @@ use App\Http\Controllers\stok\kategoriBarangController;
 use App\Http\Controllers\loginController;
 use App\Http\Controllers\customers\orderController;
 use App\Http\Controllers\dashboardSupervisorController;
-use App\Http\Controllers\getSalesStatistics;
 use App\Http\Controllers\laporan\LaporanPenjualanController;
 use App\Http\Controllers\laporan\riwayatTransaksiController;
 use App\Http\Controllers\manageAdmiinController;
 use App\Http\Controllers\ProduksiController;
 use App\Http\Controllers\rencana_produksi\rencanaProduksiController;
 use App\Http\Controllers\stok\stokBarangController;
+use App\Http\Controllers\transaksi\barangKeluarController;
 use App\Http\Controllers\transaksi\barangMasukController;
 use App\Http\Controllers\transaksi\formPoController;
 use App\Http\Controllers\transaksi\InvoiceController;
@@ -64,27 +64,29 @@ Route::middleware(['auth', 'role:supervisor'])->group(function () {
         ->name('form-po.update-status');
 });
 
-// Route::resource('stok-barang', stokBarangController::class);
 
 // Produksi
 Route::group(['middleware' => ['auth', 'verified', 'role:produksi']], function () {
-    Route::get('/dashboard-produksi', [ProduksiController::class, 'index'])->name('dashboardProduksi.index')->middleware('auth', 'verified', 'role:produksi');
+    Route::get('/dashboard-produksi', [ProduksiController::class, 'index'])->name('dashboardProduksi.index');
     Route::resource('kategori-barang', kategoriBarangController::class);
     Route::get('/api/generate-kode-produk', [stokBarangController::class, 'generateKodeProduk']);
     Route::resource('transaksi-detail', TransaksiDetailController::class);
     Route::resource('barang-masuk', barangMasukController::class);
+    Route::get('barang-keluar', [barangKeluarController::class, 'index'])->name('barang-keluar.index');
 });
 
 Route::middleware(['auth', 'verified', 'role:admin|produksi|supervisor'])->group(function () {
     Route::resource('rencana-produksi', rencanaProduksiController::class);
     Route::resource('stok-barang', stokBarangController::class);
     Route::resource('barang-rusak', barangRusakController::class);
-    // Route::get('kelola-invoice/get/customers', [InvoiceController::class, 'getCustomers'])->name('kelola-invoice.get.customers');
 });
 
 // Role supervisor
 
 Route::middleware(['auth', 'verified', 'role:supervisor'])->group(function () {
     Route::get('dashboard-supervisor', [dashboardSupervisorController::class, 'index'])->name('dashboardSupervisor.index');
+    Route::get('/all-sales-statistics', [dashboardSupervisorController::class, 'salesStatistics'])->name('allSalesStatistics');
+    Route::get('/unpaid-invoice-supervisor', [dashboardSupervisorController::class, 'unpaidInvoice'])->name('supervisor.unpaidInvoice');
+    Route::get('/get-production-plan-supervisor', [dashboardSupervisorController::class, 'getProductionPlan'])->name('supervisor.getProductionPlan');
     Route::resource('kelola-admin', manageAdmiinController::class);
 });

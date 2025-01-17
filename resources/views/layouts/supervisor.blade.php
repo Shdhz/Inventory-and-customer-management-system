@@ -50,6 +50,7 @@
         </div>
     </div>
     <!-- Libs JS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/dist/libs/apexcharts/dist/apexcharts.min.js?1692870487" defer></script>
     <script src="/dist/libs/jsvectormap/dist/js/jsvectormap.min.js?1692870487" defer></script>
     <script src="/dist/libs/jsvectormap/dist/maps/world.js?1692870487" defer></script>

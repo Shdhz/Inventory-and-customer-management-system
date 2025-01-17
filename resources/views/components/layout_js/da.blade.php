@@ -51,8 +51,6 @@
                 }
             });
         }
-
-        // Panggil fungsi fetch data
         fetchAllSalesData();
     });
 

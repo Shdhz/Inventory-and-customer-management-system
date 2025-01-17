@@ -112,11 +112,12 @@
                         orderable: false,
                         searchable: false,
                         render: function() {
-                            return ''; // Jika bukan produksi, tidak tampilkan kolom aksi
+                            return ''; 
                         }
                     }
                 @endrole
             ],
         });
     </script>
+    <x-button.confirmdelete />
 @endsection

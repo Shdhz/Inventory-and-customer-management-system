@@ -1,7 +1,6 @@
 @extends('layouts.produksi')
 
 @section('content')
-    <x-message.errors />
     <div class="container-lg mt-2">
         <div class="card">
             <div class="card-header row-cols-auto">
@@ -38,16 +37,14 @@
                             <div class="mb-3">
                                 <label for="stok_id" class="form-label">Pilih Barang <span
                                         class="text-danger">*</span></label>
-                                <select class="form-select @error('stok_id') is-invalid @enderror" name="stok_id"
-                                    id="stok_id" required>
-                                    <option value="" selected>-- Pilih Barang --</option>
-                                    @foreach ($stokBarang as $sb)
-                                        <option value="{{ $sb->id_stok }}"
-                                            {{ old('stok_id', $barangMasuk->stok_id) == $sb->id_stok ? 'selected' : '' }}>
-                                            {{ $sb->nama_produk }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                <!-- Input text untuk menampilkan nama produk -->
+                                <input type="text" class="form-control @error('stok_id') is-invalid @enderror"
+                                    id="stok_id_display"
+                                    value="{{ $barangMasuk->stok_id ? $stokBarang->firstWhere('id_stok', $barangMasuk->stok_id)->nama_produk : old('stok_id') }}"
+                                    readonly />
+                                <!-- Hidden input untuk menyimpan stok_id yang sebenarnya -->
+                                <input type="hidden" name="stok_id" id="stok_id"
+                                    value="{{ $barangMasuk->stok_id ? $barangMasuk->stok_id : old('stok_id') }}" />
                                 @error('stok_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror

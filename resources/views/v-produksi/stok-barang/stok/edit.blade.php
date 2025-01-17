@@ -128,7 +128,6 @@
                     </div>
                 </div>
                 <div class="card-footer d-flex justify-content-end gap-2">
-                    <button type="reset" class="btn btn-secondary">Reset</button>
                     <button type="submit" class="btn btn-primary">Simpan</button>
                 </div>
             </form>

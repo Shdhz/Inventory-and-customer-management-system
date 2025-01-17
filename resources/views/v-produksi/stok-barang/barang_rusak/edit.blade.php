@@ -1,6 +1,5 @@
 @extends('layouts.produksi')
 @section('content')
-    <x-message.errors />
     <div class="container-lg mt-2">
         <div class="card">
             <div class="card-header row-cols-auto">
@@ -23,16 +22,13 @@
                             <div class="mb-3">
                                 <label for="id_stok" class="form-label">Pilih Barang Rusak <span
                                         class="text-danger">*</span></label>
-                                <select class="form-select @error('id_stok') is-invalid @enderror" name="id_stok"
-                                    id="id_stok" required>
-                                    <option value="" selected>-- Pilih Barang --</option>
-                                    @foreach ($stokBarang as $sb)
-                                        <option value="{{ $sb->id_stok }}"
-                                            {{ (int) old('id_stok', $barangRusak->stok_id) === (int) $sb->id_stok ? 'selected' : '' }}>
-                                            {{ $sb->nama_produk }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                <input type="text" class="form-control @error('id_stok') is-invalid @enderror"
+                                    id="id_stok_display"
+                                    value="{{ $barangRusak->stok_id ? $stokBarang->firstWhere('id_stok', $barangRusak->stok_id)->nama_produk : old('id_stok') }}"
+                                    readonly />
+                                <!-- Hidden input untuk menyimpan id_stok yang sebenarnya -->
+                                <input type="hidden" name="id_stok" id="id_stok"
+                                    value="{{ $barangRusak->stok_id ? $barangRusak->stok_id : old('id_stok') }}" />
                                 @error('id_stok')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -51,7 +47,6 @@
                     </div>
                 </div>
                 <div class="card-footer d-flex justify-content-end gap-2">
-                    <button type="reset" class="btn btn-secondary">Reset</button>
                     <button type="submit" class="btn btn-primary">Simpan</button>
                 </div>
             </form>

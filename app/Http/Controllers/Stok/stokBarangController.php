@@ -17,66 +17,44 @@ class stokBarangController extends Controller
 
     public function index(Request $request)
     {
-        $title = 'Stok Barang';
+        $title = 'Stok Produk';
+        $button = Auth::user()->hasRole('produksi') ? 'Tambah Stok produk' : null;
 
-        null;
+        if ($request->ajax()) {
+            $productStocks = productStock::with('category')->get();
 
-        if (Auth::user()->hasRole('produksi')) {
-            $button = 'Tambah Stok barang';
-
-            if ($request->ajax()) {
-                $productStocks = productStock::with('category')->get();
-                return DataTables::of($productStocks)
-                    ->addIndexColumn()
-                    ->addColumn('updated_at', function ($row) {
-                        return Carbon::parse($row->updated_at)->format('d M Y, H:i');
-                    })
-                    ->addColumn('nama_kategori', function ($row) {
-                        return $row->category ? $row->category->nama_kategori : 'N/A';
-                    })
-                    ->addColumn('kelompok_produksi', function ($row) {
-                        return $row->category ? $row->category->kelompok_produksi : 'N/A';
-                    })
-                    ->addColumn('foto_produk', function ($row) {
-                        return $row->foto_produk
-                            ? '<img src="' . asset('storage/uploads/stok-barang/' . $row->foto_produk) . '" alt="Foto Produk" width="50">'
-                            : 'N/A';
-                    })
-                    ->addColumn('actions', function ($row) {
+            return DataTables::of($productStocks)
+                ->addIndexColumn()
+                ->addColumn('updated_at', function ($row) {
+                    return Carbon::parse($row->updated_at)->format('d M Y, H:i');
+                })
+                ->addColumn('nama_kategori', function ($row) {
+                    return $row->category ? $row->category->nama_kategori : 'N/A';
+                })
+                ->addColumn('kelompok_produksi', function ($row) {
+                    return $row->category ? $row->category->kelompok_produksi : 'N/A';
+                })
+                ->addColumn('foto_produk', function ($row) {
+                    $imageUrl = $row->foto_produk ? asset('storage/uploads/stok-barang/' . $row->foto_produk) : null;
+                    return $imageUrl
+                        ? '<img src="' . $imageUrl . '" alt="Foto Produk" width="50">'
+                        : 'N/A';
+                })
+                ->addColumn('actions', function ($row) {
+                    // Hanya tambah kolom actions jika pengguna memiliki role 'produksi'
+                    if (Auth::user()->hasRole('produksi')) {
                         return view('components.button.action-btn', [
                             'edit' => route('stok-barang.edit', $row->id_stok),
                             'delete' => route('stok-barang.destroy', $row->id_stok),
                         ])->render();
-                    })
-                    ->rawColumns(['foto_produk', 'actions'])
-                    ->make(true);
-            }
-            return view('v-produksi.stok-barang.stok.index', compact('title', 'button'));
-        } else {
-            if ($request->ajax()) {
-                $productStocks = productStock::with('category')->get();
-                return DataTables::of($productStocks)
-                    ->addIndexColumn()
-                    ->addColumn('updated_at', function ($row) {
-                        return Carbon::parse($row->updated_at)->format('d M Y, H:i');
-                    })
-                    ->addColumn('nama_kategori', function ($row) {
-                        return $row->category ? $row->category->nama_kategori : 'N/A';
-                    })
-                    ->addColumn('kelompok_produksi', function ($row) {
-                        return $row->category ? $row->category->kelompok_produksi : 'N/A';
-                    })
-                    ->addColumn('foto_produk', function ($row) {
-                        $imageUrl = $row->foto_produk ? asset('storage/uploads/stok-barang/' . $row->foto_produk) : null;
-                        return $imageUrl
-                            ? '<img src="' . $imageUrl . '" alt="Foto Produk" width="50">'
-                            : 'N/A';
-                    })
-                    ->rawColumns(['foto_produk'])
-                    ->make(true);
-            }
-            return view('v-produksi.stok-barang.stok.index', compact('title'));
+                    }
+                    return null; // Jika bukan role 'produksi', kembalikan null
+                })
+                ->rawColumns(['foto_produk', 'actions'])
+                ->make(true);
         }
+
+        return view('v-produksi.stok-barang.stok.index', compact('title', 'button'));
     }
 
 
@@ -239,7 +217,7 @@ class stokBarangController extends Controller
     public function generateKodeProduk(Request $request)
     {
         $prefix = $request->query('prefix');
-        if (!$prefix || !in_array($prefix, ['BU', 'BX', 'TS'])) {
+        if (!$prefix || !in_array($prefix, ['BU', 'BX', 'TS', 'HD'])) {
             return response()->json(['error' => 'Prefix tidak valid'], 400);
         }
 

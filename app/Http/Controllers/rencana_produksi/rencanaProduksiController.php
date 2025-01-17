@@ -30,7 +30,7 @@ class rencanaProduksiController extends Controller
                     'formPo.customerOrder.draftCustomer'
                 ])->get();
             }
-        
+
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('po_admin', function ($row) {
@@ -72,7 +72,9 @@ class rencanaProduksiController extends Controller
     public function create()
     {
         $backUrl = url()->previous();
-        $formPo = FormPo::where('status_form_po', true)->get();
+        $formPo = FormPo::where('status_form_po', true)
+            ->whereDoesntHave('rencanaProduksi')
+            ->get();
 
         return view('v-produksi.rencana-produksi.create', compact('formPo', 'backUrl'));
     }
@@ -122,7 +124,7 @@ class rencanaProduksiController extends Controller
             $rencanaProduksi->mulai_produksi = $validated['mulai_produksi'];
             $rencanaProduksi->berakhir_produksi = $validated['berakhir_produksi'];
             $rencanaProduksi->status = $validated['status'];
-            $rencanaProduksi->nama_pengrajin = $validated['nama_pengrajin']; // Menyimpan nama pengrajin
+            $rencanaProduksi->nama_pengrajin = $validated['nama_pengrajin'];
             $rencanaProduksi->save();
 
             // Redirect dengan pesan sukses
@@ -148,24 +150,83 @@ class rencanaProduksiController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit($id)
     {
-        //
+        $rencanaProduksi = rencanaProduksi::findOrFail($id);
+        $formPo = FormPo::where('status_form_po', true)
+            ->whereDoesntHave('rencanaProduksi')
+            ->orWhere('id_form_po', $rencanaProduksi->form_po_id)
+            ->get();
+
+        $backUrl = url()->previous();
+
+        return view('v-produksi.rencana-produksi.edit', compact('rencanaProduksi', 'formPo', 'backUrl'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
-        //
+        $validated = $request->validate([
+            'form_po_id' => 'required|exists:tb_form_po,id_form_po',
+            'prioritas' => 'required|in:high,medium,low',
+            'mulai_produksi' => 'required|date|after_or_equal:today',
+            'berakhir_produksi' => 'required|date|after_or_equal:mulai_produksi',
+            'status' => 'required|in:produksi,selesai',
+            'nama_pengrajin' => 'required|string|max:255',
+        ], [
+            'form_po_id.required' => 'Form PO wajib dipilih.',
+            'form_po_id.exists' => 'Form PO yang dipilih tidak valid.',
+            'prioritas.required' => 'Prioritas PO wajib dipilih.',
+            'prioritas.in' => 'Prioritas PO hanya boleh High, Medium, atau Low.',
+            'mulai_produksi.required' => 'Tanggal mulai wajib diisi.',
+            'mulai_produksi.after_or_equal' => 'Tanggal mulai tidak boleh kurang dari hari ini.',
+            'berakhir_produksi.required' => 'Tanggal selesai wajib diisi.',
+            'berakhir_produksi.after_or_equal' => 'Tanggal selesai tidak boleh kurang dari tanggal mulai.',
+            'status.required' => 'Status produksi wajib diisi.',
+            'status.in' => 'Status produksi hanya boleh Produksi atau Selesai.',
+            'nama_pengrajin.required' => 'Nama pengrajin wajib diisi.',
+            'nama_pengrajin.max' => 'Nama pengrajin tidak boleh lebih dari 255 karakter.',
+        ]);
+
+        // Mapping prioritas
+        $prioritasMapping = [
+            'high' => 1,
+            'medium' => 2,
+            'low' => 3,
+        ];
+
+        try {
+            $rencanaProduksi = rencanaProduksi::findOrFail($id);
+
+            $rencanaProduksi->form_po_id = $validated['form_po_id'];
+            $rencanaProduksi->prioritas = $prioritasMapping[$validated['prioritas']];
+            $rencanaProduksi->mulai_produksi = $validated['mulai_produksi'];
+            $rencanaProduksi->berakhir_produksi = $validated['berakhir_produksi'];
+            $rencanaProduksi->status = $validated['status'];
+            $rencanaProduksi->nama_pengrajin = $validated['nama_pengrajin'];
+            $rencanaProduksi->save();
+
+            // Redirect dengan pesan sukses
+            return redirect()
+                ->route('rencana-produksi.index')
+                ->with('success', 'Rencana produksi berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return back()
+                ->withErrors(['error' => 'Terjadi kesalahan saat memperbarui data: ' . $e->getMessage()])
+                ->withInput();
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy($id)
     {
-        //
+        $rencanaProduksi = rencanaProduksi::findOrFail($id);
+        $rencanaProduksi->delete();
+
+        return redirect()->route('rencana-produksi.index')->with('success', 'Rencana produksi berhasil dihapus.');
     }
 }

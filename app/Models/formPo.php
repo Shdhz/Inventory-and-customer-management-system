@@ -24,7 +24,7 @@ class formPo extends Model
 
     public function rencanaProduksi()
     {
-        return $this->hasMany(rencanaProduksi::class);
+        return $this->hasMany(rencanaProduksi::class, 'form_po_id', 'id_form_po');
     }
 
     public function products()

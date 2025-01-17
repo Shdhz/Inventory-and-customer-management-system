@@ -14,8 +14,8 @@ class kategoriBarangController extends Controller
      */
     public function index()
     {
-        $title = 'Kategori barang';
-        $button = 'Tambah kategori barang';
+        $title = 'Kategori produk';
+        $button = 'Tambah kategori produk';
 
         if (request()->ajax()) {
             $data = categoriesProduct::all();
@@ -27,7 +27,7 @@ class kategoriBarangController extends Controller
                         'delete' => route('kategori-barang.destroy', $row->id_kategori),
                     ])->render();
                 })
-                ->rawColumns(['actions']) // Supaya tombol HTML dirender
+                ->rawColumns(['actions']) 
                 ->make(true);
         }
         return view('v-produksi.stok-barang.kategori.index', compact('title', 'button'));
@@ -49,13 +49,11 @@ class kategoriBarangController extends Controller
      */
     public function store(Request $request)
     {
-        // echo json_encode($request->all()); die;
         // Validasi input
         $validatedData = $request->validate([
             'nama_kategori' => 'required|max:20',
             'kelompok_produksi'=>'required'
         ]);
-        // dd($validatedData);
 
         // Menyimpan kategori ke database
         categoriesProduct::create($validatedData);

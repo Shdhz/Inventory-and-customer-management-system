@@ -18,7 +18,7 @@
                         <thead>
                             <tr>
                                 <th>No</th>
-                                <th>Nama Kategori Barang</th>
+                                <th>Nama Kategori produk</th>
                                 <th>Kelompok Produksi</th>
                                 <th>Aksi</th>
                             </tr>
@@ -44,12 +44,10 @@
                         previous: 'Sebelumnya',
                     },
                 },
-                columnDefs: [
-                    {
+                columnDefs: [{
                     targets: '_all',
                     className: 'text-start',
-                    }, 
-                ],
+                }, ],
                 columns: [{
                         data: 'DT_RowIndex',
                         name: 'DT_RowIndex'
@@ -73,4 +71,5 @@
             });
         });
     </script>
+    <x-button.confirmdelete />
 @endsection

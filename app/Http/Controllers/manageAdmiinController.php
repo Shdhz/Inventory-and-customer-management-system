@@ -80,12 +80,31 @@ class manageAdmiinController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:users',
-            'password' => 'required|string|min:6|confirmed',
-            'role' => 'required|exists:roles,name',
-        ]);
+        $request->validate(
+            [
+                'name' => 'required|string|max:255',
+                'username' => 'required|string|max:255|unique:users',
+                'password' => [
+                    'nullable',
+                    'string',
+                    'min:6',
+                    'confirmed',
+                    'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/'
+                ],
+                'role' => 'required|exists:roles,name',
+            ],
+            [
+                'name.required' => 'Nama lengkap wajib diisi.',
+                'username.required' => 'Username wajib diisi.',
+                'username.unique' => 'Username sudah digunakan.',
+                'password.required' => 'Password wajib diisi.',
+                'password.min' => 'Password harus minimal 6 karakter.',
+                'password.regex' => 'Password harus mengandung minimal 1 huruf besar, 1 huruf kecil, 1 angka, dan 1 karakter khusus.',
+                'password.confirmed' => 'Konfirmasi password tidak cocok.',
+                'role.required' => 'Role wajib dipilih.',
+                'role.exists' => 'Role yang dipilih tidak valid.'
+            ]
+        );
 
         $user = User::create([
             'name' => $request->name,
@@ -115,12 +134,31 @@ class manageAdmiinController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:users,username,' . $id,
-            'password' => 'nullable|string|min:6|confirmed',
-            'role' => 'required|exists:roles,name',
-        ]);
+        $request->validate(
+            [
+                'name' => 'required|string|max:255',
+                'username' => 'required|string|max:255|unique:users,username,' . $id,
+                'password' => [
+                    'nullable',
+                    'string',
+                    'min:6',
+                    'confirmed',
+                    'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/'
+                ],
+                'role' => 'required|exists:roles,name',
+            ],
+            [
+                'name.required' => 'Nama lengkap wajib diisi.',
+                'username.required' => 'Username wajib diisi.',
+                'username.unique' => 'Username sudah digunakan, silahkan gunakan username.',
+                'password.required' => 'Password wajib diisi.',
+                'password.min' => 'Password harus minimal 6 karakter.',
+                'password.confirmed' => 'Konfirmasi password tidak cocok.',
+                'password.regex' => 'Password harus mengandung minimal 1 huruf besar, 1 huruf kecil, 1 angka, dan 1 karakter khusus.',
+                'role.required' => 'Role wajib dipilih.',
+                'role.exists' => 'Role yang dipilih tidak valid.'
+            ]
+        );
 
         $user = User::findOrFail($id);
         $user->name = $request->name;

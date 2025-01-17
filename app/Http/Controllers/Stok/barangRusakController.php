@@ -17,11 +17,11 @@ class barangRusakController extends Controller
      */
     public function index(Request $request)
     {
-        $title = "Barang rusak";
+        $title = "Produk rusak";
         $button = null;
 
         if (Auth::user()->hasRole('produksi')) {
-            $button = 'Tambah Stok barang';
+            $button = 'Tambah produk rusak';
             if ($request->ajax()) {
                 $barangRusak = barangRusak::with('product.category')->get();
                 return DataTables::of($barangRusak)
@@ -54,7 +54,7 @@ class barangRusakController extends Controller
                         return $row->product ? $row->product->nama_produk : 'N/A';
                     })
                     ->addColumn('kategori_id', function ($row) {
-                        return $row->product && $row->product->category ? $row->product->category->nama_kategori : 'N/A'; // Menampilkan nama kategori
+                        return $row->product && $row->product->category ? $row->product->category->nama_kategori : 'N/A';
                     })
                     ->addColumn('updated_at', function ($row) {
                         return Carbon::parse($row->updated_at)->format('d M Y, H:i');

@@ -88,4 +88,5 @@
             responsive: true
         });
     </script>
+    <x-button.confirmdelete />
 @endsection
