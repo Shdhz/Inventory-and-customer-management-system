@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 @section('content')
-<x-message.errors />
+    <x-message.errors />
     <div class="container-lg mt-2">
         <div class="card">
             <div class="card-header row-cols-auto">
@@ -293,21 +293,20 @@
 
 
             // Event listener untuk input harga, qty, ongkir
-            $(document).on('input', 'input[name="qty[]"], input[name="harga[]"], #ongkir', function() {
+            $(document).on('input', 'input[name="qty[]"], input[name="harga_satuan[]"], #ongkir', function() {
                 validateNumberInput($(this));
                 calculateTotals();
             });
+
             // Event listener khusus untuk DP
             $('#dp').on('input', function() {
                 let dp = validateNumberInput($(this));
-
-                // Batasi nilai DP antara 0 dan 100
                 if (dp > 100) {
                     dp = 100;
                     $(this).val(dp);
                 }
 
-                calculateTotals(); // Hitung ulang total
+                calculateTotals();
             });
 
             // Hitung total awal saat halaman dimuat

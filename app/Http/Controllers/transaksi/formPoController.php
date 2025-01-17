@@ -153,6 +153,9 @@ class formPoController extends Controller
 
         $backUrl = route('form-po.index');
         $customers = CustomerOrder::with('draftCustomer')
+            ->whereHas('draftCustomer.user', function ($query) {
+                $query->where('user_id', Auth::user()->id);
+            })
             ->where('jenis_order', 'pre order')
             ->get();
         $categories = categoriesProduct::all();
@@ -191,13 +194,14 @@ class formPoController extends Controller
         $formPo->metode_pembayaran = $request->metode_pembayaran;
 
         if ($request->hasFile('model')) {
-            // Delete old image if exists
             if ($formPo->model) {
-                Storage::delete('public/uploads/stok-barang/' . $formPo->model);
+                Storage::disk('public')->delete('uploads/stok-barang/' . $formPo->model);
             }
-            // Store new image
-            $formPo->model = $request->file('model')->store('uploads/stok-barang', 'public');
-        }
+            $file = $request->file('model');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $file->storeAs('uploads/stok-barang', $fileName, 'public');
+            $formPo->model = $fileName;
+        };
 
         $formPo->save();
 

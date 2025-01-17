@@ -63,8 +63,7 @@
                                 <div class="custom-file-upload">
                                     <input type="file" class="form-control" id="model" name="model" accept="image/*" />
                                     <label for="model" class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center">
-                                        <i class="bi bi-camera-fill me-2"></i> Upload Gambar
-                                    </label>
+                                        <i class="bi bi-camera-fill me-2"></i> Upload Gambar <span class="text-muted"> - Maksimal upload ukuran 2Mb</span></label>
                                 </div>
                                 <div class="image-preview mt-2">
                                     <img id="previewImage" src="{{ asset('storage/uploads/stok-barang/' . $formPo->model) }}" alt="Preview Gambar" style="max-width: 100%; border-radius: 8px;" />
