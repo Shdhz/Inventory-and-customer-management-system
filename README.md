@@ -1,5 +1,5 @@
 
-# Sistem Manajemen Inventaris dan Pelanggan
+# Sistem Manajemen Data Inventaris dan Pelanggan
 
 Sistem ini dirancang untuk mengelola inventaris produk dan data pelanggan, serta melacak transaksi penjualan dan pembelian.
 
