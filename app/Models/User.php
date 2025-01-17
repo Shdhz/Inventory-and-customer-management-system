@@ -22,6 +22,7 @@ class User extends Authenticatable
         'name',
         'username',
         'password',
+        'no_hp',
     ];
 
     /**
@@ -51,5 +52,10 @@ class User extends Authenticatable
     public function draftCustomers()
     {
         return $this->hasMany(DraftCustomer::class, 'user_id', 'draft_customer_id');
+    }
+
+    public function instagramForAdmin()
+    {
+        return $this->hasMany(InstagramForAdmin::class, 'id_user', 'id');
     }
 }

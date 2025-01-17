@@ -19,6 +19,8 @@
                                 <th>No</th>
                                 <th>Nama</th>
                                 <th>Username</th>
+                                <th>No hp</th>
+                                <th>instagram</th>
                                 <th>Role</th>
                                 <th>Diedit Pada</th>
                                 <th>Aksi</th>
@@ -49,6 +51,14 @@
                     {
                         data: 'username',
                         name: 'username'
+                    },
+                    {
+                        data: 'no_hp',
+                        name: 'no_hp'
+                    },
+                    {
+                        data: 'nama_instagram',
+                        name: 'nama_instagram'
                     },
                     {
                         data: 'roles',

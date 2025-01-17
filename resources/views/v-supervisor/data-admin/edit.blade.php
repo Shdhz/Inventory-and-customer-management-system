@@ -34,10 +34,45 @@
                         @enderror
                     </div>
 
+                    {{-- no_hp --}}
+                    <div class="mb-3">
+                        <label class="form-label">No hp <span class="text-danger">*</span></label>
+                        <input type="number" id="no_hp_input" name="no_hp"
+                            class="form-control @error('no_hp') is-invalid @enderror"
+                            value="{{ old('no_hp', $user->no_hp) }}" maxlength="13" required>
+                        @error('no_hp')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <!-- Instagram -->
+                    <div id="instagram-fields">
+                        @foreach (old('instagram', $instagram ?? []) as $key => $value)
+                            <div class="row mb-3">
+                                <div class="col-md-10">
+                                    <label class="form-label">Instagram <span class="text-danger">*</span></label>
+                                    <input type="text" name="instagram[]" class="form-control"
+                                        value="{{ $value }}" required>
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <button type="button" class="btn btn-danger remove-instagram">Hapus</button>
+                                </div>
+                            </div>
+                        @endforeach
+
+                        <!-- Tombol Tambah Instagram -->
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <button type="button" id="add-instagram" class="btn btn-primary">Tambah Instagram</button>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Password -->
                     <div class="mb-3">
                         <label class="form-label">Password <span class="text-danger">*</span></label>
-                        <input type="password" placeholder="Kosongkan jika tidak ingin mengubah password." name="password" class="form-control @error('password') is-invalid @enderror">
+                        <input type="password" placeholder="Kosongkan jika tidak ingin mengubah password." name="password"
+                            class="form-control @error('password') is-invalid @enderror">
                         @error('password')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -87,4 +122,49 @@
             </form>
         </div>
     </div>
+
+    <script>
+        // Membatasi panjang nomor HP sampai 13 digit
+        document.getElementById('no_hp_input').addEventListener('input', function(e) {
+            if (this.value.length > 13) {
+                this.value = this.value.slice(0, 13);
+            }
+        });
+
+        // Menambahkan field Instagram
+        document.getElementById('add-instagram').addEventListener('click', function() {
+            const newField = `
+            <div class="row mb-3">
+                <div class="col-md-10">
+                    <label class="form-label">Instagram <span class="text-danger">*</span></label>
+                    <input type="text" name="instagram[]" class="form-control" required>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" class="btn btn-danger remove-instagram">Hapus</button>
+                </div>
+            </div>
+        `;
+            document.getElementById('instagram-fields').insertAdjacentHTML('afterbegin',
+                newField);
+        });
+
+        document.getElementById('instagram-fields').addEventListener('click', function(e) {
+            if (e.target && e.target.classList.contains('remove-instagram')) {
+                const row = e.target.closest('.row');
+                const input = row.querySelector(
+                'input[name="instagram[]"]');
+
+                if (input && input.value) {
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name =
+                    'removed_instagram[]';
+                    hiddenInput.value = input.value;
+                    document.querySelector('form').appendChild(hiddenInput);
+                }
+
+                row.remove(); // Hapus elemen row terkait dari DOM
+            }
+        });
+    </script>
 @endsection

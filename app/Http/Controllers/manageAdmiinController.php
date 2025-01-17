@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\instagramForAdmin;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -18,19 +19,29 @@ class manageAdmiinController extends Controller
     {
         $title = 'Kelola Data Pengguna';
         $button = 'Tambah Data Pengguna';
-        // Cek jika request berasal dari DataTables
+
         if ($request->ajax()) {
-            $users = User::with('roles');
+            $users = User::with('roles', 'instagramForAdmin');
 
             return DataTables::of($users)
                 ->addIndexColumn()
                 ->addColumn('updated_at', function ($row) {
                     return Carbon::parse($row->updated_at)->format('d M Y');
                 })
+                ->addColumn('no_hp', function ($user) {
+                    return $user->no_hp ?: '-';
+                })
+                ->addColumn('nama_instagram', function ($user) {
+                    $instagramList = $user->instagramForAdmin->pluck('nama_instagram');
+                    if ($instagramList->isEmpty()) {
+                        return '-';
+                    }
+                    return $instagramList->map(function ($ig) {
+                        return "<span class='badge bg-info text-white'>{$ig}</span>";
+                    })->implode(' '); 
+                })
                 ->addColumn('roles', function ($user) {
-                    // Cek apakah user memiliki role 'admin', 'supervisor', atau 'produksi'
-                    $roles = $user->roles->pluck('name'); // Mengambil semua nama role dari user
-
+                    $roles = $user->roles->pluck('name'); 
                     $roleBadges = '';
 
                     // Memeriksa setiap role dan memberikan badge sesuai role yang dimiliki
@@ -57,7 +68,7 @@ class manageAdmiinController extends Controller
                         'delete' => route('kelola-admin.destroy', $row->id),
                     ])->render();
                 })
-                ->rawColumns(['roles', 'actions', 'updated_at'])
+                ->rawColumns(['roles', 'actions', 'updated_at', 'nama_instagram'])
                 ->make(true);
         }
 
@@ -92,6 +103,8 @@ class manageAdmiinController extends Controller
                     'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/'
                 ],
                 'role' => 'required|exists:roles,name',
+                'no_hp' => 'numeric|digits_between:10,13',
+                'instagram.*' => 'required|string|max:255'
             ],
             [
                 'name.required' => 'Nama lengkap wajib diisi.',
@@ -102,17 +115,33 @@ class manageAdmiinController extends Controller
                 'password.regex' => 'Password harus mengandung minimal 1 huruf besar, 1 huruf kecil, 1 angka, dan 1 karakter khusus.',
                 'password.confirmed' => 'Konfirmasi password tidak cocok.',
                 'role.required' => 'Role wajib dipilih.',
-                'role.exists' => 'Role yang dipilih tidak valid.'
+                'role.exists' => 'Role yang dipilih tidak valid.',
+                'no_hp.numeric' => 'Nomor HP harus berupa angka.',
+                'no_hp.digits_between' => 'Nomor HP harus memiliki panjang antara 10 hingga 13 digit.',
+                'instagram.*' => 'Instagram harus berupa string dengan panjang maksimal 255 karakter.',
+                'instagram.required' => 'Instagram harus diisi.'
             ]
         );
 
         $user = User::create([
             'name' => $request->name,
             'username' => $request->username,
+            'no_hp' => $request->no_hp,
             'password' => Hash::make($request->password),
         ]);
 
         $user->assignRole($request->role);
+
+        if ($request->has('instagram')) {
+            foreach ($request->instagram as $instagram) {
+                if (!empty($instagram)) {
+                    instagramForAdmin::create([
+                        'id_user' => $user->id,
+                        'nama_instagram' => $instagram,
+                    ]);
+                }
+            }
+        }
 
         return redirect()->route('kelola-admin.index')->with('success', 'Data pengguna berhasil ditambahkan.');
     }
@@ -126,7 +155,8 @@ class manageAdmiinController extends Controller
         $backUrl = url()->previous();
         $user = User::findOrFail($id);
         $roles = Role::all();
-        return view('v-supervisor.data-admin.edit', compact('title', 'backUrl', 'user', 'roles'));
+        $instagram = instagramForAdmin::where('id_user', $id)->pluck('nama_instagram')->toArray();
+        return view('v-supervisor.data-admin.edit', compact('title', 'backUrl', 'user', 'roles', 'instagram'));
     }
 
     /**
@@ -146,6 +176,7 @@ class manageAdmiinController extends Controller
                     'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/'
                 ],
                 'role' => 'required|exists:roles,name',
+                'instagram.*' => 'required|string|max:255'
             ],
             [
                 'name.required' => 'Nama lengkap wajib diisi.',
@@ -156,7 +187,9 @@ class manageAdmiinController extends Controller
                 'password.confirmed' => 'Konfirmasi password tidak cocok.',
                 'password.regex' => 'Password harus mengandung minimal 1 huruf besar, 1 huruf kecil, 1 angka, dan 1 karakter khusus.',
                 'role.required' => 'Role wajib dipilih.',
-                'role.exists' => 'Role yang dipilih tidak valid.'
+                'role.exists' => 'Role yang dipilih tidak valid.',
+                'instagram.*' => 'Instagram harus berupa string dengan panjang maksimal 255 karakter.',
+                'instagram.required' => 'Instagram harus diisi.'
             ]
         );
 
@@ -172,6 +205,20 @@ class manageAdmiinController extends Controller
 
         $user->syncRoles([$request->role]);
 
+        instagramForAdmin::where('id_user', $id)->delete();
+
+        // Menyimpan Instagram yang baru
+        if ($request->has('instagram')) {
+            foreach ($request->instagram as $instagram) {
+                if (!empty($instagram)) {
+                    instagramForAdmin::create([
+                        'id_user' => $user->id,
+                        'nama_instagram' => $instagram,
+                    ]);
+                }
+            }
+        }
+
         return redirect()->route('kelola-admin.index')->with('success', 'Data pengguna berhasil diperbarui.');
     }
 
@@ -180,6 +227,7 @@ class manageAdmiinController extends Controller
      */
     public function destroy(string $id)
     {
+        instagramForAdmin::where('id_user', $id)->delete();
         $user = User::findOrFail($id);
         $user->delete();
 
