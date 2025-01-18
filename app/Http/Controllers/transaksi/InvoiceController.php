@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Transaksi;
 
 use App\Http\Controllers\Controller;
 use App\Models\formPo;
+use App\Models\instagramForAdmin;
 use App\Models\Invoice;
 use App\Models\InvoiceDetail;
 use App\Models\TransaksiDetail;
+use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -116,8 +118,10 @@ class InvoiceController extends Controller
         $backUrl = url()->previous();
         $title = 'Tambah Invoice';
 
+        $instagrams = instagramForAdmin::where('id_user', Auth::id())->get();
         // pengambilna data invoice ready stock belum sesuai user login
         $customers = TransaksiDetail::with([
+            'transaksi.customerOrder.draftCustomer.user.instagramForAdmin',
             'transaksi.customerOrder.draftCustomer',
             'stok',
             'invoiceDetails'
@@ -131,7 +135,7 @@ class InvoiceController extends Controller
             ->groupBy(function ($item) {
                 return $item->transaksi->customerOrder->draftCustomer->draft_customers_id;
             })
-            ->map(function ($group) {
+            ->map(function ($group) use ($instagrams){
                 $firstItem = $group->first();
 
                 // Add null checks to prevent potential errors
@@ -142,12 +146,16 @@ class InvoiceController extends Controller
                     return null;
                 }
 
+                $user = optional($draftCustomer->user);
                 $invoiceDetails = $firstItem->invoiceDetails;
 
                 if ($invoiceDetails->isEmpty()) {
+
                     return [
                         'id' => $draftCustomer->draft_customers_id ?? null,
                         'nama' => $draftCustomer->Nama ?? 'Unnamed Customer',
+                        'no_hp' => $user->no_hp ?? 'Unknown Phone',
+                        'nama_instagram' => $instagrams->pluck('nama_instagram')->toArray(),
                         'produk' => $group->map(function ($item) {
                             $stok = optional($item->stok);
                             return [
@@ -170,7 +178,9 @@ class InvoiceController extends Controller
             })
             ->filter()
             ->values();
-        return view('transaksi.invoice.ready_stok.create', compact('backUrl', 'title', 'customers'));
+
+        // Ambil data Instagram berdasarkan user_id
+        return view('transaksi.invoice.ready_stok.create', compact('backUrl', 'title', 'customers' , 'instagrams'));
     }
 
     /**
@@ -251,6 +261,7 @@ class InvoiceController extends Controller
      */
     public function show($invoice_id)
     {
+        $user = User::with('instagramForAdmin')->find(Auth::id());
         $invoice = Invoice::with([
             'invoiceDetails.transaksiDetail.stok',
             'invoiceDetails.transaksiDetail.transaksi.customerOrder.draftCustomer',
@@ -261,11 +272,12 @@ class InvoiceController extends Controller
         $title = 'Detail Invoice';
         $backUrl = url()->previous();
 
-        return view('transaksi.invoice.ready_stok.show', compact('invoice', 'invoiceDetails', 'title', 'backUrl'));
+        return view('transaksi.invoice.ready_stok.show', compact('invoice', 'invoiceDetails', 'title', 'backUrl', 'user'));
     }
 
     public function downloadPdf($invoice_id)
     {
+        $user = User::with('instagramForAdmin')->find(Auth::id());
         $invoice = Invoice::with([
             'invoiceDetails.transaksiDetail.stok',
             'invoiceDetails.transaksiDetail.transaksi.customerOrder.draftCustomer',
@@ -278,7 +290,7 @@ class InvoiceController extends Controller
         $nota_no = preg_replace('/[\/\\\]/', '_', $nota_no);
         $filename = 'Invoice-' . $nota_no . '.pdf';
 
-        $pdf = Pdf::loadView('transaksi.invoice.ready_stok.pdf', compact('invoice', 'invoiceDetails'));
+        $pdf = Pdf::loadView('transaksi.invoice.ready_stok.pdf', compact('invoice', 'invoiceDetails', 'user'));
         $pdf->setPaper('b5', 'portrait');
         return $pdf->download($filename);
     }
@@ -294,15 +306,16 @@ class InvoiceController extends Controller
         $title = 'Edit Invoice';
 
         // Mengambil data invoice berdasarkan ID yang sesuai dengan user login
+        $instagrams = instagramForAdmin::where('id_user', Auth::id())->get();
         $invoice = Invoice::with([
             'invoiceDetails.transaksiDetail.stok',
             'invoiceDetails.transaksiDetail.transaksi.customerOrder.draftCustomer',
         ])
-        ->when(Auth::user()->hasRole('admin'), function ($query) {
-            $query->whereHas('invoiceDetails.transaksiDetail.transaksi.customerOrder.draftCustomer.user', function ($Subquery) {
-                $Subquery->where('user_id', Auth::id());
-            });
-        })->findOrFail($id);
+            ->when(Auth::user()->hasRole('admin'), function ($query) {
+                $query->whereHas('invoiceDetails.transaksiDetail.transaksi.customerOrder.draftCustomer.user', function ($Subquery) {
+                    $Subquery->where('user_id', Auth::id());
+                });
+            })->findOrFail($id);
 
         $invoiceDetails = $invoice->invoiceDetails;
 
@@ -318,13 +331,15 @@ class InvoiceController extends Controller
             ->groupBy(function ($id) {
                 return $id->transaksiDetail->transaksi->customerOrder->draftCustomer->draft_customers_id ?? 'Unknown Customer';
             })
-            ->map(function ($group) {
+            ->map(function ($group) use ($instagrams) {
                 $firstItem = $group->first();
                 $draftCustomer = optional($firstItem->transaksiDetail->transaksi->customerOrder)->draftCustomer;
 
                 return [
                     'id' => $draftCustomer->draft_customers_id ?? 'Unknown ID',
                     'nama' => $draftCustomer->Nama ?? 'Unnamed Customer',
+                    'no_hp' => $draftCustomer->user->no_hp ?? 'Unknown Phone',
+                    'nama_instagram' => $instagrams->pluck('nama_instagram')->toArray(),
                     'produk' => $group->map(function ($item) {
                         $stok = optional($item->stok);
                         return [

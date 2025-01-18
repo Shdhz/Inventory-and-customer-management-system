@@ -176,6 +176,7 @@ class manageAdmiinController extends Controller
                     'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/'
                 ],
                 'role' => 'required|exists:roles,name',
+                'no_hp' => 'numeric|digits_between:10,13',
                 'instagram.*' => 'required|string|max:255'
             ],
             [
@@ -192,10 +193,12 @@ class manageAdmiinController extends Controller
                 'instagram.required' => 'Instagram harus diisi.'
             ]
         );
-
+        
         $user = User::findOrFail($id);
+        
         $user->name = $request->name;
         $user->username = $request->username;
+        $user->no_hp = $request->no_hp;
 
         if ($request->password) {
             $user->password = Hash::make($request->password);

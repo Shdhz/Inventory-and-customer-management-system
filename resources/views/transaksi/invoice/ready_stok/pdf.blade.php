@@ -81,10 +81,15 @@
                 <address class="address">
                     Jl. Cikuya RT.03/07 Desa/Kec. Rajapolah<br>
                     Kab. Tasikmalaya - Jawa Barat<br>
-                    <span><img src="dist\wa.png" alt="" width="10px"></span> WhatsApp: 089639152588,
-                    081779200583<br>
+                    <span><img src="dist\wa.png" alt="" width="10px"></span> WhatsApp: {{ $user->no_hp }}<br>
                     <span><img src="dist\instagram.png" alt="" width="10px"></span> Instagram:
-                    @kaifa_craft, @kaifacraft<br>
+                    @foreach ($user->instagramForAdmin as $instagram)
+                        {{ $instagram->nama_instagram }}
+                        @if (!$loop->last)
+                            ,
+                        @endif
+                    @endforeach
+                    <br>
                 </address>
             </td>
             <td class="text-end">

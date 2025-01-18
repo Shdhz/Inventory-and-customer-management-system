@@ -25,8 +25,17 @@
                             <address>
                                 Jl. Cikuya RT.03/07 Desa/kec. Rajapolah<br>
                                 Kab.Tasikmalaya - Jawa Barat<br>
-                                <span>089639152588, 081779200583</span><br>
-                                <span>@kaifa_craft, @kaifacraft, @kerajinanbamburajapolah</span>
+                                @foreach ($customers as $customer)
+                                    <div>
+                                        <span>{{ $customer['no_hp'] }}</span><br>
+                                    </div>
+                                    @foreach ($customer['nama_instagram'] as $instagram)
+                                        <span>{{ $instagram }}</span>
+                                        @if (!$loop->last)
+                                            ,
+                                        @endif
+                                    @endforeach
+                                @endforeach
                             </address>
                         </div>
 
