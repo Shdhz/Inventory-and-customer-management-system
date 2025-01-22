@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\stok;
+namespace App\Http\Controllers\Stok;
 
 use App\Http\Controllers\Controller;
 use App\Models\categoriesProduct;

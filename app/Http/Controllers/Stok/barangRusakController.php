@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Stok;
+namespace App\Http\Controllers\stok;
 
 use App\Http\Controllers\Controller;
 use App\Models\barangRusak;
