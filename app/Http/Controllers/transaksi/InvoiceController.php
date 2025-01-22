@@ -53,6 +53,9 @@ class InvoiceController extends Controller
                 ->addColumn('customer_name', function ($row) {
                     return $row->transaksiDetail->transaksi->customerOrder->draftCustomer->Nama ?? '-';
                 })
+                ->addColumn('admin_name', function ($row) {
+                    return $row->transaksiDetail->transaksi->customerOrder->draftCustomer->user->name ?? '-';
+                })
                 ->addColumn('nota_no', function ($row) {
                     return $row->invoice->nota_no ?? 'N/A';
                 })

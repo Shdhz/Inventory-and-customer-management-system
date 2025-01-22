@@ -30,6 +30,7 @@
                         <thead>
                             <tr>
                                 <th>No</th>
+                                <th>Dikelola</th>
                                 <th>Nama customer</th>
                                 <th>Sumber Customer</th>
                                 <th>Tipe Order</th>
@@ -66,6 +67,10 @@
                 columns: [{
                         data: 'DT_RowIndex',
                         name: 'DT_RowIndex'
+                    },
+                    {
+                        data: 'admin_name',
+                        name: 'admin_name'
                     },
                     {
                         data: 'Nama',

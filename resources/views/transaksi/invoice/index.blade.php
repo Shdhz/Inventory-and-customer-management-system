@@ -40,6 +40,7 @@
                                         <th>Total Sisa</th>
                                         <th>Status Pembayaran</th>
                                         <th>Tenggat Waktu</th>
+                                        <th>Dikelola</th>
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
@@ -62,6 +63,7 @@
                                         <th>Total Sisa</th>
                                         <th>Status Pembayaran</th>
                                         <th>Tenggat Waktu</th>
+                                        <th>Dikelola</th>
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
@@ -125,6 +127,10 @@
                         name: 'tenggat_invoice'
                     },
                     {
+                        data: 'admin_name',
+                        name: 'admin_name'
+                    },
+                    {
                         data: 'actions',
                         name: 'actions',
                         orderable: false,
@@ -143,7 +149,7 @@
                 }
             });
 
-            // DataTable untuk Invoice Detail
+            // DataTable untuk Invoice ready stock
             $('#detail-table').DataTable({
                 processing: true,
                 serverSide: true,
@@ -191,6 +197,10 @@
                     {
                         data: 'tenggat_invoice',
                         name: 'tenggat_invoice'
+                    },
+                    {
+                        data: 'admin_name',
+                        name: 'admin_name'
                     },
                     {
                         data: 'actions',

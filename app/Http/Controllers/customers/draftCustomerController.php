@@ -25,6 +25,9 @@ class draftCustomerController extends Controller
                 ->get();
                 
             return DataTables::of($data)
+                ->addColumn('admin_name', function ($row) {
+                    return $row->user->name ?? '-';
+                })
                 ->addColumn('actions', function ($row) {
                     return view('components.button.action-btn', [
                         'edit' => route('draft-customer.edit', $row->draft_customers_id),
@@ -59,7 +62,7 @@ class draftCustomerController extends Controller
                 'provinsi' => 'nullable|string',
                 'kota' => 'nullable|string',
                 'alamat_lengkap' => 'nullable|string',
-                'sumber' => ['required', 'regex:/^(shopee|tokopedia|lazada|tiktok shop|tiktok|whatsapp|instagram|facebook)$/i'],
+                'sumber' => ['required', 'regex:/^(shopee|tokopedia|lazada|tiktok shop|tiktok|whatsapp|instagram|facebook|Youtube|youtube)$/i'],
             ],
             [
                 'Nama.required' => 'Nama wajib diisi.',
@@ -113,7 +116,7 @@ class draftCustomerController extends Controller
                 'provinsi' => 'nullable|string',
                 'kota' => 'nullable|string',
                 'alamat_lengkap' => 'nullable|string',
-                'sumber' => ['required', 'regex:/^(shopee|tokopedia|lazada|tiktok shop|tiktok|whatsapp|instagram|facebook)$/i'],
+                'sumber' => ['required', 'regex:/^(shopee|tokopedia|lazada|tiktok shop|tiktok|whatsapp|instagram|facebook|Youtube|youtube)$/i'],
             ],
             [
                 'Nama.required' => 'Nama wajib diisi.',

@@ -34,6 +34,9 @@ class orderController extends Controller
                 ->addColumn('Nama', function ($row) {
                     return $row->draftCustomer ? $row->draftCustomer->Nama : '-';
                 })
+                ->addColumn('admin_name', function ($row) {
+                    return $row->draftCustomer ? $row->draftCustomer->user->name : '-';
+                })
                 ->addColumn('sumber', function ($row) {
                     return $row->draftCustomer ? $row->draftCustomer->sumber : '-';
                 })
@@ -80,10 +83,11 @@ class orderController extends Controller
         ]);
 
         // Tentukan tipe order
+        $sumber = strtolower(DraftCustomer::findOrFail($validated['draft_customer_id'])->sumber);
+
         $tipeOrder = match (true) {
-            $sumber = strtolower(DraftCustomer::findOrFail($validated['draft_customer_id'])->sumber),
             in_array($sumber, ['shopee', 'tokopedia', 'lazada', 'tiktok shop', 'tiktok']) => 'cashless',
-            in_array($sumber, ['whatsapp', 'instagram', 'facebook']) => 'cash',
+            in_array($sumber, ['whatsapp', 'instagram', 'facebook', 'youtube']) => 'cash', // Pastikan 'youtube' ditangani
             default => null,
         };
 
@@ -134,10 +138,11 @@ class orderController extends Controller
 
         // Ambil data order customer berdasarkan ID
         $orderCustomer = CustomerOrder::findOrFail($id);
+        $sumber = strtolower(DraftCustomer::findOrFail($validated['draft_customer_id'])->sumber);
+
         $tipeOrder = match (true) {
-            $sumber = strtolower(DraftCustomer::findOrFail($validated['draft_customer_id'])->sumber),
             in_array($sumber, ['shopee', 'tokopedia', 'lazada', 'tiktok shop', 'tiktok']) => 'cashless',
-            in_array($sumber, ['whatsapp', 'instagram', 'facebook']) => 'cash',
+            in_array($sumber, ['whatsapp', 'instagram', 'facebook', 'youtube']) => 'cash',
             default => null,
         };
 

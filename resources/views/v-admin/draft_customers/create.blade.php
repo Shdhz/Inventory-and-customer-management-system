@@ -52,7 +52,7 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                                 <div class="form-text">
-                                    <strong>Jenis Cash:</strong> Instagram, WhatsApp, Facebook<br>
+                                    <strong>Jenis Cash:</strong> Instagram, WhatsApp, Facebook, Youtube<br>
                                     <strong>Jenis Cashless:</strong> Shopee, Tokopedia, Lazada, TikTok Shop, TikTok
                                 </div>
                             </div>
@@ -62,8 +62,9 @@
                         <div class="flex-grow-1">
                             <div class="mb-3">
                                 <label class="form-label">No HP <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control @error('no_hp') is-invalid @enderror"
-                                    name="no_hp" placeholder="No HP" value="{{ old('no_hp') }}" required maxlength="13"/>
+                                <input type="number" id="no_hp"
+                                    class="form-control @error('no_hp') is-invalid @enderror" name="no_hp"
+                                    placeholder="No HP" value="{{ old('no_hp') }}" required maxlength="13" />
                                 @error('no_hp')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -94,4 +95,21 @@
             </form>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const nomorHpInput = document.getElementById('no_hp');
+
+            nomorHpInput.addEventListener('input', () => {
+                let value = nomorHpInput.value;
+                value = value.replace(/[^0-9]/g, '');
+
+                if (value.length > 13) {
+                    value = value.slice(0, 13);
+                }
+
+                nomorHpInput.value = value;
+            });
+        });
+    </script>
 @endsection

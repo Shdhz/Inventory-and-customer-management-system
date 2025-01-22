@@ -81,6 +81,9 @@ class TransaksiController extends Controller
                 ->addColumn('metode_pembayaran', function ($row) {
                     return ucfirst($row->metode_pembayaran);
                 })
+                ->addColumn('admin_name', function ($row) {
+                    return $row->customerOrder->draftCustomer->user->name ?? '-';
+                })
                 ->addColumn('actions', function ($row) {
                     return view('components.button.action-btn', [
                         'edit' => route('transaksi-customer.edit', $row->id_transaksi),

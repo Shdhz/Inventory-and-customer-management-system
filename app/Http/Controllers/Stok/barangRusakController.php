@@ -86,7 +86,6 @@ class barangRusakController extends Controller
             'jumlah_barang_rusak' => 'required|integer|min:1',
         ]);
         try {
-            // Simpan data ke database
             barangRusak::create([
                 'stok_id' => $request->id_stok,
                 'jumlah_barang_rusak' => $request->jumlah_barang_rusak

@@ -18,6 +18,7 @@
                         <thead>
                             <tr>
                                 <th>No</th>
+                                <th>Dikelola</th>
                                 <th>Nama customer</th>
                                 <th>No Hp</th>
                                 <th>Email</th>
@@ -54,6 +55,10 @@
                                 return meta.row + 1;
                             }
                         }, // Untuk nomor urut
+                        {
+                            data: 'admin_name',
+                            name: 'admin_name'
+                        },
                         {
                             data: 'Nama',
                             name: 'Nama'

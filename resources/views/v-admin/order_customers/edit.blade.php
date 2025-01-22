@@ -83,7 +83,7 @@
             document.getElementById('sumber_display').value = sumber;
 
             const cashlessSources = ['shopee', 'tokopedia', 'lazada', 'tiktok shop', 'tiktok'];
-            const cashSources = ['whatsapp', 'instagram', 'facebook'];
+            const cashSources = ['whatsapp', 'instagram', 'facebook', 'youtube'];
 
             const sumberLower = sumber.toLowerCase();
             if (cashlessSources.includes(sumberLower)) {

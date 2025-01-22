@@ -7,7 +7,7 @@
             <div class="card-body">
                 <div class="row g-2 align-items-center">
                     <div class="col">
-                        <h2 class="page-title">Data Transaksi Customer</h2>
+                        <h2 class="page-title">Data Transaksi Ready stock</h2>
                     </div>
                     <div class="col-auto">
                         <x-button.invoice-btn href="{{ route('kelola-invoice.create') }}" :btn_invoice="'Tambah Invoice'" />
@@ -30,6 +30,7 @@
                                 <th>Grand Total</th>
                                 <th>ekspedisi</th>
                                 <th>Metode Pembayaran</th>
+                                <th>Dikelola</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -110,6 +111,10 @@
                         render: function(data) {
                             return `<span class="badge bg-primary text-white">${data}</span>`;
                         }
+                    },
+                    {
+                        data: 'admin_name',
+                        name: 'admin_name',
                     },
                     {
                         data: 'actions',

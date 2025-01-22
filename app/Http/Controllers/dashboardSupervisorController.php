@@ -34,7 +34,7 @@ class dashboardSupervisorController extends Controller
                 $currentYear = Carbon::now()->year;
 
                 $salesQuery = function ($relationPath) {
-                    return Invoice::whereHas($relationPath);
+                    return invoice::whereHas($relationPath);
                 };
 
                 // Hitung penjualan harian
@@ -85,7 +85,7 @@ class dashboardSupervisorController extends Controller
     {
         if ($request->ajax()) {
             try {
-                $unpaidInvoices = Invoice::select([
+                $unpaidInvoices = invoice::select([
                     'invoice_id',
                     'nota_no',
                     'status_pembayaran',

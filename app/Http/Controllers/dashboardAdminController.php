@@ -6,7 +6,6 @@ use App\Models\barangRusak;
 use App\Models\CustomerOrder;
 use App\Models\DraftCustomer;
 use App\Models\Invoice;
-use App\Models\InvoiceDetail;
 use App\Models\productStock;
 use App\Models\rencanaProduksi;
 use Carbon\Carbon;
@@ -47,7 +46,7 @@ class dashboardAdminController extends Controller
 
                 // Query untuk menghitung total penjualan
                 $salesQuery = function ($relationPath) use ($adminId) {
-                    return Invoice::whereHas($relationPath, function ($query) use ($adminId) {
+                    return invoice::whereHas($relationPath, function ($query) use ($adminId) {
                         $query->where('user_id', $adminId);
                     });
                 };
@@ -101,7 +100,7 @@ class dashboardAdminController extends Controller
         if ($request->ajax()) {
             try {
                 $adminId = Auth::id();
-                $unpaidInvoices = Invoice::select([
+                $unpaidInvoices = invoice::select([
                     'invoice_id',
                     'nota_no',
                     'status_pembayaran',

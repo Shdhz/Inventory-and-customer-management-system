@@ -80,12 +80,12 @@
         });
         document.getElementById('draft_customer_select').addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
-            const sumber = selectedOption.getAttribute('data-sumber') || ''; // Ambil data-sumber dari option
-            document.getElementById('sumber_display').value = sumber; // Tampilkan sumber di input
+            const sumber = selectedOption.getAttribute('data-sumber') || ''; 
+            document.getElementById('sumber_display').value = sumber; 
 
             // Menentukan tipe order berdasarkan sumber (case insensitive)
             const cashlessSources = ['shopee', 'tokopedia', 'lazada', 'tiktok shop', 'tiktok'];
-            const cashSources = ['whatsapp', 'instagram', 'facebook'];
+            const cashSources = ['whatsapp', 'instagram', 'facebook', 'youtube'];
 
             const sumberLower = sumber.toLowerCase();
             if (cashlessSources.includes(sumberLower)) {
@@ -93,7 +93,7 @@
             } else if (cashSources.includes(sumberLower)) {
                 document.getElementById('tipe_order').value = 'cash';
             } else {
-                document.getElementById('tipe_order').value = ''; // Kosongkan jika sumber tidak dikenali
+                document.getElementById('tipe_order').value = '';
             }
         });
     </script>
