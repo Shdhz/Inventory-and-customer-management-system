@@ -9,7 +9,9 @@
                     <div class="col">
                         <h2 class="page-title">Draft Customer All Data</h2>
                     </div>
-                    <x-button.add-btn :button="$button" href="{{ route('draft-customer.create') }}" />
+                    @role('admin')
+                        <x-button.add-btn :button="$button" href="{{ route('draft-customer.create') }}" />
+                    @endrole
                 </div>
             </div>
             <div class="card-body">

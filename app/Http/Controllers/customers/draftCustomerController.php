@@ -17,6 +17,7 @@ class draftCustomerController extends Controller
     public function index()
     {
         $button = "Tambah draft customer";
+        
         if (request()->ajax()) {
             $data = DraftCustomer::with('user')
                 ->when(Auth::user()->hasRole('admin'), function ($query) {
