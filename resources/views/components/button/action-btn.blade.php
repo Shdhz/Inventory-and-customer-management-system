@@ -13,11 +13,12 @@
     </div>
 
     <!-- Tombol Hapus -->
-    <div class="">
+    <div class="mb-2">
         <form action="{{ $delete }}" method="POST" class="d-inline">
             @csrf
             @method('DELETE')
-            <button type="button" class="btn btn-danger btn-sm p-2 rounded d-flex align-items-center" onclick="confirmDelete('{{ $delete }}')">
+            <button type="button" class="btn btn-danger btn-sm p-2 rounded d-flex align-items-center"
+                onclick="confirmDelete('{{ $delete }}')">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
@@ -30,4 +31,15 @@
             </button>
         </form>
     </div>
+
+    @if (request()->is('form-po*') || request()->is('rencana-produksi*'))
+        <a href="{{ $show }}" class="btn btn-primary btn-sm p-2 rounded d-flex align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
+            </svg>
+        </a>
+    @endif
 </div>

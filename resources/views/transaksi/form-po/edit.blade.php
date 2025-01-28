@@ -1,10 +1,10 @@
 @extends('layouts.admin')
 
 @section('content')
-    <x-message.errors />
     <style>
         .custom-file-upload input[type="file"] {
-            display: none; /* Hide the file input element */
+            display: none;
+            /* Hide the file input element */
         }
 
         .custom-file-upload label {
@@ -18,12 +18,46 @@
 
         .custom-file-upload label:hover {
             background-color: #f5f5f5;
+            border: 2px dashed #381bdd;
+            color: black;
         }
 
-        .image-preview img {
-            max-height: 300px;
-            object-fit: contain;
+        .image-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .image-preview-item {
+            position: relative;
+            display: inline-block;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .image-preview-item img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .image-preview-item .delete-image {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 5px;
+            background-color: rgba(255, 0, 0, 0.7);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+        }
+
+        .image-preview-item .delete-image:hover {
+            background-color: rgba(255, 0, 0, 1);
         }
     </style>
 
@@ -46,46 +80,73 @@
                         <div class="flex-grow-1">
                             <div class="mb-3">
                                 <label class="form-label">Nama Customer</label>
-                                <select class="form-control @error('customer_order_id') is-invalid @enderror" name="customer_order_id" required>
+                                <select class="form-control @error('customer_order_id') is-invalid @enderror"
+                                    name="customer_order_id" required>
                                     <option value="" selected>-- Pilih Nama Customer --</option>
                                     @foreach ($customers as $customer)
-                                        <option value="{{ $customer->customer_order_id }}" {{ old('customer_order_id', $formPo->customer_order_id) == $customer->customer_order_id ? 'selected' : '' }}>
-                                            {{ $customer->draftCustomer->Nama  }}
+                                        <option value="{{ $customer->customer_order_id }}"
+                                            {{ old('customer_order_id', $formPo->customer_order_id) == $customer->customer_order_id ? 'selected' : '' }}>
+                                            {{ $customer->draftCustomer->Nama }}
                                         </option>
                                     @endforeach
                                 </select>
                                 @error('customer_order_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                            </div>                                                 
+                            </div>
                             <div class="mb-3">
                                 <label class="form-label">Model</label>
                                 <div class="custom-file-upload">
-                                    <input type="file" class="form-control" id="model" name="model" accept="image/*" />
-                                    <label for="model" class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center">
-                                        <i class="bi bi-camera-fill me-2"></i> Upload Gambar <span class="text-muted"> - Maksimal upload ukuran 2Mb</span></label>
+                                    <input type="file" class="form-control" id="model" name="model[]"
+                                        accept="image/*" multiple />
+                                    <label for="model"
+                                        class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center">
+                                        <i class="bi bi-camera-fill me-2"></i> Upload Gambar <span class="text-muted"> - Maksimal upload ukuran/gambar : 2Mb</span></label>
                                 </div>
-                                <div class="image-preview mt-2">
-                                    <img id="previewImage" src="{{ asset('storage/uploads/stok-barang/' . $formPo->model) }}" alt="Preview Gambar" style="max-width: 100%; border-radius: 8px;" />
+                                <div class="image-preview mt-2" id="imagePreviewContainer">
+                                    <!-- Preview gambar akan ditampilkan di sini -->
+                                    @foreach ($formPo->modelsFormpo as $model)
+                                        <div class="image-preview-item" data-id="{{ $model->id_model }}">
+                                            <img src="{{ asset('storage/uploads/stok-barang/' . $model->model) }}"
+                                                alt="Model" width="100" height="100" class="img-thumbnail">
+                                            <button type="button" class="btn btn-danger btn-sm delete-image"
+                                                onclick="deleteModel({{ $model->id_model }})">
+                                                <i><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                        <path d="M4 7l16 0" />
+                                                        <path d="M10 11l0 6" />
+                                                        <path d="M14 11l0 6" />
+                                                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
+                                                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
+                                                    </svg></i>
+                                            </button>
+                                        </div>
+                                    @endforeach
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Qty <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control @error('qty') is-invalid @enderror" name="qty" placeholder="Jumlah" value="{{ old('qty', $formPo->qty) }}" required>
+                                <input type="number" class="form-control @error('qty') is-invalid @enderror" name="qty"
+                                    placeholder="Jumlah" value="{{ old('qty', $formPo->qty) }}" required>
                                 @error('qty')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Ukuran <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('ukuran') is-invalid @enderror" name="ukuran" placeholder="Ukuran" value="{{ old('ukuran', $formPo->ukuran) }}" required>
+                                <input type="text" class="form-control @error('ukuran') is-invalid @enderror"
+                                    name="ukuran" placeholder="Ukuran" value="{{ old('ukuran', $formPo->ukuran) }}"
+                                    required>
                                 @error('ukuran')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Warna <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('warna') is-invalid @enderror" name="warna" placeholder="Warna" value="{{ old('warna', $formPo->warna) }}" required>
+                                <input type="text" class="form-control @error('warna') is-invalid @enderror"
+                                    name="warna" placeholder="Warna" value="{{ old('warna', $formPo->warna) }}" required>
                                 @error('warna')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -96,24 +157,29 @@
                         <div class="flex-grow-1">
                             <div class="mb-3">
                                 <label class="form-label">Bahan <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('bahan') is-invalid @enderror" name="bahan" placeholder="Bahan" value="{{ old('bahan', $formPo->bahan) }}" required>
+                                <input type="text" class="form-control @error('bahan') is-invalid @enderror"
+                                    name="bahan" placeholder="Bahan" value="{{ old('bahan', $formPo->bahan) }}" required>
                                 @error('bahan')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Aksesoris <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('aksesoris') is-invalid @enderror" name="aksesoris" placeholder="Aksesoris" value="{{ old('aksesoris', $formPo->aksesoris) }}">
+                                <input type="text" class="form-control @error('aksesoris') is-invalid @enderror"
+                                    name="aksesoris" placeholder="Aksesoris"
+                                    value="{{ old('aksesoris', $formPo->aksesoris) }}">
                                 @error('aksesoris')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Kategori Barang <span class="text-danger">*</span></label>
-                                <select class="form-control @error('kategori_id') is-invalid @enderror" name="kategori_id" required>
+                                <select class="form-control @error('kategori_id') is-invalid @enderror" name="kategori_id"
+                                    required>
                                     <option value="" selected>-- Pilih Kategori Barang --</option>
                                     @foreach ($categories as $category)
-                                        <option value="{{ $category->id_kategori }}" {{ old('kategori_id', $formPo->kategori_id) == $category->id_kategori ? 'selected' : '' }}>
+                                        <option value="{{ $category->id_kategori }}"
+                                            {{ old('kategori_id', $formPo->kategori_id) == $category->id_kategori ? 'selected' : '' }}>
                                             {{ $category->nama_kategori }}
                                         </option>
                                     @endforeach
@@ -121,7 +187,7 @@
                                 @error('kategori_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                            </div> 
+                            </div>
                             <div class="mb-3">
                                 <label for="keterangan" class="form-label">Keterangan</label>
                                 <textarea name="keterangan" id="keterangan" class="form-control @error('keterangan') is-invalid @enderror">{{ old('keterangan', $formPo->keterangan) }}</textarea>
@@ -131,18 +197,24 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Metode Pembayaran <span class="text-danger">*</span></label>
-                                <select class="form-control @error('metode_pembayaran') is-invalid @enderror" name="metode_pembayaran" required>
+                                <select class="form-control @error('metode_pembayaran') is-invalid @enderror"
+                                    name="metode_pembayaran" required>
                                     <option value="" selected>-- Pilih Metode Pembayaran --</option>
-                                    <option value="cod" {{ old('metode_pembayaran', $formPo->metode_pembayaran) == 'cod' ? 'selected' : '' }}>COD</option>
-                                    <option value="transfer" {{ old('metode_pembayaran', $formPo->metode_pembayaran) == 'transfer' ? 'selected' : '' }}>Transfer</option>
+                                    <option value="cod"
+                                        {{ old('metode_pembayaran', $formPo->metode_pembayaran) == 'cod' ? 'selected' : '' }}>
+                                        COD</option>
+                                    <option value="transfer"
+                                        {{ old('metode_pembayaran', $formPo->metode_pembayaran) == 'transfer' ? 'selected' : '' }}>
+                                        Transfer</option>
                                 </select>
                                 @error('metode_pembayaran')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                            </div>                           
+                            </div>
                         </div>
                     </div>
                 </div>
+                <div id="deletedModelsContainer"></div>
                 <div class="card-footer d-flex justify-content-end gap-2">
                     <button type="reset" class="btn btn-secondary">Reset</button>
                     <button type="submit" class="btn btn-primary">Simpan</button>
@@ -152,48 +224,101 @@
     </div>
     <script>
         const modelInput = document.getElementById('model');
-        const previewImage = document.getElementById('previewImage');
+        const imagePreviewContainer = document.getElementById('imagePreviewContainer');
         const errorMessage = document.createElement('div');
         errorMessage.style.color = 'red';
         errorMessage.style.marginTop = '5px';
-        modelInput.parentElement.appendChild(errorMessage); // Append error message below the input
-    
-        // Allowed image types and maximum size (5MB)
+        modelInput.parentElement.appendChild(errorMessage);
+
         const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-        const maxSize = 5 * 1024 * 1024; // 5MB max size
-    
-        // Preview Foto Produk with validation
+        const maxSize = 2 * 1024 * 1024; // 2MB
+        let selectedFiles = [];
+
+        // Fungsi untuk menampilkan preview gambar
+        function displayImagePreview(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.width = '100px';
+                img.style.height = '100px';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '8px';
+                img.style.marginBottom = '10px';
+                imagePreviewContainer.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Fungsi untuk menangani perubahan input file
         modelInput.addEventListener('change', function(event) {
-            const file = event.target.files[0];
-    
-            // Clear previous error message
+            const files = event.target.files;
+
             errorMessage.textContent = '';
-    
-            if (file) {
-                // Validate file type
-                if (!allowedTypes.includes(file.type)) {
-                    errorMessage.textContent = 'File harus berupa gambar (JPEG, PNG, JPG).';
-                    modelInput.value = ''; // Clear the input
-                    previewImage.src = ''; // Clear the preview
-                    return;
+
+            if (files.length > 0) {
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+
+                    if (!allowedTypes.includes(file.type)) {
+                        errorMessage.textContent = 'File type not allowed. Only JPG, JPEG, and PNG are allowed.';
+                        return;
+                    }
+
+                    if (file.size > maxSize) {
+                        errorMessage.textContent = 'File is too large. Maximum size allowed is 2MB.';
+                        return;
+                    }
+
+                    // Tambahkan file ke array selectedFiles jika belum ada
+                    if (!selectedFiles.some(existingFile => existingFile.name === file.name && existingFile.size ===
+                            file.size)) {
+                        selectedFiles.push(file);
+                        displayImagePreview(file);
+                    }
                 }
-    
-                // Validate file size
-                if (file.size > maxSize) {
-                    errorMessage.textContent = 'Ukuran file maksimal adalah 5MB.';
-                    modelInput.value = ''; // Clear the input
-                    previewImage.src = ''; // Clear the preview
-                    return;
-                }
-    
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewImage.src = e.target.result;
-                }
-                reader.readAsDataURL(file);
-            } else {
-                previewImage.src = ''; // Clear the preview
+
+                const dataTransfer = new DataTransfer();
+                selectedFiles.forEach(file => dataTransfer.items.add(file));
+                modelInput.files = dataTransfer.files;
             }
         });
+
+        let deletedModels = [];
+
+        function deleteModel(modelId) {
+            Swal.fire({
+                title: 'Apakah Anda yakin?',
+                text: "Anda tidak dapat mengembalikan gambar ini setelah dihapus!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Hapus gambar dari tampilan front-end
+                    const imagePreviewItem = document.querySelector(`.image-preview-item[data-id="${modelId}"]`);
+                    if (imagePreviewItem) {
+                        imagePreviewItem.remove();
+                    }
+                    deletedModels.push(modelId);
+                    const deletedModelsContainer = document.getElementById('deletedModelsContainer');
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'deleted_models[]';
+                    input.value = modelId;
+                    deletedModelsContainer.appendChild(input);
+
+                    Swal.fire({
+                        title: 'Dihapus!',
+                        text: 'Gambar telah dihapus dari tampilan.',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            });
+        }
     </script>
 @endsection

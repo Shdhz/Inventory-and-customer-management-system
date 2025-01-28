@@ -27,7 +27,8 @@ class rencanaProduksiController extends Controller
                 })->get();
             } else {
                 $data = rencanaProduksi::with([
-                    'formPo.customerOrder.draftCustomer'
+                    'formPo.customerOrder.draftCustomer',
+                    'formPo.modelsFormpo'
                 ])->get();
             }
 
@@ -38,6 +39,26 @@ class rencanaProduksiController extends Controller
                 })
                 ->addColumn('nama_barang', function ($row) {
                     return $row->formPo->keterangan ?? 'Tidak Ada';
+                })
+                ->addColumn('model', function ($row) {
+                    $models = $row->formPo->modelsFormpo;
+                    $html = '';
+                    $limit = Auth::user()->hasRole('produksi||admin') ? 3 : PHP_INT_MAX;
+                    $count = 0;
+
+                    foreach ($models as $model) {
+                        if ($count >= $limit) {
+                            break;
+                        }
+                        $html .= '<img src="' . asset('storage/uploads/stok-barang/' . $model->model) . '" alt="Foto Produk" width="50" style="margin: 5px;">';
+                        $count++;
+                    }
+
+                    if ($models->count() > $limit) {
+                        $html .= '<span style="font-weight: bold;">+' . ($models->count() - $limit) . '</span>';
+                    }
+
+                    return $html ?: 'N/A';
                 })
                 ->addColumn('mulai_produksi', function ($row) {
                     return Carbon::parse($row->mulai_produksi)->format('d F Y');
@@ -50,11 +71,12 @@ class rencanaProduksiController extends Controller
                         return view('components.button.action-btn', [
                             'edit' => route('rencana-produksi.edit', $row->id_rencana_produksi),
                             'delete' => route('rencana-produksi.destroy', $row->id_rencana_produksi),
+                            'show' => route('rencana-produksi.show', $row->id_rencana_produksi),
                         ])->render();
                     }
                     return '-';
                 })
-                ->rawColumns(['actions', 'po_admin'])
+                ->rawColumns(['actions', 'po_admin', 'model'])
                 ->make(true);
         }
 
@@ -142,9 +164,13 @@ class rencanaProduksiController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($id)
     {
-        //
+        $formPo = rencanaProduksi::with('formPo.modelsFormpo')->findOrFail($id);
+        $backUrl = url()->previous();
+
+        $models = $formPo->formPo->modelsFormpo;
+        return view('v-produksi.rencana-produksi.show', compact('models', 'backUrl'));
     }
 
     /**

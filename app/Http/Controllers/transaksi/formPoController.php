@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\categoriesProduct;
 use App\Models\CustomerOrder;
 use App\Models\formPo;
+use App\Models\modelsFormpo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -20,18 +21,33 @@ class formPoController extends Controller
     {
         if ($request->ajax()) {
             if (Auth::user()->hasRole('supervisor')) {
-                $data = formPo::with(['customerOrder.draftCustomer.user', 'category'])->get();
+                $data = formPo::with(['customerOrder.draftCustomer.user', 'category', 'modelsFormpo'])->get();
             } else {
-                $data = formPo::with(['customerOrder.draftCustomer.user', 'category'])
+                $data = formPo::with(['customerOrder.draftCustomer.user', 'category', 'modelsFormpo'])
                     ->whereHas('customerOrder.draftCustomer.user', function ($query) {
                         $query->where('user_id', Auth::user()->id);
                     })->get();
             }
             return DataTables::of($data)
                 ->addColumn('model', function ($row) {
-                    return $row->model
-                        ? '<img src="' . asset('storage/uploads/stok-barang/' . $row->model) . '" alt="Foto Produk" width="50">'
-                        : 'N/A';
+                    $models = $row->modelsFormpo;
+                    $html = '';
+                    $limit = Auth::user()->hasRole('admin') ? 3 : PHP_INT_MAX;
+                    $count = 0;
+
+                    foreach ($models as $model) {
+                        if ($count >= $limit) {
+                            break;
+                        }
+                        $html .= '<img src="' . asset('storage/uploads/stok-barang/' . $model->model) . '" alt="Foto Produk" width="50" style="margin: 5px;">';
+                        $count++;
+                    }
+
+                    if ($models->count() > $limit) {
+                        $html .= '<span style="font-weight: bold;">+' . ($models->count() - $limit) . '</span>';
+                    }
+
+                    return $html ?: 'N/A';
                 })
                 ->addColumn('po_admin', function ($row) {
                     return $row->customerOrder && $row->customerOrder->draftCustomer && $row->customerOrder->draftCustomer->user
@@ -64,6 +80,7 @@ class formPoController extends Controller
                         return view('components.button.action-btn', [
                             'edit' => route('form-po.edit', $row->id_form_po),
                             'delete' => route('form-po.destroy', $row->id_form_po),
+                            'show' => route('form-po.show', $row->id_form_po),
                         ])->render();
                     }
                     return '';
@@ -101,7 +118,8 @@ class formPoController extends Controller
         $request->validate([
             'customer_order_id' => 'required|exists:tb_customer_orders,customer_order_id',
             'kategori_id' => 'required|exists:tb_categories_products,id_kategori',
-            'model' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+            'model' => 'nullable|array',
+            'model.*' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             'qty' => 'required|integer|min:1',
             'ukuran' => 'required|string|max:255',
             'warna' => 'required|string|max:255',
@@ -111,19 +129,9 @@ class formPoController extends Controller
             'metode_pembayaran' => 'required|in:cod,transfer',
         ]);
 
-        // Handle file upload
-        if ($request->hasFile('model')) {
-            $file = $request->file('model');
-            $fileName = time() . '_' . $file->getClientOriginalName();
-            $file->storeAs('uploads/stok-barang', $fileName, 'public');
-            $data['model'] = $fileName;
-        }
-
-        // Save data
-        formPo::create([
+        $formPo = formPo::create([
             'customer_order_id' => $request->customer_order_id,
             'kategori_id' => $request->kategori_id,
-            'model' => $fileName,
             'qty' => $request->qty,
             'ukuran' => $request->ukuran,
             'warna' => $request->warna,
@@ -131,17 +139,34 @@ class formPoController extends Controller
             'aksesoris' => $request->aksesoris,
             'keterangan' => $request->keterangan,
             'metode_pembayaran' => $request->metode_pembayaran,
-            'status_form_po' => false, // Default active
+            'status_form_po' => false,
         ]);
+
+        if ($request->hasFile('model')) {
+            foreach ($request->file('model') as $file) {
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $file->storeAs('uploads/stok-barang', $fileName, 'public');
+
+                modelsFormpo::create([
+                    'id_form_po' => $formPo->id_form_po,
+                    'model' => $fileName,
+                ]);
+            }
+        }
+
         return redirect()->route('form-po.index')->with('success', 'Form PO berhasil ditambahkan.');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($id)
     {
-        //
+        $formPo = FormPo::with('modelsFormpo')->findOrFail($id);
+        $backUrl = url()->previous();
+
+        $models = $formPo->modelsFormpo;
+        return view('transaksi.form-po.show', compact('formPo', 'models', 'backUrl'));
     }
 
     /**
@@ -149,7 +174,7 @@ class formPoController extends Controller
      */
     public function edit(string $id)
     {
-        $formPo = FormPo::findOrFail($id);
+        $formPo = FormPo::with('modelsFormpo')->findOrFail($id);
 
         $backUrl = route('form-po.index');
         $customers = CustomerOrder::with('draftCustomer')
@@ -170,40 +195,55 @@ class formPoController extends Controller
     {
         $request->validate([
             'customer_order_id' => 'required|exists:tb_customer_orders,customer_order_id',
-            'qty' => 'required|integer',
+            'kategori_id' => 'required|exists:tb_categories_products,id_kategori',
+            'model' => 'nullable|array',
+            'model.*' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+            'qty' => 'required|integer|min:1',
             'ukuran' => 'required|string|max:255',
             'warna' => 'required|string|max:255',
             'bahan' => 'required|string|max:255',
             'aksesoris' => 'nullable|string|max:255',
-            'kategori_id' => 'required|exists:tb_categories_products,id_kategori',
             'keterangan' => 'nullable|string',
-            'metode_pembayaran' => 'required|string|in:cod,transfer',
-            'model' => 'nullable|image|mimes:jpeg,png,jpg|max:5120'
+            'metode_pembayaran' => 'required|in:cod,transfer',
         ]);
 
-        $formPo = FormPo::findOrFail($id);
-
-        $formPo->customer_order_id = $request->customer_order_id;
-        $formPo->qty = $request->qty;
-        $formPo->ukuran = $request->ukuran;
-        $formPo->warna = $request->warna;
-        $formPo->bahan = $request->bahan;
-        $formPo->aksesoris = $request->aksesoris;
-        $formPo->kategori_id = $request->kategori_id;
-        $formPo->keterangan = $request->keterangan;
-        $formPo->metode_pembayaran = $request->metode_pembayaran;
-
-        if ($request->hasFile('model')) {
-            if ($formPo->model) {
-                Storage::disk('public')->delete('uploads/stok-barang/' . $formPo->model);
+        // dd($request->all());
+        // Hapus gambar yang dipilih
+        if ($request->has('deleted_models')) {
+            foreach ($request->deleted_models as $modelId) {
+                $model = modelsFormpo::find($modelId);
+                if ($model) {
+                    Storage::disk('public')->delete('uploads/stok-barang/' . $model->model);
+                    $model->delete();
+                }
             }
-            $file = $request->file('model');
-            $fileName = time() . '_' . $file->getClientOriginalName();
-            $file->storeAs('uploads/stok-barang', $fileName, 'public');
-            $formPo->model = $fileName;
-        };
+        }
 
-        $formPo->save();
+        $formPo = FormPo::findOrFail($id);
+        $formPo->update([
+            'customer_order_id' => $request->customer_order_id,
+            'kategori_id' => $request->kategori_id,
+            'qty' => $request->qty,
+            'ukuran' => $request->ukuran,
+            'warna' => $request->warna,
+            'bahan' => $request->bahan,
+            'aksesoris' => $request->aksesoris,
+            'keterangan' => $request->keterangan,
+            'metode_pembayaran' => $request->metode_pembayaran,
+        ]);
+
+        // Handle upload gambar baru 
+        if ($request->hasFile('model')) {
+            foreach ($request->file('model') as $file) {
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $file->storeAs('uploads/stok-barang', $fileName, 'public');
+
+                modelsFormpo::create([
+                    'id_form_po' => $formPo->id_form_po,
+                    'model' => $fileName,
+                ]);
+            }
+        }
 
         return redirect()->route('form-po.index')->with('success', 'Form PO berhasil diupdate.');
     }
@@ -213,17 +253,17 @@ class formPoController extends Controller
      */
     public function destroy(string $id)
     {
-        $formPo = formPo::findOrFail($id);
+        $formPo = FormPo::findOrFail($id);
 
-        // Hapus file gambar jika ada
-        if ($formPo->model) {
-            $filePath = public_path('storage/uploads/stok-barang/' . $formPo->model);
-            if (file_exists($filePath)) {
-                unlink($filePath);
+        // Hapus semua gambar yang terkait dengan FormPo
+        if ($formPo->modelsFormpo->isNotEmpty()) {
+            foreach ($formPo->modelsFormpo as $model) {
+                Storage::disk('public')->delete('uploads/stok-barang/' . $model->model);
+                $model->delete();
             }
         }
 
-        // Hapus data dari database
+        // Hapus data FormPo dari database
         $formPo->delete();
 
         return back()->with('success', 'Form Po berhasil dihapus.');

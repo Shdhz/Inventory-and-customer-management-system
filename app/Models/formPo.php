@@ -36,4 +36,9 @@ class formPo extends Model
     {
         return $this->hasMany(invoiceFormPo::class, 'form_po_id', 'id_form_po');
     }
+
+    public function modelsFormpo()
+    {
+        return $this->hasMany(modelsFormpo::class, 'id_form_po', 'id_form_po');
+    }
 }

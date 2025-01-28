@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,35 +7,40 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            font-size: 12px;
+            line-height: 1.6;
         }
         h1, h2 {
             text-align: center;
         }
+        .header {
+            margin-bottom: 20px;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 10px;
         }
         table, th, td {
-            border: 1px solid black;
+            border: 1px solid #000;
         }
         th, td {
             padding: 8px;
             text-align: left;
         }
         th {
-            background-color: #f2f2f2;
+            background-color: #f4f4f4;
         }
         .footer {
-            margin-top: 40px;
-            text-align: center;
+            margin-top: 20px;
+            text-align: right;
+            font-size: 10px;
         }
     </style>
 </head>
 <body>
     <h1>Laporan Penjualan</h1>
-    <h2>Periode: {{ $request->start_date ?? 'Semua' }} - {{ $request->end_date ?? 'Semua' }}</h2>
+    <h2>Periode: {{ $start_date }} - {{ $end_date }}</h2>
 
     <table>
         <thead>
@@ -45,7 +50,7 @@
                 <th>Tanggal Keluar</th>
                 <th>Qty</th>
                 <th>Harga Satuan</th>
-                <th>Subtotal</th>
+                <th>Jumlah</th>
                 <th>Diskon Produk</th>
                 <th>Diskon Ongkir</th>
                 <th>Ekspedisi</th>
@@ -54,26 +59,30 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($data as $index => $item)
+            @forelse ($data as $index => $item)
                 <tr>
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $item->stok->nama_produk ?? '-' }}</td>
-                    <td>{{ \Carbon\Carbon::parse($item->tanggal_keluar)->format('d F Y') }}</td>
+                    <td>{{ $item->tanggal_keluar }}</td>
                     <td>{{ $item->qty }}</td>
-                    <td>Rp {{ number_format($item->harga_satuan, 2, ',', '.') }}</td>
-                    <td>Rp {{ number_format($item->subtotal, 2, ',', '.') }}</td>
-                    <td>{{ $item->diskon_produk ?? '-' }}%</td>
-                    <td>{{ $item->diskon_ongkir ?? '-' }}%</td>
+                    <td>Rp {{ number_format($item->harga_satuan, 0, ',', '.') }}</td>
+                    <td>Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                    <td>{{ $item->transaksi->diskon_produk ?? '-' }}</td>
+                    <td>{{ $item->transaksi->diskon_ongkir ?? '-' }}</td>
                     <td>{{ $item->transaksi->ekspedisi ?? '-' }}</td>
                     <td>{{ $item->transaksi->metode_pembayaran ?? '-' }}</td>
                     <td>{{ $item->transaksi->customerOrder->draftCustomer->Nama ?? '-' }}</td>
                 </tr>
-            @endforeach
+            @empty
+                <tr>
+                    <td colspan="11" style="text-align: center;">Data tidak ditemukan untuk periode ini.</td>
+                </tr>
+            @endforelse
         </tbody>
     </table>
 
     <div class="footer">
-        <p>Dicetak pada: {{ \Carbon\Carbon::now()->format('d F Y H:i') }}</p>
+        Dicetak pada: {{ \Carbon\Carbon::now()->format('d-m-Y H:i:s') }}
     </div>
 </body>
 </html>

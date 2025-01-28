@@ -23,6 +23,7 @@
                                 <th>Po admin</th>
                                 <th>Prioritas PO</th>
                                 <th>Nama barang</th>
+                                <th>Model</th>
                                 <th>Nama Pengrajin</th>
                                 <th>Mulai</th>
                                 <th>Selesai</th>
@@ -59,6 +60,10 @@
                 {
                     data: 'nama_barang',
                     name: 'nama_barang'
+                },
+                {
+                    data: 'model',
+                    name: 'model'
                 },
                 {
                     data: 'nama_pengrajin',
