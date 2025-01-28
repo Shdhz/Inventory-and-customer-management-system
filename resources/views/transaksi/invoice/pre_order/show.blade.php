@@ -40,7 +40,7 @@
                 <div class="d-flex justify-content-between">
                     {{-- Informasi Kaifacraft --}}
                     <div class="col-8">
-                        <img src="\dist\logo.gif" alt="logo_kaifacraft.jpg" class="img-fluid mb-2" width="30%">
+                        <img src="\dist\logo_kaifacraftgroup.png" alt="logo_kaifacraft.jpg" class="img-fluid mb-2" width="35%">
                         <p>Sentra kerajinan tangan unggulan</p>
                         <address>
                             Jl. Cikuya RT.03/07 Desa/kec. Rajapolah<br>

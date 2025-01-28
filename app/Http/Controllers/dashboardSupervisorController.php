@@ -67,9 +67,15 @@ class dashboardSupervisorController extends Controller
                     ->sum('down_payment');
 
                 return response()->json([
-                    'daily' => $dailySales,
-                    'weekly' => $weeklySales,
-                    'monthly' => $monthlySales,
+                    'daily' => [
+                        'sales' => $dailySales
+                    ],
+                    'weekly' => [
+                        'sales' => $weeklySales
+                    ],
+                    'monthly' => [
+                        'sales' => $monthlySales
+                    ]
                 ]);
             } catch (\Exception $e) {
                 // Log error jika ada masalah dalam query
@@ -96,10 +102,10 @@ class dashboardSupervisorController extends Controller
                 ])
                     ->with([
                         'invoiceDetails.transaksiDetail.transaksi.customerOrder.draftCustomer.user' => function ($query) {
-                            $query->select('id', 'name'); 
+                            $query->select('id', 'name');
                         },
                         'invoiceFormPo.formPo.customerOrder.draftCustomer.user' => function ($query) {
-                            $query->select('id', 'name'); 
+                            $query->select('id', 'name');
                         }
                     ])
                     ->where('status_pembayaran', 'belum lunas')

@@ -76,14 +76,14 @@
         <tr>
             <td>
                 <!-- Informasi Kaifacraft -->
-                <img src="dist/logo.gif" alt="logo_kaifacraft" width="150px">
+                <img src="dist/logo_kaifacraftgroup.png" alt="logo_kaifacraft" width="150px">
                 <p>Sentra kerajinan tangan unggulan</p>
                 <address class="address">
                     Jl. Cikuya RT.03/07 Desa/Kec. Rajapolah<br>
                     Kab. Tasikmalaya - Jawa Barat<br>
-                    <span><img src="dist\wa.png" alt="" width="10px"></span> WhatsApp: 089639152588,
+                    <span><img src="dist/wa.png" alt="" width="10px"></span> WhatsApp: 089639152588,
                     081779200583<br>
-                    <span><img src="dist\instagram.png" alt="" width="10px"></span> Instagram:
+                    <span><img src="dist/instagram.png" alt="" width="10px"></span> Instagram:
                     @kaifa_craft, @kaifacraft<br>
                 </address>
             </td>
@@ -146,7 +146,7 @@
     <hr>
     <div class="">
         <h3>Members :</h3>
-        <img src="dist\members.jpg" alt="members" width="100%" height="auto">
+        <img src="dist/members.jpg" alt="members" width="100%" height="auto">
     </div>
 </body>
 

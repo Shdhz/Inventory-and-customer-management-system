@@ -13,7 +13,7 @@
             })
             .then(response => response.json())
             .then(data => {
-                console.log("Data received:", data); 
+                console.log("Data received:", data);
                 if (data.error) {
                     console.error(data.error);
                     return;
@@ -25,13 +25,20 @@
 
     function renderChart(data) {
         const ctx = document.getElementById('salesChart').getContext('2d');
+
+        const labels = [
+            `Harian:`,
+            `Mingguan:`,
+            `Bulanan:`
+        ];
+
         const salesChart = new Chart(ctx, {
-            type: 'bar', // atau 'line', 'pie', dll.
+            type: 'bar',
             data: {
-                labels: ['Harian', 'Mingguan', 'Bulanan'],
+                labels: labels,
                 datasets: [{
                     label: 'Total Penjualan (Rp)',
-                    data: [data.daily, data.weekly, data.monthly],
+                    data: [data.daily.sales, data.weekly.sales, data.monthly.sales],
                     backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
                     borderWidth: 1
                 }]
@@ -41,12 +48,14 @@
                 maintainAspectRatio: false,
                 scales: {
                     y: {
+                        type: 'logarithmic',
                         beginAtZero: true
                     }
                 }
             }
         });
     }
+
 
     function loadUnpaidInvoices() {
         $.ajax({

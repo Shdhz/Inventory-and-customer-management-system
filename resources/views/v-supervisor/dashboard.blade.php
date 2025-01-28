@@ -15,12 +15,7 @@
                 <!-- Page title actions -->
                 <div class="col-auto ms-auto d-print-none">
                     <div class="btn-list">
-                        <span class="d-none d-sm-inline">
-                            <a href="{{ route('draft-customer.create') }}" class="btn">
-                                Tambah Draft Customer
-                            </a>
-                        </span>
-                        <a href="#" class="btn btn-primary d-none d-sm-inline-block">
+                        <a href="{{ route('kelola-invoice.index') }}" class="btn btn-primary d-none d-sm-inline-block">
                             Kelola Invoice
                         </a>
                     </div>

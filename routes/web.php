@@ -20,9 +20,21 @@ use App\Http\Controllers\transaksi\InvoiceController;
 use App\Http\Controllers\transaksi\invoiceFormpoController;
 use App\Http\Controllers\transaksi\TransaksiController;
 use App\Http\Controllers\transaksi\TransaksiDetailController;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 
+// Storage link
+Route::get('/storage-link', function(){
+    $target = '/home/public_html/simdipal/storage/app';
+    $link = '/home/public_html/simdipal/public/storage/uploads/stok-barang';
 
+    if(!File::exist($link)){
+        symlink($target, $link);
+        return 'symlink created successfully';
+    }
+    return 'symlink already exist';
+});
 
 Route::controller(LoginController::class)->group(function () {
     Route::middleware('guest')->group(function () {
