@@ -66,6 +66,19 @@ class rencanaProduksiController extends Controller
                 ->addColumn('berakhir_produksi', function ($row) {
                     return Carbon::parse($row->berakhir_produksi)->format('d F Y');
                 })
+                ->addColumn('status', function ($row) {
+                    $status = strtolower($row->status);
+                    $StatusBadge = '';
+                
+                    if (strpos($status, 'selesai') !== false) {
+                        $StatusBadge .= '<span class="badge bg-primary text-white">Selesai</span> ';
+                    }
+                    if (strpos($status, 'produksi') !== false) {
+                        $StatusBadge .= '<span class="badge bg-warning text-white">Produksi</span> ';
+                    }
+
+                    return $StatusBadge ?: '<span class="badge bg-secondary text-white">Tidak ada status</span>';
+                })
                 ->addColumn('actions', function ($row) {
                     if (Auth::user()->hasRole('produksi')) {
                         return view('components.button.action-btn', [
@@ -76,7 +89,7 @@ class rencanaProduksiController extends Controller
                     }
                     return '-';
                 })
-                ->rawColumns(['actions', 'po_admin', 'model'])
+                ->rawColumns(['actions', 'po_admin', 'model', 'status'])
                 ->make(true);
         }
 

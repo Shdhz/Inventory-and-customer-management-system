@@ -20,21 +20,31 @@
                     @method('PUT')
                     <div class="row">
                         <div class="col-8">
-                            <img src="\dist\logo_kaifacraftgroup.png" alt="logo_kaifacraft.jpg" class="img-fluid img" width="35%">
+                            <img src="\dist\logo_kaifacraftgroup.png" alt="logo_kaifacraft.jpg" class="img-fluid img"
+                                width="35%">
                             <p>Sentra kerajinan tangan unggulan</p>
                             <address>
                                 Jl. Cikuya RT.03/07 Desa/kec. Rajapolah<br>
-                                Kab.Tasikmalaya - Jawa Barat<br>
-                                @foreach ($customers as $customer)
-                                    <div>
-                                        <span>{{ $customer['no_hp'] }}</span><br>
-                                    </div>
-                                    @foreach ($customer['nama_instagram'] as $instagram)
-                                        <span>{{ $instagram }}</span>
-                                        @if (!$loop->last)
-                                            ,
-                                        @endif
-                                    @endforeach
+                                Kab. Tasikmalaya - Jawa Barat<br>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-whatsapp"
+                                    width="20" height="20" viewBox="0 0 24 24" stroke="currentColor" fill="none">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                    <path d="M3 21l1.65 -3.8a9 9 0 1 1 3.4 2.9l-5.05 .9" />
+                                    <path
+                                        d="M9 10a.5 .5 0 0 0 1 0v-1a.5 .5 0 0 0 -1 0v1a5 5 0 0 0 5 5h1a.5 .5 0 0 0 0 -1h-1a.5 .5 0 0 0 0 1" />
+                                </svg>{{ $Instagram->no_hp }}<br>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-instagram"
+                                    width="20" height="20" viewBox="0 0 24 24" stroke="currentColor" fill="none">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                    <path d="M4 8a4 4 0 0 1 4 -4h8a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-8a4 4 0 0 1 -4 -4z" />
+                                    <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+                                    <path d="M16.5 7.5v.01" />
+                                </svg>
+                                @foreach ($Instagram->instagramForAdmin as $instagram)
+                                    {{ $instagram->nama_instagram }}
+                                    @if (!$loop->last)
+                                        ,
+                                    @endif
                                 @endforeach
                             </address>
                         </div>
@@ -91,18 +101,21 @@
                                 <div class="col">
                                     <label for="qty_{{ $index }}" class="form-label">Jumlah (Qty)</label>
                                     <input type="number" name="qty[]" id="qty_{{ $index }}" class="form-control"
-                                        value="{{ old("qty.$index", $detail->transaksiDetail->qty ?? 0) }}" placeholder="Jumlah" readonly>
+                                        value="{{ old("qty.$index", $detail->transaksiDetail->qty ?? 0) }}"
+                                        placeholder="Jumlah" readonly>
                                 </div>
                                 <div class="col">
                                     <label for="harga_{{ $index }}" class="form-label">Harga Satuan</label>
                                     <input type="number" name="harga[]" id="harga_{{ $index }}"
-                                        class="form-control" value="{{ old("harga.$index", $detail->transaksiDetail->harga_satuan ?? 0) }}"
+                                        class="form-control"
+                                        value="{{ old("harga.$index", $detail->transaksiDetail->harga_satuan ?? 0) }}"
                                         placeholder="Harga per item" readonly>
                                 </div>
                                 <div class="col">
                                     <label for="subtotal_{{ $index }}" class="form-label">Subtotal</label>
                                     <input type="number" name="subtotal[]" id="subtotal_{{ $index }}"
-                                        class="form-control" value="{{ old("subtotal.$index", $detail->transaksiDetail->subtotal ?? 0) }}"
+                                        class="form-control"
+                                        value="{{ old("subtotal.$index", $detail->transaksiDetail->subtotal ?? 0) }}"
                                         placeholder="Subtotal" readonly>
                                 </div>
                             </div>

@@ -16,9 +16,17 @@ class riwayatTransaksiController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            $query = transaksiDetail::with(['transaksi', 'stok'])->whereHas('transaksi.customerOrder.draftCustomer.user', function ($query) {
-                $query->where('user_id', Auth::id());
-            })->get();
+
+            $user = Auth::user();
+            $query = transaksiDetail::with(['transaksi', 'stok']);
+
+            if ($user->hasRole('admin')) {
+                $query->whereHas('transaksi.customerOrder.draftCustomer.user', function ($query) {
+                    $query->where('user_id', Auth::id());
+                })->get();
+            }else{
+                $query->get();
+            }
 
             return DataTables::of($query)
                 ->addColumn('nama_barang', function ($row) {

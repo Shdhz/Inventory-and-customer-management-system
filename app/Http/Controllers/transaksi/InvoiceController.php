@@ -307,8 +307,7 @@ class InvoiceController extends Controller
         $backUrl = url()->previous();
         $title = 'Edit Invoice';
 
-        // Mengambil data invoice berdasarkan ID yang sesuai dengan user login
-        $instagrams = instagramForAdmin::where('id_user', Auth::id())->get();
+        $Instagram = User::with('instagramForAdmin')->find(Auth::id());
         $invoice = Invoice::with([
             'invoiceDetails.transaksiDetail.stok',
             'invoiceDetails.transaksiDetail.transaksi.customerOrder.draftCustomer',
@@ -333,7 +332,7 @@ class InvoiceController extends Controller
             ->groupBy(function ($id) {
                 return $id->transaksiDetail->transaksi->customerOrder->draftCustomer->draft_customers_id ?? 'Unknown Customer';
             })
-            ->map(function ($group) use ($instagrams) {
+            ->map(function ($group){
                 $firstItem = $group->first();
                 $draftCustomer = optional($firstItem->transaksiDetail->transaksi->customerOrder)->draftCustomer;
 
@@ -341,7 +340,6 @@ class InvoiceController extends Controller
                     'id' => $draftCustomer->draft_customers_id ?? 'Unknown ID',
                     'nama' => $draftCustomer->Nama ?? 'Unnamed Customer',
                     'no_hp' => $draftCustomer->user->no_hp ?? 'Unknown Phone',
-                    'nama_instagram' => $instagrams->pluck('nama_instagram')->toArray(),
                     'produk' => $group->map(function ($item) {
                         $stok = optional($item->stok);
                         return [
@@ -358,7 +356,7 @@ class InvoiceController extends Controller
             ->values();
 
         // dd($customers);
-        return view('transaksi.invoice.ready_stok.edit', compact('backUrl', 'title', 'customers', 'invoice', 'dpPersen'));
+        return view('transaksi.invoice.ready_stok.edit', compact('backUrl', 'title', 'customers', 'invoice', 'dpPersen', 'Instagram'));
     }
 
     /**

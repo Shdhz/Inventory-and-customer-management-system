@@ -4,8 +4,10 @@ namespace App\Http\Controllers\transaksi;
 
 use App\Http\Controllers\Controller;
 use App\Models\formPo;
+use App\Models\instagramForAdmin;
 use App\Models\invoice;
 use App\Models\invoiceFormPo;
+use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -265,6 +267,7 @@ class invoiceFormpoController extends Controller
      */
     public function show(string $id)
     {
+        $user = User::with('instagramForAdmin')->find(Auth::id());
         $invoice = invoice::with([
             'invoiceFormPo.formPo.customerOrder.draftCustomer',
             'invoiceFormPo.formPo',
@@ -278,7 +281,7 @@ class invoiceFormpoController extends Controller
         $title = 'Detail Invoice';
         $backUrl = url()->previous();
 
-        return view('transaksi.invoice.pre_order.show', compact('invoice', 'invoiceFormPo', 'title', 'backUrl', 'namaPelanggan'));
+        return view('transaksi.invoice.pre_order.show', compact('invoice', 'invoiceFormPo', 'title', 'backUrl', 'namaPelanggan', 'user'));
     }
 
     /**
@@ -289,6 +292,7 @@ class invoiceFormpoController extends Controller
         $title = 'Edit Invoice';
         $backUrl = url()->previous();
 
+        $Instagram = User::with('instagramForAdmin')->find(Auth::id());
         $invoice = Invoice::with([
             'invoiceFormPo.formPo.customerOrder.draftCustomer',
             'invoiceFormPo.formPo.products',
@@ -314,7 +318,7 @@ class invoiceFormpoController extends Controller
         $dpPersen = $subtotal > 0 ? ($dpReal / $subtotal) * 100 : 0;
 
         // Kirim data ke view
-        return view('transaksi.invoice.pre_order.edit', compact('title', 'backUrl', 'invoice', 'namaPelanggan', 'detail_produk', 'dpPersen'));
+        return view('transaksi.invoice.pre_order.edit', compact('title', 'backUrl', 'invoice', 'namaPelanggan', 'detail_produk', 'dpPersen', 'Instagram'));
     }
 
 
@@ -407,6 +411,7 @@ class invoiceFormpoController extends Controller
     public function downloadPdf($invoice_id)
     {
         try {
+            $user = User::with('instagramForAdmin')->find(Auth::id());
             $invoice = Invoice::with([
                 'invoiceFormPo.formPo.customerOrder.draftCustomer',
                 'invoiceFormPo.formPo.products',
@@ -419,7 +424,7 @@ class invoiceFormpoController extends Controller
             $nota_no = preg_replace('/[\/\\\]/', '_', $nota_no);
             $filename = 'Invoice-' . $nota_no . '.pdf';
 
-            $pdf = Pdf::loadView('transaksi.invoice.pre_order.pdf', compact('invoice', 'invoiceFormPo'));
+            $pdf = Pdf::loadView('transaksi.invoice.pre_order.pdf', compact('invoice', 'invoiceFormPo', 'user'));
             $pdf->setPaper([176, 250], 'portrait');
 
             return $pdf->download($filename);

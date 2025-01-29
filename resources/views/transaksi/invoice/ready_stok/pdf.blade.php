@@ -147,7 +147,7 @@
     </table>
 
     <p class="text-end">Hormat Kami,</p>
-    <p class="text-end"><strong>Kaifacraft</strong></p>
+    <p class="text-end"><strong>Kaifacraft Group</strong></p>
     <hr>
     <div class="">
         <h3>Members :</h3>
