@@ -71,7 +71,7 @@
                     );
                 },
                 success: function(data) {
-                    console.log(data); 
+                    console.log(data);
                     if (data.length === 0) {
                         $('#unpaidCustomersTable').html(
                             '<p class="text-center text-muted">Semua invoice telah dilunasi. 🎉</p>'
@@ -128,7 +128,8 @@
                                 month: 'short',
                                 year: 'numeric'
                             };
-                            const formattedTenggatWaktu = new Intl.DateTimeFormat('id-ID', options).format(tenggatWaktu);
+                            const formattedTenggatWaktu = new Intl.DateTimeFormat('id-ID',
+                                options).format(tenggatWaktu);
 
                             tableHtml += `
                             <tr>
@@ -151,7 +152,7 @@
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.error("Error:", error); 
+                    console.error("Error:", error);
                     $('#unpaidCustomersTable').html(
                         `<p class="text-center text-danger">Gagal memuat data. Error: ${error}</p>`
                     );
@@ -212,8 +213,10 @@
                                 month: 'short',
                                 year: 'numeric'
                             };
-                            const formattedMulai = new Intl.DateTimeFormat('id-ID', options).format(mulaiProduksi);
-                            const formattedBerakhir = new Intl.DateTimeFormat('id-ID',options).format(berakhirProduksi);
+                            const formattedMulai = new Intl.DateTimeFormat('id-ID', options)
+                                .format(mulaiProduksi);
+                            const formattedBerakhir = new Intl.DateTimeFormat('id-ID',
+                                options).format(berakhirProduksi);
 
                             tableHtml += `
                             <tr>
@@ -249,5 +252,101 @@
 
         // Panggil fungsi saat halaman dimuat
         loadProductionPlan();
+    });
+
+    $(document).ready(function() {
+        // Menyiapkan chart
+        let salesChart;
+
+        // Fetch data sales saat halaman pertama kali dimuat
+        function fetchSalesData() {
+            $.ajax({
+                url: '{{ route('admin.salesSources') }}',
+                type: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    if (data.error) {
+                        console.error(data.error);
+                        return;
+                    }
+                    updateChart(data);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error fetching data:', error);
+                }
+            });
+        }
+
+        function updateChart(salesData) {
+            console.log('Data received:', salesData);
+            const ctx = $('#salesSources')[0].getContext('2d');
+
+            const labels = ['Direct', 'Marketplace'];
+
+            const readyStockData = labels.map(category => salesData[category.toLowerCase()]["ready_stock"]
+                .count);
+            const preOrderData = labels.map(category => salesData[category.toLowerCase()]["pre_order"].count);
+            const readyStockDP = labels.map(category => salesData[category.toLowerCase()]["ready_stock"]
+                .down_payment);
+            const preOrderDP = labels.map(category => salesData[category.toLowerCase()]["pre_order"]
+                .down_payment);
+
+            if (salesChart) {
+                salesChart.destroy(); // Hapus chart lama jika sudah ada
+            }
+
+            salesChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                            label: 'Ready Stock',
+                            data: readyStockData,
+                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Pre Order',
+                            data: preOrderData,
+                            backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    let category = tooltipItem.label.toLowerCase();
+                                    let type = tooltipItem.dataset.label.toLowerCase().replace(' ',
+                                        '_');
+
+                                    let count = salesData[category][type].count;
+                                    let dp = salesData[category][type].down_payment;
+
+                                    return [
+                                        `${tooltipItem.dataset.label}:`,
+                                        `Jumlah Transaksi: ${count}`,
+                                        `Total transaksi: Rp${dp.toLocaleString()}`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Memanggil fungsi untuk mengambil data saat halaman dimuat
+        fetchSalesData();
     });
 </script>

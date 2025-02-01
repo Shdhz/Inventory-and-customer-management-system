@@ -151,9 +151,10 @@
                 </div>
             </div>
             {{-- Statitsik penjulalan --}}
-            <div class="row mt-5">
-                <div class="col-6">
-                    <div class="card shadow-sm">
+            <div class="row mt-5 g-3 row-cols-1 row-cols-md-2">
+                <!-- Statistik Penjualan -->
+                <div class="col d-flex">
+                    <div class="card shadow-sm flex-grow-1">
                         <div class="card-header">
                             <h3>Statistik Penjualan</h3>
                         </div>
@@ -164,33 +165,50 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-6">
-                    <div class="d-flex flex-column gap-3">
-                        <div class="card shadow-sm border-0">
-                            <div class="card-header bg-primary text-white">
-                                <h3>Pelanggan yang Belum Melunasi Invoice</h3>
-                            </div>
-                            <div class="card-body">
-                                <div id="unpaidCustomersTable">
-                                    <p class="text-center text-muted">Memuat data...</p>
-                                </div>
+
+                <!-- Pelanggan Belum Melunasi Invoice -->
+                <div class="col d-flex">
+                    <div class="card shadow-sm border-0 flex-grow-1">
+                        <div class="card-header bg-primary text-white">
+                            <h3>Pelanggan yang Belum Melunasi Invoice</h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="unpaidCustomersTable">
+                                <p class="text-center text-muted">Memuat data...</p>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <!-- Card Rencana Produksi Minggu Ini -->
-                        <div class="card shadow-sm border-0">
-                            <div class="card-header bg-warning text-white">
-                                <h3>Rencana Produksi Minggu Ini</h3>
+                <!-- Rencana Produksi Minggu Ini -->
+                <div class="col d-flex">
+                    <div class="card shadow-sm border-0 flex-grow-1">
+                        <div class="card-header bg-warning text-white">
+                            <h3>Rencana Produksi Minggu Ini</h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="productionPlanTable">
+                                <p class="text-center text-muted">Memuat data...</p>
                             </div>
-                            <div class="card-body">
-                                <div id="productionPlanTable">
-                                    <p class="text-center text-muted">Memuat data...</p>
-                                </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sumber Penjualan Semua Admin -->
+                <div class="col d-flex">
+                    <div class="card shadow-sm flex-grow-1">
+                        <div class="card-header">
+                            <h3 class="mb-0">Sumber Penjualan Semua Admin</h3>
+                        </div>
+                        <div class="card-body">
+                            <div style="position: relative; height: 300px;">
+                                <canvas id="salesSources"></canvas>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
     </div>

@@ -145,47 +145,78 @@
                         </div>
                     </div>
                 </div>
-                {{-- informasi statistik penjualan dll --}}
-                <div class="row mt-5">
-                    <div class="col-6">
-                        <div class="card shadow-sm">
+                {{-- Informasi Statistik Penjualan, Invoice Belum Lunas, Rencana Produksi, dan Sumber Penjualan --}}
+                <div class="row mt-5 g-3 row-cols-1 row-cols-md-2">
+                    <!-- Statistik Penjualan -->
+                    <div class="col d-flex">
+                        <div class="card shadow-sm flex-grow-1">
                             <div class="card-header">
                                 <h3>Statistik Penjualan</h3>
                             </div>
                             <div class="card-body">
                                 <div style="position: relative; height: 400px;">
-                                    <canvas id="salesChart"></canvas>
+                                    <canvas id="salesChart" width="400" height="200"></canvas>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-6">
-                        <div class="d-flex flex-column gap-3">
-                            <!-- Card Pelanggan yang Belum Melunasi Invoice -->
-                            <div class="card shadow-sm border-0">
-                                <div class="card-header bg-primary text-white">
-                                    <h3>Pelanggan yang Belum Melunasi Invoice</h3>
-                                </div>
-                                <div class="card-body">
-                                    <div id="unpaidCustomersTable">
-                                        <p class="text-center text-muted">Memuat data...</p>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <!-- Card Rencana Produksi Minggu Ini -->
-                            <div class="card shadow-sm border-0">
-                                <div class="card-header bg-warning text-white">
-                                    <h3>Rencana Produksi Minggu Ini</h3>
-                                </div>
-                                <div class="card-body">
-                                    <div id="productionPlanTable">
-                                        <p class="text-center text-muted">Memuat data...</p>
-                                    </div>
+                    <div class="col d-flex">
+                        <div class="card shadow-sm flex-grow-1">
+                            <div class="card-header">
+                                <h3>Statistik Penjualan tiap admin</h3>
+                            </div>
+                            <div class="card-body">
+                                <div style="position: relative; height: 400px;">
+                                    <canvas id="adminSalesChart" width="400" height="200"></canvas>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Sumber Penjualan Semua Admin -->
+                    <div class="col d-flex">
+                        <div class="card shadow-sm flex-grow-1">
+                            <div class="card-header">
+                                <h3 class="mb-0">Sumber Penjualan Admin</h3>
+                            </div>
+                            <div class="card-body">
+                                <div style="position: relative; height: 300px;">
+                                    <canvas id="salesSources"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pelanggan Belum Melunasi Invoice -->
+                    <div class="col d-flex">
+                        <div class="card shadow-sm border-0 flex-grow-1">
+                            <div class="card-header bg-primary text-white">
+                                <h3>Pelanggan yang Belum Melunasi Invoice</h3>
+                            </div>
+                            <div class="card-body">
+                                <div id="unpaidCustomersTable">
+                                    <p class="text-center text-muted">Memuat data...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rencana Produksi Minggu Ini -->
+                    <div class="col d-flex">
+                        <div class="card shadow-sm border-0 flex-grow-1">
+                            <div class="card-header bg-warning text-white">
+                                <h3>Rencana Produksi Minggu Ini</h3>
+                            </div>
+                            <div class="card-body">
+                                <div id="productionPlanTable">
+                                    <p class="text-center text-muted">Memuat data...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    
                 </div>
             </div>
         </div>

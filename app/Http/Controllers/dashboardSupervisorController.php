@@ -8,17 +8,19 @@ use App\Models\productStock;
 use App\Models\rencanaProduksi;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class dashboardSupervisorController extends Controller
 {
-    public function index()
+    public function index(request $request)
     {
         $draftCustomerCount = DB::table('tb_draft_customers')->count();
         $orderCustomerCount = DB::table('tb_customer_orders')->count();
         $barangRusakCount = barangRusak::with('product')->count();
         $productstockCount = productStock::sum('jumlah_stok');
+
         return view('v-supervisor.dashboard', compact('draftCustomerCount', 'orderCustomerCount', 'barangRusakCount', 'productstockCount'));
     }
 
@@ -37,34 +39,42 @@ class dashboardSupervisorController extends Controller
                     return invoice::whereHas($relationPath);
                 };
 
-                // Hitung penjualan harian
-                $dailySales = $salesQuery('invoiceDetails.transaksiDetail.transaksi.customerOrder.draftCustomer')
-                    ->whereDate('updated_at', $today)
-                    ->sum('down_payment')
-                    +
-                    $salesQuery('invoiceFormPo.formPo.customerOrder.draftCustomer')
-                    ->whereDate('updated_at', $today)
-                    ->sum('down_payment');
+                $cacheDuration = now()->addMinutes(10);
 
-                // Hitung penjualan mingguan
-                $weeklySales = $salesQuery('invoiceDetails.transaksiDetail.transaksi.customerOrder.draftCustomer')
-                    ->whereBetween('updated_at', [$startOfWeek, $endOfWeek])
-                    ->sum('down_payment')
-                    +
-                    $salesQuery('invoiceFormPo.formPo.customerOrder.draftCustomer')
-                    ->whereBetween('updated_at', [$startOfWeek, $endOfWeek])
-                    ->sum('down_payment');
+                // Hitung penjualan harian dengan cache
+                $dailySales = Cache::remember('daily_sales_' . $today, $cacheDuration, function () use ($salesQuery, $today) {
+                    return $salesQuery('invoiceDetails.transaksiDetail.transaksi.customerOrder.draftCustomer')
+                        ->whereDate('updated_at', $today)
+                        ->sum('down_payment')
+                        +
+                        $salesQuery('invoiceFormPo.formPo.customerOrder.draftCustomer')
+                        ->whereDate('updated_at', $today)
+                        ->sum('down_payment');
+                });
 
-                // Hitung penjualan bulanan
-                $monthlySales = $salesQuery('invoiceDetails.transaksiDetail.transaksi.customerOrder.draftCustomer')
-                    ->whereMonth('updated_at', $currentMonth)
-                    ->whereYear('updated_at', $currentYear)
-                    ->sum('down_payment')
-                    +
-                    $salesQuery('invoiceFormPo.formPo.customerOrder.draftCustomer')
-                    ->whereMonth('updated_at', $currentMonth)
-                    ->whereYear('updated_at', $currentYear)
-                    ->sum('down_payment');
+                // Hitung penjualan mingguan dengan cache
+                $weeklySales = Cache::remember('weekly_sales_' . $startOfWeek . '_' . $endOfWeek, $cacheDuration, function () use ($salesQuery, $startOfWeek, $endOfWeek) {
+                    return $salesQuery('invoiceDetails.transaksiDetail.transaksi.customerOrder.draftCustomer')
+                        ->whereBetween('updated_at', [$startOfWeek, $endOfWeek])
+                        ->sum('down_payment')
+                        +
+                        $salesQuery('invoiceFormPo.formPo.customerOrder.draftCustomer')
+                        ->whereBetween('updated_at', [$startOfWeek, $endOfWeek])
+                        ->sum('down_payment');
+                });
+
+                // Hitung penjualan bulanan dengan cache
+                $monthlySales = Cache::remember('monthly_sales_' . $currentMonth . '_' . $currentYear, $cacheDuration, function () use ($salesQuery, $currentMonth, $currentYear) {
+                    return $salesQuery('invoiceDetails.transaksiDetail.transaksi.customerOrder.draftCustomer')
+                        ->whereMonth('updated_at', $currentMonth)
+                        ->whereYear('updated_at', $currentYear)
+                        ->sum('down_payment')
+                        +
+                        $salesQuery('invoiceFormPo.formPo.customerOrder.draftCustomer')
+                        ->whereMonth('updated_at', $currentMonth)
+                        ->whereYear('updated_at', $currentYear)
+                        ->sum('down_payment');
+                });
 
                 return response()->json([
                     'daily' => [
@@ -145,5 +155,150 @@ class dashboardSupervisorController extends Controller
             ->get();
 
         return response()->json($data);
+    }
+
+    public function getSalesSources(Request $request)
+    {
+        if ($request->ajax()) {
+            try {
+                // Kategori sumber penjualan
+                $marketplaceSources = ['shopee', 'tokopedia', 'lazada'];
+                $directSources = ['whatsapp', 'instagram', 'facebook', 'youtube', 'tiktok', 'tiktok shop'];
+
+                $salesData = [
+                    'direct' => [
+                        'ready_stock' => ['count' => 0, 'down_payment' => 0],
+                        'pre_order' => ['count' => 0, 'down_payment' => 0]
+                    ],
+                    'marketplace' => [
+                        'ready_stock' => ['count' => 0, 'down_payment' => 0],
+                        'pre_order' => ['count' => 0, 'down_payment' => 0]
+                    ]
+                ];
+
+                // Proses data per sumber
+                foreach (array_merge($marketplaceSources, $directSources) as $source) {
+                    $category = in_array($source, $marketplaceSources) ? 'marketplace' : 'direct';
+
+                    $readyStockQuery = invoice::whereHas('invoiceDetails.transaksiDetail.transaksi.customerOrder', function ($query) use ($source) {
+                        $query->where('jenis_order', 'ready stock')
+                            ->whereHas('draftCustomer', function ($subQuery) use ($source) {
+                                $subQuery->where('sumber', $source);
+                            });
+                    });
+
+                    $countReadyStock = $readyStockQuery->count();
+                    $totalReadyStockDP = $readyStockQuery->sum('down_payment');
+
+                    $preOrderQuery = invoice::whereHas('invoiceFormPo.formPo.customerOrder', function ($query) use ($source) {
+                        $query->where('jenis_order', 'pre order')
+                            ->whereHas('draftCustomer', function ($subQuery) use ($source) {
+                                $subQuery->where('sumber', $source);
+                            });
+                    });
+
+                    $countPreOrder = $preOrderQuery->count();
+                    $totalPreOrderDP = $preOrderQuery->sum('down_payment');
+
+                    $salesData[$category]['ready_stock']['count'] += $countReadyStock;
+                    $salesData[$category]['ready_stock']['down_payment'] += $totalReadyStockDP;
+
+                    $salesData[$category]['pre_order']['count'] += $countPreOrder;
+                    $salesData[$category]['pre_order']['down_payment'] += $totalPreOrderDP;
+                }
+
+                return response()->json($salesData);
+            } catch (\Exception $e) {
+                return response()->json(['error' => 'Failed to load data'], 500);
+            }
+        }
+    }
+
+    public function getUserDownPayments(Request $request)
+    {
+        if ($request->ajax()) {
+            try {
+                $userDownPayments = invoice::with([
+                    'invoiceDetails.transaksiDetail.transaksi.customerOrder.draftCustomer.user:id,name',
+                    'invoiceFormPo.formPo.customerOrder.draftCustomer.user:id,name'
+                ])
+                    ->where('down_payment', '>', 0) // Hanya ambil invoice yang memiliki DP
+                    ->select('invoice_id', 'down_payment', 'created_at')
+                    ->get();
+
+                $todayDate = now()->startOfDay();
+                $startOfWeek = now()->startOfWeek();
+                $startOfMonth = now()->startOfMonth();
+
+                // Group data per user dengan total DP per periode
+                $users = [];
+
+                // Loop melalui data yang diambil
+                foreach ($userDownPayments as $invoice) {
+                    $userName = null;
+
+                    // Cek relasi invoiceDetails
+                    if ($invoice->invoiceDetails->isNotEmpty()) {
+                        foreach ($invoice->invoiceDetails as $invoiceDetail) {
+                            if ($invoiceDetail->transaksiDetail && $invoiceDetail->transaksiDetail->transaksi) {
+                                $userName = $invoiceDetail->transaksiDetail->transaksi->customerOrder->draftCustomer->user->name ?? null;
+                            }
+                        }
+                    }
+
+                    if ($userName) {
+                        if (!isset($users[$userName])) {
+                            $users[$userName] = [
+                                'harian' => 0,
+                                'mingguan' => 0,
+                                'bulanan' => 0
+                            ];
+                        }
+
+                        $createdAt = $invoice->created_at;
+
+                        // Tambahkan DP ke periode yang sesuai
+                        if ($createdAt >= $todayDate) {
+                            $users[$userName]['harian'] += $invoice->down_payment;
+                        }
+                        if ($createdAt >= $startOfWeek) {
+                            $users[$userName]['mingguan'] += $invoice->down_payment;
+                        }
+                        if ($createdAt >= $startOfMonth) {
+                            $users[$userName]['bulanan'] += $invoice->down_payment;
+                        }
+                    }
+                }
+
+                // Format untuk Chart.js
+                $labels = ['Harian', 'Mingguan', 'Bulanan'];
+                $datasets = [];
+
+                foreach ($users as $userName => $data) {
+                    $red = rand(0, 255);
+                    $green = rand(0, 255);
+                    $blue = rand(0, 255);
+
+                    $datasets[] = [
+                        'label' => $userName,
+                        'data' => [
+                            $data['harian'],
+                            $data['mingguan'],
+                            $data['bulanan']
+                        ],
+                        'backgroundColor' => sprintf('rgba(%d, %d, %d, 0.2)', $red, $green, $blue), // Warna solid dengan opacity 0.2
+                        'borderColor' => sprintf('rgba(%d, %d, %d, 1)', $red, $green, $blue), // Warna solid dengan opacity 1
+                        'borderWidth' => 1
+                    ];
+                }
+
+                return response()->json([
+                    'labels' => $labels,
+                    'datasets' => $datasets
+                ]);
+            } catch (\Exception $e) {
+                return response()->json(['error' => $e->getMessage()], 500);
+            }
+        }
     }
 }

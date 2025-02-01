@@ -50,6 +50,7 @@ Route::group(['middleware' => ['auth', 'verified', 'role:admin|supervisor']], fu
     Route::get('/sales-statistics', [dashboardAdminController::class, 'salesStatistics'])->name('salesStatistics');
     Route::get('/unpaid-invoices', [dashboardAdminController::class, 'unpaidInvoice'])->name('admin.unpaidInvoice');
     Route::get('/admin/production-plan', [dashboardAdminController::class, 'getProductionPlan'])->name('admin.getProductionPlan');
+    Route::get('/admin/sales-sources', [dashboardAdminController::class, 'getSalesSources'])->name('admin.salesSources');
     Route::resource('draft-customer', draftCustomerController::class);
     Route::resource('order-customer', orderController::class);
     Route::resource('transaksi-customer', TransaksiController::class);
@@ -100,5 +101,7 @@ Route::middleware(['auth', 'verified', 'role:supervisor'])->group(function () {
     Route::get('/all-sales-statistics', [dashboardSupervisorController::class, 'salesStatistics'])->name('allSalesStatistics');
     Route::get('/unpaid-invoice-supervisor', [dashboardSupervisorController::class, 'unpaidInvoice'])->name('supervisor.unpaidInvoice');
     Route::get('/get-production-plan-supervisor', [dashboardSupervisorController::class, 'getProductionPlan'])->name('supervisor.getProductionPlan');
+    Route::get('/get-sales-sources-supervisor', [dashboardSupervisorController::class, 'getSalesSources'])->name('supervisor.sales.sources');
+    Route::get('/user-down-payments', [DashboardSupervisorController::class, 'getUserDownPayments'])->name('userDownPayment');
     Route::resource('kelola-admin', manageAdmiinController::class);
 });
