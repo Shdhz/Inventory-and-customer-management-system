@@ -21,7 +21,8 @@
                     @csrf
                     <div class="row">
                         <div class="col-8">
-                            <img src="\dist\logo_kaifacraftgroup.png" alt="logo_kaifacraft.jpg" class="img-fluid img" width="35%">
+                            <img src="\dist\logo_kaifacraftgroup.png" alt="logo_kaifacraft.jpg" class="img-fluid img"
+                                width="35%">
                             <p>Sentra kerajinan tangan unggulan</p>
                             <address>
                                 Jl. Cikuya RT.03/07 Desa/kec. Rajapolah<br>
@@ -121,7 +122,8 @@
                             <label for="dp" class="form-label">DP (Down Payment) (%)</label>
                             <div class="input-group">
                                 <input type="number" id="dp" name="dp" class="form-control"
-                                    placeholder="Masukkan DP dalam persen" required min="0" max="100">
+                                    placeholder="Masukkan DP dalam persen" required min="0" max="100"
+                                    step="0.01">
                                 <span class="input-group-text" id="basic-addon1">%</span>
                             </div>
                             @error('dp')
@@ -258,7 +260,7 @@
                 });
 
                 const ongkir = parseInt($('#ongkir').val()) || 0;
-                const dpPersen = parseInt($('#dp').val()) || 0;
+                let dpPersen = parseFloat($('#dp').val().replace(',', '.')) || 0;
 
                 subtotal += ongkir;
 
@@ -283,11 +285,14 @@
 
             // Format angka menjadi Rupiah
             function formatRupiah(angka) {
-                return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                return 'Rp ' + angka.toLocaleString('id-ID');
             }
 
             // Event listeners untuk hitung total
-            $(document).on('input', 'input[name="qty[]"], input[name="harga[]"], #ongkir, #dp', calculateTotals);
+            $('input[name="qty[]"], input[name="harga[]"], #ongkir, #dp').on('input', function() {
+                calculateTotals();
+            });
+
 
             // Reset form function
             function resetForm() {
@@ -300,14 +305,14 @@
             }
 
 
-            $('#dp').on('input', function() {
-                let dp = parseInt($(this).val()) || 0;
-                if (dp > 100) {
-                    dp = 0;
-                    $(this).val(dp);
-                }
-                calculateTotals();
-            });
+            // $('#dp').on('input', function() {
+            //     let dp = parseInt($(this).val()) || 0;
+            //     if (dp > 100) {
+            //         dp = 0;
+            //         $(this).val(dp);
+            //     }
+            //     calculateTotals();
+            // });
 
             calculateTotals();
         });

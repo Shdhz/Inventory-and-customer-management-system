@@ -21,7 +21,8 @@
                         @csrf
                         <div class="row">
                             <div class="col-8">
-                                <img src="\dist\logo_kaifacraftgroup.png" alt="logo_kaifacraft.jpg" class="img-fluid img" width="35%">
+                                <img src="\dist\logo_kaifacraftgroup.png" alt="logo_kaifacraft.jpg" class="img-fluid img"
+                                    width="35%">
                                 <p>Sentra kerajinan tangan unggulan</p>
                                 <address>
                                     Jl. Cikuya RT.03/07 Desa/kec. Rajapolah<br>
@@ -119,11 +120,12 @@
                                 @enderror
                             </div>
                             <div class="mt-4 input-group">
-                                <label for="dp" class="form-label">DP (Down Payment) (%) <span
+                                <label for="dp" class="form-label">DP (Down Payment)<span
                                         class="text-danger">*</span></label>
                                 <div class="input-group">
+                                    <span class="input-group-text" id="basic-addon1">Rp</span>
                                     <input type="number" id="dp" name="dp" class="form-control"
-                                        placeholder="Masukkan DP dalam persen" required min="0" max="100">
+                                        placeholder="Masukkan DP dalam persen" required min="0">
                                     <span class="input-group-text" id="basic-addon1">%</span>
                                 </div>
                                 @error('dp')
@@ -219,7 +221,7 @@
                         newRow.find('input[name="qty[]"]').val(item.qty || 1);
                         newRow.find('input[name="harga[]"]').val('');
                         newRow.find('input[name="form_po_id[]"]').val(item
-                        .form_po_id); // Update form_po_id in each row
+                            .form_po_id); // Update form_po_id in each row
 
                         // Update the IDs for the new row to ensure uniqueness
                         const rowIndex = index + 1; // Adding 1 to the index to start from 1
@@ -241,7 +243,7 @@
                 });
 
                 function formatRupiah(angka) {
-                    return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                    return 'Rp ' + angka.toLocaleString('id-ID');
                 }
 
                 // Fungsi untuk format angka dengan pemisah ribuan
@@ -272,36 +274,26 @@
 
                     // Ambil nilai ongkir dan dp
                     const ongkir = validateNumberInput($('#ongkir'));
-                    let dpPersen = validateNumberInput($('#dp'));
+                    const dp = validateNumberInput($('#dp'));
 
                     subtotal += ongkir;
 
-
-                    // Validasi DP untuk mencegah angka lebih dari 100
-                    if (dpPersen > 100) {
-                        dpPersen = 100;
-                        $('#dp').val(dpPersen);
-                    }
-
-                    // Hitung DP dalam angka   Bug dalam angka 7
-                    const dp = (dpPersen / 100) * subtotal;
-
                     // Hitung total yang belum dibayar
                     const totalBelumDibayar = subtotal - dp;
+                    const statusDp = dp === subtotal ? 'LUNAS' : 'BELUM LUNAS';
 
                     // Perbarui tampilan
                     $('#subtotal').text(formatRupiah(subtotal));
                     $('#biaya-kirim').text(formatRupiah(ongkir));
                     $('#dp-total').text(formatRupiah(dp));
                     $('#total-sisa').text(formatRupiah(totalBelumDibayar));
-                    $('#status-dp').text(dpPersen === 100 ? 'LUNAS' : 'BELUM LUNAS');
+                    $('#status-dp').text(statusDp);
                 }
 
-                // Event listener untuk input harga, qty, ongkir
-                $(document).on('input', 'input[name="qty[]"], input[name="harga[]"], #ongkir', function() {
-                    validateNumberInput($(this));
+                $('input[name="qty[]"], input[name="harga[]"], #ongkir, #dp').on('input', function() {
                     calculateTotals();
                 });
+
 
                 // Reset form function
                 function resetForm() {
@@ -312,19 +304,6 @@
                     $('#dp').val('');
                     calculateTotals();
                 }
-                
-                // Event listener khusus untuk DP
-                $('#dp').on('input', function() {
-                    let dp = validateNumberInput($(this));
-
-                    // Batasi nilai DP antara 0 dan 100
-                    if (dp > 100) {
-                        dp = 100;
-                        $(this).val(dp);
-                    }
-
-                    calculateTotals(); // Hitung ulang total
-                });
 
                 // Hitung total awal saat halaman dimuat
                 calculateTotals();

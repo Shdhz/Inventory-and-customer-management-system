@@ -135,8 +135,8 @@
                                 class="text-danger">*</span></label>
                         <div class="input-group">
                             <input type="number" id="dp" name="dp" class="form-control"
-                                placeholder="Masukkan DP dalam persen" value="{{ $dpPersen }}" required
-                                min="0" max="100">
+                                placeholder="Masukkan DP dalam persen" value="{{ number_format($dpPersen, 2) }}" required
+                                min="0" max="100" step="0.01">
                             <span class="input-group-text" id="basic-addon1">%</span>
                         </div>
                         @error('dp')
@@ -258,7 +258,7 @@
             });
 
             function formatRupiah(angka) {
-                return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                return 'Rp ' + angka.toLocaleString('id-ID');
             }
 
             // Fungsi untuk format angka dengan pemisah ribuan
@@ -287,7 +287,7 @@
                 });
 
                 const ongkir = parseFloat($('#ongkir').val()) || 0;
-                let dpPersen = parseFloat($('#dp').val()) || 0;
+                let dpPersen = parseFloat($('#dp').val().replace(',', '.')) || 0;
 
                 subtotal += ongkir
 
@@ -311,20 +311,7 @@
             }
 
 
-            // Event listener untuk input harga, qty, ongkir
-            $(document).on('input', 'input[name="qty[]"], input[name="harga_satuan[]"], #ongkir', function() {
-                validateNumberInput($(this));
-                calculateTotals();
-            });
-
-            // Event listener khusus untuk DP
-            $('#dp').on('input', function() {
-                let dp = validateNumberInput($(this));
-                if (dp > 100) {
-                    dp = 100;
-                    $(this).val(dp);
-                }
-
+            $('input[name="qty[]"], input[name="harga_satuan[]"], #ongkir, #dp').on('input', function() {
                 calculateTotals();
             });
 

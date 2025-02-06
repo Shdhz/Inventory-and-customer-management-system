@@ -3,6 +3,7 @@
         fetchSalesData();
         loadUnpaidInvoices();
         loadProductionPlan();
+        fetchUserDownPayment();
     });
 
     function fetchSalesData() {
@@ -367,48 +368,68 @@
         fetchSalesData();
     });
 
+    // User down payment
 
-    document.addEventListener('DOMContentLoaded', function() {
-        fetch('{{ route('userDownPayment') }}', {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                const ctx = document.getElementById('adminSalesChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: data.labels, // Harian, Mingguan, Bulanan
-                        datasets: data.datasets // Data per user
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    callback: function(value) {
-                                        return 'Rp ' + value.toLocaleString('id-ID');
-                                    }
-                                }
-                            }
-                        },
-                        plugins: {
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return context.dataset.label + ': Rp ' + context.parsed
-                                            .y.toLocaleString('id-ID');
-                                    }
-                                }
+    function fetchUserDownPayment() {
+        $.ajax({
+            url: "{{ route('userDownPayment') }}",
+            method: "GET",
+            dataType: "json",
+            success: function(data) {
+                renderUserDownPaymentChart(data);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching data:', error);
+            }
+        });
+    }
+
+    function renderUserDownPaymentChart(data) {
+        const ctx = document.getElementById('adminSalesChart').getContext('2d');
+
+        // Tambahkan warna dinamis di frontend
+        data.datasets = data.datasets.map(dataset => {
+            const red = Math.floor(Math.random() * 255);
+            const green = Math.floor(Math.random() * 255);
+            const blue = Math.floor(Math.random() * 255);
+            return {
+                ...dataset,
+                backgroundColor: `rgb(${red}, ${green}, ${blue})`,
+                borderColor: `rgb(${red}, ${green}, ${blue})`, 
+                borderWidth: 1
+            };
+        });
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: data.datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return 'Rp ' + value.toLocaleString('id-ID');
                             }
                         }
                     }
-                });
-            })
-            .catch(error => console.error('Error fetching data:', error));
-    });
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': Rp ' + context.parsed.y.toLocaleString(
+                                    'id-ID');
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
 </script>

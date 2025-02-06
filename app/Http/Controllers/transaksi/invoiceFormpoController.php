@@ -169,7 +169,7 @@ class invoiceFormpoController extends Controller
             'qty.*' => 'required|integer|min:1',
             'harga.*' => 'required|numeric|min:1',
             'ongkir' => 'required|numeric|min:0',
-            'dp' => 'required|numeric|between:0,100',
+            'dp' => 'required|numeric',
             'form_po_id' => 'required|array',
             'form_po_id.*' => 'required|exists:tb_form_po,id_form_po',
         ], [
@@ -197,7 +197,6 @@ class invoiceFormpoController extends Controller
             'ongkir.min' => 'Biaya ongkir tidak boleh kurang dari 0.',
             'dp.required' => 'Jumlah Down Payment (DP) wajib diisi.',
             'dp.numeric' => 'Down Payment (DP) harus berupa angka.',
-            'dp.between' => 'Down Payment (DP) harus antara 0 dan 100 persen.',
             'form_po_id.distinct' => 'Terdapat duplikasi pada Form PO ID.',
             'form_po_id.*.exists' => 'Form PO ID tidak valid.',
             'form_po_id.*.required' => 'ID Form PO wajib diisi.',
@@ -215,7 +214,7 @@ class invoiceFormpoController extends Controller
         $subtotal += $validatedData['ongkir'];
 
         // Perhitungan total: dp - subtotal
-        $downPayment = ($validatedData['dp'] / 100) * $subtotal;
+        $downPayment = $validatedData['dp'];
         $total = $subtotal - $downPayment;
 
         $statusPembayaran = $downPayment >= $subtotal ? 'Lunas' : 'Belum Lunas';

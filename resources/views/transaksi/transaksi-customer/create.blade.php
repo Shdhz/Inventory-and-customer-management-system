@@ -60,7 +60,7 @@
                                 @enderror
                                 <input type="number"
                                     class="form-control price-input @error('products.*.harga_satuan') is-invalid @enderror"
-                                    name="products[0][harga_satuan]" placeholder="Harga" required>
+                                    name="products[0][harga_satuan]" placeholder="Harga" required step="any">
                                 @error('products.0.harga_satuan')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -131,7 +131,7 @@
                 ${products.map(product => `<option value="${product.id_stok}" data-stok="${product.jumlah_stok}">${product.nama_produk} (Stok : ${product.jumlah_stok})</option>`).join('')}
             </select>
             <input type="number" class="form-control qty-input" name="products[${index}][qty]" placeholder="Qty" required min="0">
-            <input type="number" class="form-control price-input" name="products[${index}][harga_satuan]" placeholder="Harga" required min="0">
+            <input type="number" class="form-control price-input" name="products[${index}][harga_satuan]" placeholder="Harga" required min="0" step="any">
             <button type="button" class="btn btn-danger remove-product">Hapus</button>
         </div>`;
             }

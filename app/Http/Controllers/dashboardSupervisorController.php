@@ -41,7 +41,6 @@ class dashboardSupervisorController extends Controller
 
                 $cacheDuration = now()->addMinutes(10);
 
-                // Hitung penjualan harian dengan cache
                 $dailySales = Cache::remember('daily_sales_' . $today, $cacheDuration, function () use ($salesQuery, $today) {
                     return $salesQuery('invoiceDetails.transaksiDetail.transaksi.customerOrder.draftCustomer')
                         ->whereDate('updated_at', $today)
@@ -52,7 +51,6 @@ class dashboardSupervisorController extends Controller
                         ->sum('down_payment');
                 });
 
-                // Hitung penjualan mingguan dengan cache
                 $weeklySales = Cache::remember('weekly_sales_' . $startOfWeek . '_' . $endOfWeek, $cacheDuration, function () use ($salesQuery, $startOfWeek, $endOfWeek) {
                     return $salesQuery('invoiceDetails.transaksiDetail.transaksi.customerOrder.draftCustomer')
                         ->whereBetween('updated_at', [$startOfWeek, $endOfWeek])
@@ -63,7 +61,6 @@ class dashboardSupervisorController extends Controller
                         ->sum('down_payment');
                 });
 
-                // Hitung penjualan bulanan dengan cache
                 $monthlySales = Cache::remember('monthly_sales_' . $currentMonth . '_' . $currentYear, $cacheDuration, function () use ($salesQuery, $currentMonth, $currentYear) {
                     return $salesQuery('invoiceDetails.transaksiDetail.transaksi.customerOrder.draftCustomer')
                         ->whereMonth('updated_at', $currentMonth)
@@ -222,7 +219,7 @@ class dashboardSupervisorController extends Controller
                     'invoiceDetails.transaksiDetail.transaksi.customerOrder.draftCustomer.user:id,name',
                     'invoiceFormPo.formPo.customerOrder.draftCustomer.user:id,name'
                 ])
-                    ->where('down_payment', '>', 0) // Hanya ambil invoice yang memiliki DP
+                    ->where('down_payment', '>', 0)
                     ->select('invoice_id', 'down_payment', 'created_at')
                     ->get();
 
@@ -230,20 +227,19 @@ class dashboardSupervisorController extends Controller
                 $startOfWeek = now()->startOfWeek();
                 $startOfMonth = now()->startOfMonth();
 
-                // Group data per user dengan total DP per periode
                 $users = [];
 
-                // Loop melalui data yang diambil
                 foreach ($userDownPayments as $invoice) {
                     $userName = null;
-
-                    // Cek relasi invoiceDetails
-                    if ($invoice->invoiceDetails->isNotEmpty()) {
-                        foreach ($invoice->invoiceDetails as $invoiceDetail) {
-                            if ($invoiceDetail->transaksiDetail && $invoiceDetail->transaksiDetail->transaksi) {
-                                $userName = $invoiceDetail->transaksiDetail->transaksi->customerOrder->draftCustomer->user->name ?? null;
-                            }
-                        }
+                    
+                    $invoiceDetail = $invoice->invoiceDetails->first();
+                    if ($invoiceDetail && $invoiceDetail->transaksiDetail && $invoiceDetail->transaksiDetail->transaksi) {
+                        $userName = $invoiceDetail->transaksiDetail->transaksi->customerOrder->draftCustomer->user->name ?? null;
+                    }
+                    
+                    if (!$userName && $invoice->invoiceFormPo->isNotEmpty()) {
+                        $formPo = $invoice->invoiceFormPo->first();
+                        $userName = $formPo->formPo->customerOrder->draftCustomer->user->name ?? null;
                     }
 
                     if ($userName) {
@@ -275,20 +271,13 @@ class dashboardSupervisorController extends Controller
                 $datasets = [];
 
                 foreach ($users as $userName => $data) {
-                    $red = rand(0, 255);
-                    $green = rand(0, 255);
-                    $blue = rand(0, 255);
-
                     $datasets[] = [
                         'label' => $userName,
                         'data' => [
                             $data['harian'],
                             $data['mingguan'],
                             $data['bulanan']
-                        ],
-                        'backgroundColor' => sprintf('rgba(%d, %d, %d, 0.2)', $red, $green, $blue), // Warna solid dengan opacity 0.2
-                        'borderColor' => sprintf('rgba(%d, %d, %d, 1)', $red, $green, $blue), // Warna solid dengan opacity 1
-                        'borderWidth' => 1
+                        ]
                     ];
                 }
 

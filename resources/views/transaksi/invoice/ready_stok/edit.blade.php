@@ -108,14 +108,14 @@
                                     <label for="harga_{{ $index }}" class="form-label">Harga Satuan</label>
                                     <input type="number" name="harga[]" id="harga_{{ $index }}"
                                         class="form-control"
-                                        value="{{ old("harga.$index", $detail->transaksiDetail->harga_satuan ?? 0) }}"
+                                        value="{{ old("harga.$index", floatval($detail->transaksiDetail->harga_satuan)) }}"
                                         placeholder="Harga per item" readonly>
                                 </div>
                                 <div class="col">
                                     <label for="subtotal_{{ $index }}" class="form-label">Subtotal</label>
                                     <input type="number" name="subtotal[]" id="subtotal_{{ $index }}"
                                         class="form-control"
-                                        value="{{ old("subtotal.$index", $detail->transaksiDetail->subtotal ?? 0) }}"
+                                        value="{{ old("subtotal.$index", floatval($detail->transaksiDetail->subtotal ?? 0)) }}"
                                         placeholder="Subtotal" readonly>
                                 </div>
                             </div>
@@ -127,7 +127,7 @@
                             <div class="input-group">
                                 <span class="input-group-text" id="basic-addon1">Rp</span>
                                 <input type="number" id="ongkir" name="ongkir" class="form-control"
-                                    value="{{ old('ongkir', $invoice->ongkir) }}" placeholder="Masukkan Ongkir" required>
+                                    value="{{ old('ongkir', floatval($invoice->ongkir)) }}" placeholder="Masukkan Ongkir" required>
                             </div>
                             @error('ongkir')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -137,8 +137,8 @@
                             <label for="dp" class="form-label">DP (Down Payment) (%)</label>
                             <div class="input-group">
                                 <input type="number" id="dp" name="dp" class="form-control"
-                                    value="{{ old('dp', $dpPersen) }}" placeholder="Masukkan DP dalam persen" required
-                                    min="0" max="100">
+                                    value="{{ old('dp', number_format($dpPersen, 2)) }}" placeholder="Masukkan DP dalam persen" required
+                                    min="0" max="100" step="0.01">
                                 <span class="input-group-text" id="basic-addon1">%</span>
                             </div>
                             @error('dp')
@@ -274,7 +274,7 @@
                 });
 
                 const ongkir = parseInt($('#ongkir').val()) || 0;
-                const dpPersen = parseInt($('#dp').val()) || 0;
+                let dpPersen = parseFloat($('#dp').val().replace(',', '.')) || 0;
 
                 subtotal += ongkir;
 
@@ -299,11 +299,13 @@
 
             // Format angka menjadi Rupiah
             function formatRupiah(angka) {
-                return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                return 'Rp ' + angka.toLocaleString('id-ID');
             }
 
             // Event listener untuk input yang memengaruhi total
-            $(document).on('input', 'input[name="qty[]"], input[name="harga[]"], #ongkir, #dp', calculateTotals);
+            $('input[name="qty[]"], input[name="harga[]"], #ongkir, #dp').on('input', function() {
+                calculateTotals();
+            });
 
             // Reset form function
             function resetForm() {
@@ -314,16 +316,6 @@
                 $('#dp').val('');
                 calculateTotals();
             }
-
-
-            $('#dp').on('input', function() {
-                let dp = parseInt($(this).val()) || 0;
-                if (dp > 100) {
-                    dp = 0;
-                    $(this).val(dp);
-                }
-                calculateTotals();
-            });
 
             calculateTotals();
         });
