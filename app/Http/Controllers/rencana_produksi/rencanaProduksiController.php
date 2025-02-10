@@ -107,7 +107,7 @@ class rencanaProduksiController extends Controller
     public function create()
     {
         $backUrl = url()->previous();
-        $formPo = FormPo::where('status_form_po', true)
+        $formPo = FormPo::with('modelsFormpo')->where('status_form_po', true)
             ->whereDoesntHave('rencanaProduksi')
             ->get();
 
